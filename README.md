@@ -1,5 +1,7 @@
 # OnigiriShop
 
+Problème technique, contre temps, le code arrivera sous peu.
+
 # Configuration des secrets Mailjet
 
 Pour le dev local, configurez vos clés Mailjet avec user-secrets :
