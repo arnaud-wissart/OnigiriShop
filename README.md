@@ -1,6 +1,6 @@
 # OnigiriShop
 
-Problème technique, contre temps, le code arrivera sous peu.
+
 
 # Configuration des secrets Mailjet
 
