@@ -1,9 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.JSInterop;
-using OnigiriShop.Data;
-using OnigiriShop.Services;
 using System.ComponentModel.DataAnnotations;
 
 namespace OnigiriShop.Pages
@@ -12,9 +8,7 @@ namespace OnigiriShop.Pages
     {
         [Parameter] public bool Visible { get; set; }
         [Parameter] public EventCallback OnHide { get; set; }
-        [Inject] public HttpClient Http { get; set; }
         [Inject] public IJSRuntime JS { get; set; }
-        [Inject] public NavigationManager Nav { get; set; }
 
         protected LoginModel Model { get; set; } = new();
         protected string Error { get; set; }
@@ -26,42 +20,33 @@ namespace OnigiriShop.Pages
             OnHide.InvokeAsync();
         }
 
-        public class LoginModel
-        {
-            public string Email { get; set; }
-            public string Password { get; set; }
-        }
-
         protected async Task LoginAsync()
         {
             Error = null;
             IsBusy = true;
             try
             {
-                var response = await Http.PostAsJsonAsync("/api/auth/login", Model);
-                if (response.IsSuccessStatusCode)
+                var result = await JS.InvokeAsync<LoginResult>("onigiriAuth.login", Model.Email, Model.Password);
+                if (result.Success)
                 {
-                    await JS.InvokeVoidAsync("console.log", "Attente avant reload…");
-                    await Task.Delay(5000); // 5 secondes pour inspecter le cookie dans l’onglet Application de DevTools
+                    // Cookie OK, reload page to get authenticated state
                     await JS.InvokeVoidAsync("location.reload");
-                }
-                else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                {
-                    Error = "Email ou mot de passe incorrect.";
                 }
                 else
                 {
-                    Error = $"Erreur {response.StatusCode}";
+                    Error = result.Error;
                 }
-            }
-            catch (Exception ex)
-            {
-                Error = ex.Message;
             }
             finally
             {
                 IsBusy = false;
             }
+        }
+
+        public class LoginResult
+        {
+            public bool Success { get; set; }
+            public string Error { get; set; }
         }
     }
 

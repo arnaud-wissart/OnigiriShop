@@ -14,17 +14,25 @@
                         <DataAnnotationsValidator />
                         <ValidationSummary />
                         <div class="mb-3">
-                            <input class="form-control" placeholder="Email" @bind="Model.Email" />
+                            <input class="form-control" placeholder="Email" @bind="Model.Email" autocomplete="username" />
                         </div>
                         <div class="mb-3">
-                            <input class="form-control" type="password" placeholder="Mot de passe" @bind="Model.Password" />
+                            <input class="form-control" type="password" placeholder="Mot de passe" @bind="Model.Password" autocomplete="current-password" />
                         </div>
                         @if (!string.IsNullOrEmpty(Error))
                         {
                             <div class="alert alert-danger">@Error</div>
                         }
-                        <button class="btn btn-success w-100" disabled="@IsBusy">
-                            Se connecter
+                        <button class="btn btn-success w-100 d-flex align-items-center justify-content-center" type="submit" disabled="@IsBusy">
+                            @if (IsBusy)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                <span>Connexion…</span>
+                            }
+                            else
+                            {
+                                <span>Se connecter</span>
+                            }
                         </button>
                     </EditForm>
                 </div>
