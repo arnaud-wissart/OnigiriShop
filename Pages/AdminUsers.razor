@@ -5,52 +5,138 @@
 
 <h2>Utilisateurs</h2>
 
-<div class="mb-3">
-    <input class="form-control" placeholder="Recherche email ou nom..." @bind="Search" @bind:event="oninput" />
-</div>
-
-@if (IsLoading)
-{
-    <div class="text-center"><span class="spinner-border"></span> Chargement...</div>
-}
-else
-{
-    <table class="table table-striped">
-        <thead>
+<button class="btn btn-primary mb-3" @onclick="ShowAddModal">Ajouter un utilisateur</button>
+<input class="form-control mb-2" placeholder="Recherche email/nom"
+       @bind="SearchTerm" @bind:event="oninput" />
+<table class="table table-hover">
+    <thead>
+        <tr>
+            <th>Email</th>
+            <th>Nom</th>
+            <th>Rôle</th>
+            <th>Créé le</th>
+            <th>Actif</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in FilteredUsers)
+        {
             <tr>
-                <th>Nom</th>
-                <th>Email</th>
-                <th>Rôle</th>
-                <th>Date création</th>
-                <th>Statut</th>
-                <th>Actions</th>
+                <td>@user.Email</td>
+                <td>@user.Name</td>
+                <td>@(user.Role == "Admin" ? "Administrateur" : "Utilisateur")</td>
+                <td>@user.CreatedAt.ToString("dd/MM/yyyy")</td>
+                <td>
+                    <span class="badge @(user.IsActive ? "bg-success" : "bg-secondary")">
+                        @(user.IsActive ? "Oui" : "Non")
+                    </span>
+                </td>
+                <td>
+                    <button class="btn btn-sm btn-outline-secondary me-2" @onclick="() => EditUser(user)">Éditer</button>
+                    <button class="btn btn-sm btn-outline-warning" @onclick="() => ConfirmInviteUser(user)">Renvoi invitation</button>
+                    <button class="btn btn-outline-danger btn-sm" @onclick="() => ConfirmDeleteUser(user)">Supprimer</button>
+                </td>
             </tr>
-        </thead>
-        <tbody>
-            @foreach (var user in Users)
-            {
-                <tr>
-                    <td>@user.Name</td>
-                    <td>@user.Email</td>
-                    <td>@user.Role</td>
-                    <td>@user.CreatedAt.ToString("yyyy-MM-dd")</td>
-                    <td>
-                        @if (user.IsActive)
+        }
+    </tbody>
+</table>
+
+@* Modale ajout/modif *@
+@if (ShowModal)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background:rgba(33,33,33,0.18);" @onclick="HideModal">
+        <div class="modal-dialog" @onclick:stopPropagation>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@ModalTitle</h5>
+                    <button type="button" class="btn-close" @onclick="HideModal"></button>
+                </div>
+                <div class="modal-body">
+                    <EditForm Model="ModalModel" OnValidSubmit="HandleModalValid">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+                        <div class="mb-3">
+                            <label>Email</label>
+                            <InputText class="form-control" @bind-Value="ModalModel.Email" />
+                        </div>
+                        <div class="mb-3">
+                            <label>Nom</label>
+                            <InputText class="form-control" @bind-Value="ModalModel.Name" />
+                        </div>
+                        <div class="mb-3">
+                            <label>Téléphone</label>
+                            <InputText class="form-control" @bind-Value="ModalModel.Phone" />
+                        </div>
+                        <div class="mb-3 form-check">
+                            <InputCheckbox class="form-check-input" @bind-Value="IsModalAdmin" />
+                            <label class="form-check-label">Créer un utilisateur administrateur</label>
+                        </div>
+                        @if (IsEdit)
                         {
-                            <span class="badge bg-success">Actif</span>
+                            <div class="mb-3 form-check">
+                                <InputCheckbox class="form-check-input" @bind-Value="ModalModel.IsActive" />
+                                <label class="form-check-label">Compte actif</label>
+                            </div>
                         }
-                        else
-                        {
-                            <span class="badge bg-secondary">Inactif</span>
-                        }
-                    </td>
-                    <td>
-                        <button class="btn btn-sm btn-warning me-1" @onclick="() => ToggleUserActive(user)">@(user.IsActive ? "Désactiver" : "Activer")</button>
-                        <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => ResetPassword(user)">Réinit. Mdp</button>
-                        <!-- Autres actions : voir commandes, supprimer, etc. -->
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+                        <button class="btn btn-success" type="submit" disabled="@IsBusy">
+                            @((IsEdit ? "Mettre à jour" : "Créer"))
+                            @if (IsBusy)
+                            {
+                                <span class="spinner-border spinner-border-sm ms-2"></span>
+                            }
+                        </button>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@* Modale confirmation renvoi invitation *@
+@if (ShowInviteModal)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background:rgba(33,33,33,0.25);" @onclick="HideInviteModal">
+        <div class="modal-dialog" @onclick:stopPropagation>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Renvoyer l'invitation</h5>
+                    <button type="button" class="btn-close" @onclick="HideInviteModal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Renvoyer un email d'invitation à <strong>@InviteUser?.Email</strong> ?</p>
+                    <div class="d-flex justify-content-end">
+                        <button class="btn btn-secondary me-2" @onclick="HideInviteModal">Annuler</button>
+                        <button class="btn btn-warning" @onclick="SendInviteAsync" disabled="@IsBusy">
+                            Renvoyer
+                            @if (IsBusy)
+                            {
+                                <span class="spinner-border spinner-border-sm ms-2"></span>
+                            }
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (ShowDeleteConfirm)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background:rgba(33,33,33,0.18);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmation</h5>
+                </div>
+                <div class="modal-body">
+                    <p>Confirmer la suppression de l'utilisateur <b>@UserToDelete?.Email</b> ?</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CancelDelete">Annuler</button>
+                    <button class="btn btn-danger" @onclick="DeleteUserConfirmed">Supprimer</button>
+                </div>
+            </div>
+        </div>
+    </div>
 }

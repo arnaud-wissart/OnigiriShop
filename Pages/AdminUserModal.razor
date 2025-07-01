@@ -1,0 +1,41 @@
+﻿@if (Visible)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background:rgba(33,33,33,0.18);" @onclick="Hide">
+        <div class="modal-dialog" @onclick:stopPropagation>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5>@(IsEditMode ? "Éditer l'utilisateur" : "Nouvel utilisateur")</h5>
+                    <button class="btn-close" @onclick="Hide"></button>
+                </div>
+                <div class="modal-body">
+                    <EditForm Model="EditModel" OnValidSubmit="SaveUser">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+                        <div class="mb-3">
+                            <label>Email</label>
+                            <InputText class="form-control" @bind-Value="EditModel.Email" />
+                        </div>
+                        <div class="mb-3">
+                            <label>Nom</label>
+                            <InputText class="form-control" @bind-Value="EditModel.Name" />
+                        </div>
+                        <div class="mb-3">
+                            <label>Téléphone</label>
+                            <InputText class="form-control" @bind-Value="EditModel.Phone" />
+                        </div>
+                        <div class="mb-3 form-check">
+                            <InputCheckbox class="form-check-input" @bind-Value="IsAdmin" />
+                            <label class="form-check-label">Créer un utilisateur administrateur</label>
+                        </div>
+                        <button class="btn btn-success" disabled="@IsBusy">Enregistrer</button>
+                        <button type="button" class="btn btn-secondary ms-2" @onclick="Hide">Annuler</button>
+                    </EditForm>
+                    @if (!string.IsNullOrEmpty(Error))
+                    {
+                        <div class="alert alert-danger mt-2">@Error</div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}

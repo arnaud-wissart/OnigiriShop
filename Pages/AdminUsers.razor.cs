@@ -4,37 +4,129 @@ using OnigiriShop.Services;
 
 namespace OnigiriShop.Pages
 {
-    public class AdminUsersBase : AdminPageBase
+    public class AdminUsersBase : ComponentBase
     {
         [Inject] public UserService UserService { get; set; }
+        [Inject] public NavigationManager NavigationManager { get; set; }
 
-        protected List<User> Users = new();
-        protected string Search { get; set; }
-        protected bool IsLoading { get; set; }
-
+        public List<User> Users { get; set; } = new();
+        public bool ShowModal { get; set; }
+        public bool ShowInviteModal { get; set; }
+        public User ModalModel { get; set; } = new();
+        public User InviteUser { get; set; }
+        public bool IsBusy { get; set; }
+        public bool IsEdit { get; set; }
+        public string ModalTitle => IsEdit ? "Modifier l'utilisateur" : "Ajouter un utilisateur";
+        public bool IsModalAdmin
+        {
+            get => ModalModel.Role == "Admin";
+            set => ModalModel.Role = value ? "Admin" : "User";
+        }
+        protected bool ShowDeleteConfirm { get; set; }
+        protected User UserToDelete { get; set; }
         protected override void OnInitialized()
         {
-            LoadUsers();
+            ReloadUsers();
+        }
+        protected string SearchTerm { get; set; }
+        public List<User> FilteredUsers => string.IsNullOrWhiteSpace(SearchTerm)
+            ? Users
+            : Users.Where(u =>
+                (!string.IsNullOrEmpty(u.Email) && u.Email.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase))
+                || (!string.IsNullOrEmpty(u.Name) && u.Name.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase)))
+              .ToList();
+
+        public void ReloadUsers()
+        {
+            Users = UserService.GetAllUsers();
+            StateHasChanged();
+        }
+        public void ConfirmDeleteUser(User user)
+        {
+            UserToDelete = user;
+            ShowDeleteConfirm = true;
         }
 
-        protected void LoadUsers()
+        public void CancelDelete()
         {
-            IsLoading = true;
-            Users = UserService.GetAllUsers(Search);
-            IsLoading = false;
+            UserToDelete = null;
+            ShowDeleteConfirm = false;
         }
 
-        protected void ToggleUserActive(User user)
+        public void DeleteUserConfirmed()
         {
-            UserService.SetUserActive(user.Id, !user.IsActive);
-            LoadUsers();
+            if (UserToDelete != null)
+            {
+                UserService.SoftDeleteUser(UserToDelete.Id);
+                ReloadUsers();
+            }
+            CancelDelete();
+        }
+        public void ShowAddModal()
+        {
+            ModalModel = new User { IsActive = true, Role = "User" };
+            IsEdit = false;
+            ShowModal = true;
         }
 
-        protected async Task ResetPassword(User user)
+        public void EditUser(User user)
         {
-            // Génère un magic link pour ce user + envoie mail
-            await UserService.GenerateAndSendResetLinkAsync(user.Email, user.Name, Nav.BaseUri);
-            // Affiche toast/alerte ici
+            // Clone pour ne pas modifier dans la liste tant que pas validé
+            ModalModel = new User
+            {
+                Id = user.Id,
+                Email = user.Email,
+                Name = user.Name,
+                Phone = user.Phone,
+                CreatedAt = user.CreatedAt,
+                IsActive = user.IsActive,
+                Role = user.Role
+            };
+            IsEdit = true;
+            ShowModal = true;
+        }
+
+        public void HideModal()
+        {
+            ShowModal = false;
+            StateHasChanged();
+        }
+
+        public async Task HandleModalValid()
+        {
+            IsBusy = true;
+            if (IsEdit)
+            {
+                await UserService.UpdateUserAsync(ModalModel);
+            }
+            else
+            {
+                await UserService.InviteUserAsync(ModalModel.Email, ModalModel.Name, NavigationManager.BaseUri);
+            }
+            IsBusy = false;
+            HideModal();
+            ReloadUsers();
+        }
+
+        public void ConfirmInviteUser(User user)
+        {
+            InviteUser = user;
+            ShowInviteModal = true;
+            StateHasChanged();
+        }
+
+        public void HideInviteModal()
+        {
+            ShowInviteModal = false;
+            StateHasChanged();
+        }
+
+        public async Task SendInviteAsync()
+        {
+            IsBusy = true;
+            await UserService.InviteUserAsync(InviteUser.Email, InviteUser.Name, NavigationManager.BaseUri);
+            IsBusy = false;
+            HideInviteModal();
         }
     }
 }

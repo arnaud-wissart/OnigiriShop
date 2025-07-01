@@ -117,7 +117,27 @@ namespace OnigiriShop.Services
 
             return Task.FromResult(userId != null ? Convert.ToInt32(userId) : 0);
         }
+        public void SoftDeleteUser(int userId)
+        {
+            using var conn = _connectionFactory.CreateConnection();
+            conn.Open();
 
+            var cmd = conn.CreateCommand();
+            cmd.CommandText = @"UPDATE User SET IsActive = 0 WHERE Id = @UserId";
+            cmd.Parameters.AddWithValue("@UserId", userId);
+            cmd.ExecuteNonQuery();
+
+            // Audit log
+            var cmdAudit = conn.CreateCommand();
+            cmdAudit.CommandText = @"
+        INSERT INTO AuditLog (UserId, Action, TargetType, TargetId, Timestamp, Details)
+        VALUES (@UserId, 'SoftDelete', 'User', @TargetId, @Timestamp, @Details);";
+            cmdAudit.Parameters.AddWithValue("@UserId", DBNull.Value);
+            cmdAudit.Parameters.AddWithValue("@TargetId", userId);
+            cmdAudit.Parameters.AddWithValue("@Timestamp", DateTime.UtcNow);
+            cmdAudit.Parameters.AddWithValue("@Details", "Suppression logique (désactivation)");
+            cmdAudit.ExecuteNonQuery();
+        }
         public Task<User> AuthenticateAsync(string email, string password)
         {
             // 1. Vérifie dans le fichier JSON d'abord
@@ -177,6 +197,8 @@ namespace OnigiriShop.Services
                 diff |= (uint)a[i] ^ b[i];
             return diff == 0;
         }
+
+
 
         public List<User> GetAllUsers(string search = null)
         {
@@ -279,6 +301,45 @@ namespace OnigiriShop.Services
             cmdAudit.ExecuteNonQuery();
 
             Log.Information("Changement état actif pour userId={UserId}: {NewState}", userId, isActive ? "Actif" : "Inactif");
+        }
+
+        public async Task UpdateUserAsync(User user)
+        {
+            using var conn = _connectionFactory.CreateConnection();
+            conn.Open();
+            using var txn = conn.BeginTransaction();
+
+            var cmd = conn.CreateCommand();
+            cmd.CommandText = @"
+        UPDATE User
+        SET Email = @Email,
+            Name = @Name,
+            Phone = @Phone,
+            IsActive = @IsActive,
+            Role = @Role
+        WHERE Id = @Id";
+            cmd.Parameters.AddWithValue("@Email", user.Email);
+            cmd.Parameters.AddWithValue("@Name", user.Name ?? user.Email);
+            cmd.Parameters.AddWithValue("@Phone", user.Phone ?? "");
+            cmd.Parameters.AddWithValue("@IsActive", user.IsActive ? 1 : 0);
+            cmd.Parameters.AddWithValue("@Role", string.IsNullOrEmpty(user.Role) ? "User" : user.Role);
+            cmd.Parameters.AddWithValue("@Id", user.Id);
+
+            cmd.ExecuteNonQuery();
+
+            // Audit log
+            var cmdAudit = conn.CreateCommand();
+            cmdAudit.CommandText = @"
+        INSERT INTO AuditLog (UserId, Action, TargetType, TargetId, Timestamp, Details)
+        VALUES (@UserId, 'Update', 'User', @TargetId, @Timestamp, @Details);";
+            cmdAudit.Parameters.AddWithValue("@UserId", DBNull.Value); // Admin à compléter si besoin
+            cmdAudit.Parameters.AddWithValue("@TargetId", user.Id);
+            cmdAudit.Parameters.AddWithValue("@Timestamp", DateTime.UtcNow);
+            cmdAudit.Parameters.AddWithValue("@Details", $"Mise à jour de l'utilisateur {user.Email}");
+            cmdAudit.ExecuteNonQuery();
+
+            txn.Commit();
+            await Task.CompletedTask;
         }
 
     }
