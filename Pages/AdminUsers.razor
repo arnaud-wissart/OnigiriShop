@@ -1,0 +1,56 @@
+﻿@page "/admin/users"
+@layout AdminLayout
+@inherits AdminUsersBase
+@attribute [Authorize]
+
+<h2>Utilisateurs</h2>
+
+<div class="mb-3">
+    <input class="form-control" placeholder="Recherche email ou nom..." @bind="Search" @bind:event="oninput" />
+</div>
+
+@if (IsLoading)
+{
+    <div class="text-center"><span class="spinner-border"></span> Chargement...</div>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Nom</th>
+                <th>Email</th>
+                <th>Rôle</th>
+                <th>Date création</th>
+                <th>Statut</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Users)
+            {
+                <tr>
+                    <td>@user.Name</td>
+                    <td>@user.Email</td>
+                    <td>@user.Role</td>
+                    <td>@user.CreatedAt.ToString("yyyy-MM-dd")</td>
+                    <td>
+                        @if (user.IsActive)
+                        {
+                            <span class="badge bg-success">Actif</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Inactif</span>
+                        }
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-warning me-1" @onclick="() => ToggleUserActive(user)">@(user.IsActive ? "Désactiver" : "Activer")</button>
+                        <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => ResetPassword(user)">Réinit. Mdp</button>
+                        <!-- Autres actions : voir commandes, supprimer, etc. -->
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

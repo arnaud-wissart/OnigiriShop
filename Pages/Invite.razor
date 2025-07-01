@@ -1,0 +1,38 @@
+﻿@page "/invite"
+
+@if (!IsValidToken)
+{
+    <div class="alert alert-danger my-5">@Message</div>
+}
+else
+{
+    <div class="container my-5" style="max-width:420px">
+        <h2>Création de votre mot de passe</h2>
+        <EditForm OnValidSubmit="SubmitAsync">
+            <div class="mb-3">
+                <label class="form-label">Mot de passe *</label>
+                <InputText type="password" class="form-control" @bind-Value="Password" required />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Confirmer le mot de passe *</label>
+                <InputText type="password" class="form-control" @bind-Value="PasswordConfirm" required />
+            </div>
+            <button class="btn btn-primary" type="submit" disabled="@IsBusy">
+                @if (IsBusy)
+                {
+                    <span class="spinner-border spinner-border-sm">Validation...</span>                   
+                }
+                else
+                {
+                    <span>Enregistrer le mot de passe</span>
+                }
+            </button>
+            @if (!string.IsNullOrWhiteSpace(Message))
+            {
+                <div class="alert @(Message.Contains("Erreur") ? "alert-danger" : "alert-success") mt-3">
+                    @Message
+                </div>
+            }
+        </EditForm>
+    </div>
+}

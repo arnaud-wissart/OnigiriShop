@@ -1,0 +1,271 @@
+﻿html, body {
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    background: #f8f6f2;
+}
+
+.main-title {
+    position: sticky;
+    top: 0;
+    background: #fff;
+    z-index: 1000;
+    text-align: center;
+    font-size: 2.2rem;
+    font-weight: bold;
+    letter-spacing: 0.02em;
+    padding: 1.1rem 0 0.7rem 0;
+    margin: 0;
+    border-bottom: 1px solid #eceae6;
+    box-shadow: 0 4px 14px 0 rgba(100,90,80,0.11), 0 1px 0 #eceae6;
+}
+/* ---- OVERLAY JAPONAIS ---- */
+.japan-overlay {
+    position: fixed;
+    top: 80px; /* Ajuste selon ton header */
+    left: 20px;
+    min-width: 90px;
+    max-width: 140px;
+    height: calc(100vh - 80px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    pointer-events: none;
+}
+
+.japan-vertical {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    color: #212529;
+    font-family: 'Noto Sans JP', 'Yu Mincho', 'Meiryo', serif;
+    font-weight: 400;
+    font-size: calc((100vh - 110px) / 13);
+    line-height: 1.05;
+    white-space: nowrap;
+    text-align: center;
+    user-select: none;
+    pointer-events: auto;
+    text-shadow: 0 2px 10px rgba(255,255,255,0.9), 0 1px 2px #eceae6;
+}
+/* ---- OVERLAY PANIER ---- */
+.cart-sticky {
+    position: fixed;
+    bottom: 40px;
+    right: 20px;
+    width: 280px;
+    z-index: 2000;
+    pointer-events: none;
+}
+
+    .cart-sticky .cart-box {
+        pointer-events: auto;
+        background: #fff;
+        border-radius: 18px;
+        box-shadow: 0 2px 18px 0 rgba(100,90,80,0.12);
+        border: 1px solid #eceae6;
+        padding: 2rem 1.3rem;
+        min-height: 220px;
+        flex: 1 1 0;
+    }
+/* ---- PRODUITS ---- */
+.products-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+}
+
+.col-6-custom {
+    flex: 0 0 48%;
+    max-width: 48%;
+}
+
+.onigiri-card {
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 2px 16px 0 rgba(100,90,80,0.07);
+    border: 1px solid #eceae6;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    min-height: 170px;
+    cursor: pointer;
+    transition: box-shadow .15s;
+    padding: 1.2rem 2rem;
+    width: 100%;
+    min-width: 0;
+}
+
+    .onigiri-card:hover {
+        box-shadow: 0 8px 28px 0 rgba(100,90,80,0.14);
+    }
+
+.onigiri-img {
+    max-width: 120px;
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 15px;
+    margin-right: 2rem;
+    background: #eceae6;
+    flex-shrink: 0;
+}
+
+.onigiri-info {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.onigiri-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+    word-break: break-word;
+}
+
+.onigiri-desc {
+    font-size: 1.1rem;
+    color: #6c757d;
+    margin-bottom: 1.3rem;
+    word-break: break-word;
+}
+
+.onigiri-price {
+    font-size: 1.4rem;
+    font-weight: 500;
+    color: #212529;
+    margin-top: auto;
+    font-family: 'Noto Sans JP', sans-serif;
+}
+
+@media (max-width: 1200px) {
+    .japan-overlay {
+        min-width: 70px;
+    }
+
+    .cart-sticky {
+        width: 220px;
+    }
+}
+
+@media (max-width: 992px) {
+    .japan-overlay {
+        position: static;
+        width: 100vw;
+        max-width: none;
+        min-width: 0;
+        height: auto;
+        justify-content: flex-start;
+        align-items: flex-start;
+        top: 0;
+        left: 0;
+    }
+
+    .japan-vertical {
+        writing-mode: initial;
+        text-orientation: initial;
+        font-size: 1.7rem;
+        text-align: left;
+        margin-top: 1.2rem;
+        margin-bottom: 0.8rem;
+    }
+
+    .products-list {
+        flex-direction: column;
+    }
+
+    .cart-sticky {
+        position: static;
+        width: 100vw;
+        right: auto;
+        bottom: auto;
+        margin: 1.2rem 0;
+    }
+}
+
+@media (max-width: 600px) {
+    .onigiri-card {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 1rem 1rem;
+    }
+
+    .onigiri-img {
+        margin: 0 0 0.8rem 0;
+    }
+
+    .cart-sticky .cart-box {
+        padding: 1rem 0.7rem;
+    }
+}
+.cart-fab {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    z-index: 4000;
+    background: #20c997;
+    border-radius: 50%;
+    width: 56px;
+    height: 56px;
+    box-shadow: 0 2px 10px 0 rgba(100,90,80,0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background .2s;
+}
+
+    .cart-fab:hover {
+        background: #17a589;
+    }
+
+.cart-fab-icon {
+    position: relative;
+    color: #fff;
+    font-size: 2rem;
+}
+
+.cart-fab-count {
+    position: absolute;
+    top: -7px;
+    right: -10px;
+    background: #dc3545;
+    color: #fff;
+    border-radius: 20px;
+    padding: 2px 7px;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+@media (min-width: 992px) {
+    .cart-fab {
+        display: none !important;
+    }
+}
+.cart-anim {
+    animation: popcart 0.4s;
+}
+
+@keyframes popcart {
+    0% {
+        transform: scale(1);
+    }
+
+    60% {
+        transform: scale(1.2);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.qty-btn:active {
+    transform: scale(0.95);
+}
+
+.qty-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px #0d6efd44;
+}

@@ -1,0 +1,29 @@
+﻿<div class="cart-box">
+    <h4 class="mb-3">Mon panier</h4>
+    <ul class="list-group mb-3">
+        @if (_items == null || _items.Count == 0)
+        {
+            <li class="list-group-item text-muted">Votre panier est vide…</li>
+        }
+        else
+        {
+            @foreach (var item in _items)
+            {
+                <li class="list-group-item d-flex align-items-center justify-content-between">
+                    <span>
+                        <b>@item.Product.Name</b>
+                        <small class="d-block text-muted">@item.Quantity × @($"{item.Product.Price:C2}")</small>
+                    </span>
+                    <button class="btn btn-sm btn-outline-danger" @onclick="() => RemoveItem(item.Product.Id)">
+                        ×
+                    </button>
+                </li>
+            }
+        }
+    </ul>
+    <div class="d-flex justify-content-between">
+        <span class="fw-bold">Total</span>
+        <span class="fw-bold">@($"{_totalPrice:C2}")</span>
+    </div>
+    <a class="btn btn-success w-100 mt-3 @(!_hasItems ? "disabled" : "")" href="/panier">Commander</a>
+</div>

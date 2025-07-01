@@ -1,0 +1,29 @@
+﻿@inherits LayoutComponentBase
+
+<header class="main-title">
+    Onigiris et Sponge Cakes
+</header>
+
+<!-- Overlay japonais à gauche (desktop) -->
+<div class="japan-overlay d-none d-lg-flex">
+    <div class="japan-vertical">おにぎりとスポンジケーキ</div>
+</div>
+
+<!-- Overlay panier sticky à droite (desktop) -->
+<div class="cart-sticky d-none d-lg-block">
+    <CartSticky />
+    @if (CartService.Items.Count > 0)
+    {
+        <div class="cart-fab d-lg-none" @onclick="GoToCart">
+            <span class="cart-fab-icon">
+                <i class="bi bi-cart-fill"></i>
+                <span class="cart-fab-count">@CartService.Items.Count</span>
+            </span>
+        </div>
+    }
+</div>
+
+<!-- Contenu principal du site -->
+<main class="container-fluid pt-4">
+    @Body
+</main>

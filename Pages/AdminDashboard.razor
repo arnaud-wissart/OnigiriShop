@@ -1,0 +1,28 @@
+﻿@page "/admin"
+@layout AdminLayout
+@inherits AdminDashboardBase
+@attribute [Authorize]
+
+<div class="container my-5">
+    <h2 class="mb-4">Administration Onigiri Shop</h2>
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Gestion des utilisateurs</h5>
+                    <p class="card-text">Créer, inviter, activer/désactiver, réinitialiser un mot de passe…</p>
+                    <button class="btn btn-primary" @onclick="GotoUsers">Gérer les utilisateurs</button>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Catalogue produits</h5>
+                    <p class="card-text">Ajouter/modifier/supprimer des produits, gérer le menu du jour…</p>
+                    <button class="btn btn-secondary" @onclick="GotoCatalog">Gérer le catalogue</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

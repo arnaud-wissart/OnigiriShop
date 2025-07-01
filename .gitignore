@@ -424,3 +424,6 @@ appsettings.Development.json
 # Fichiers de config sensibles
 App_Data/admins.json
 App_Data/allowed_users.json
+
+wwwroot/bootstrap/
+wwwroot/lib/

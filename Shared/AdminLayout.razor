@@ -1,0 +1,18 @@
+﻿@using OnigiriShop.Pages
+@inherits AdminLayoutBase
+
+<header class="main-title">
+    Onigiris et Sponge Cakes
+</header>
+
+<div class="japan-overlay d-none d-lg-flex">
+    <div class="japan-vertical">おにぎりとスポンジケーキ</div>
+</div>
+
+<main class="container-fluid pt-4">
+    <LoginModal Visible="@ShowLoginModal" OnHide="HideLoginModal" />
+    @if (IsAuthenticated && IsAdmin)
+    {
+        @Body
+    }
+</main>
