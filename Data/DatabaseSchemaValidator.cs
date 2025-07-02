@@ -6,12 +6,25 @@ namespace OnigiriShop.Data
 {
     public static class DatabaseSchemaValidator
     {
+        /// <summary>
+        /// Vérifie et applique le schéma (sans seed).
+        /// </summary>
+        public static void EnsureSchemaUpToDate(string dbPath, string initScriptPath)
+        {
+            EnsureSchemaUpToDate(dbPath, initScriptPath, null);
+        }
+
+        /// <summary>
+        /// Vérifie et applique le schéma (+ seed si fourni/non nul).
+        /// </summary>
         public static void EnsureSchemaUpToDate(string dbPath, string initScriptPath, string seedScriptPath)
         {
             Log.Information("Contrôle du schéma de la base SQLite : {DbPath}", dbPath);
 
             var initScript = File.ReadAllText(initScriptPath);
-            var seedScript = File.ReadAllText(seedScriptPath);
+            var seedScript = string.Empty;
+            if (!string.IsNullOrWhiteSpace(seedScriptPath) && File.Exists(seedScriptPath))
+                seedScript = File.ReadAllText(seedScriptPath);
 
             var schemas = ParseSchemas(initScript);
 
@@ -55,67 +68,66 @@ namespace OnigiriShop.Data
                 }
             }
 
-            // PHASE 2 : Drop/recreate des tables (plus besoin de manipuler le fichier !)
-            if (schemaOk && needReset)
+            if (!File.Exists(dbPath))
             {
-                Log.Warning("Différence détectée dans le schéma : réinitialisation des tables...");
-                using (var conn = new SqliteConnection($"Data Source={dbPath}"))
-                {
-                    conn.Open();
-
-                    // Désactivation des FK pour drop propre
-                    using (var pragmaOff = conn.CreateCommand())
-                    {
-                        pragmaOff.CommandText = "PRAGMA foreign_keys = OFF;";
-                        pragmaOff.ExecuteNonQuery();
-                    }
-
-                    // Drop toutes les tables connues du script
-                    foreach (var expected in schemas)
-                    {
-                        try
-                        {
-                            using var cmdDrop = conn.CreateCommand();
-                            cmdDrop.CommandText = $"DROP TABLE IF EXISTS {expected.Name};";
-                            cmdDrop.ExecuteNonQuery();
-                            Log.Information("Table {Table} supprimée", expected.Name);
-                        }
-                        catch (Exception ex)
-                        {
-                            Log.Error(ex, "Erreur lors du drop de la table {Table}", expected.Name);
-                        }
-                    }
-
-                    // Réactivation FK
-                    using (var pragmaOn = conn.CreateCommand())
-                    {
-                        pragmaOn.CommandText = "PRAGMA foreign_keys = ON;";
-                        pragmaOn.ExecuteNonQuery();
-                    }
-
-                    // Création + seed
-                    using var cmdCreate = conn.CreateCommand();
-                    cmdCreate.CommandText = initScript + "\n" + seedScript;
-                    cmdCreate.ExecuteNonQuery();
-                    Log.Information("Tables recréées et base réinitialisée.");
-                }
-                schemaOk = false;
-            }
-            else if (!schemaOk)
-            {
-                Log.Information("Initialisation du schéma et seed (nouvelle base)...");
+                // Base n'existe pas, on crée et seed
                 using var conn = new SqliteConnection($"Data Source={dbPath}");
                 conn.Open();
                 using var cmd = conn.CreateCommand();
-                cmd.CommandText = initScript + "\n" + seedScript;
+                cmd.CommandText = initScript + (seedScript != null ? "\n" + seedScript : "");
                 cmd.ExecuteNonQuery();
-                Log.Information("Base initialisée.");
+                Log.Information("Base initialisée et seed exécuté (nouvelle base).");
+            }
+            else if (needReset)
+            {
+                // Schéma non conforme, on drop tout et recrée tout (danger en prod !)
+                Log.Warning("Différence détectée dans le schéma : réinitialisation des tables...");
+                using var conn = new SqliteConnection($"Data Source={dbPath}");
+                conn.Open();
+
+                // Désactive les FK pour drop propre
+                using (var pragmaOff = conn.CreateCommand())
+                {
+                    pragmaOff.CommandText = "PRAGMA foreign_keys = OFF;";
+                    pragmaOff.ExecuteNonQuery();
+                }
+
+                // Drop toutes les tables connues du script
+                foreach (var expected in schemas)
+                {
+                    try
+                    {
+                        using var cmdDrop = conn.CreateCommand();
+                        cmdDrop.CommandText = $"DROP TABLE IF EXISTS {expected.Name};";
+                        cmdDrop.ExecuteNonQuery();
+                        Log.Information("Table {Table} supprimée", expected.Name);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error(ex, "Erreur lors du drop de la table {Table}", expected.Name);
+                    }
+                }
+
+                // Réactive FK
+                using (var pragmaOn = conn.CreateCommand())
+                {
+                    pragmaOn.CommandText = "PRAGMA foreign_keys = ON;";
+                    pragmaOn.ExecuteNonQuery();
+                }
+
+                // Création + seed
+                using var cmdCreate = conn.CreateCommand();
+                cmdCreate.CommandText = initScript + (seedScript != null ? "\n" + seedScript : "");
+                cmdCreate.ExecuteNonQuery();
+                Log.Information("Tables recréées et base réinitialisée.");
             }
             else
             {
                 Log.Information("Schéma conforme.");
             }
         }
+
+        // ------------------- Helpers techniques ci-dessous (inchangés) -------------------
 
         private static bool TableExists(SqliteConnection conn, string tableName)
         {
@@ -196,7 +208,6 @@ namespace OnigiriShop.Data
             }
             return idx;
         }
-
 
         private static bool ColumnsMatch(List<(string, string, bool, bool)> expected, List<(string, string, bool, bool)> real, string table)
         {
@@ -326,7 +337,8 @@ namespace OnigiriShop.Data
         }
     }
 
-    // Schémas
+    // ---- Schémas pour la validation ----
+
     public class TableSchema
     {
         public string Name { get; set; }

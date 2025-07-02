@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using OnigiriShop.Data.Models;
+using System.Text.Json;
 
 namespace OnigiriShop.Data
 {

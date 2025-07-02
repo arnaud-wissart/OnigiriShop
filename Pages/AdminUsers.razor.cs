@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
-using OnigiriShop.Data;
+using OnigiriShop.Data.Models;
 using OnigiriShop.Infrastructure;
 using OnigiriShop.Services;
 

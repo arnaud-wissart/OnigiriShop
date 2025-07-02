@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using OnigiriShop.Data.Models;
 
 namespace OnigiriShop.Data
 {

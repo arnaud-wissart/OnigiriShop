@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Components.Authorization;
+using OnigiriShop.Data.Models;
 using OnigiriShop.Infrastructure;
 using System.Security.Claims;
 

@@ -1,4 +1,4 @@
-﻿namespace OnigiriShop.Data
+﻿namespace OnigiriShop.Data.Models
 {
     public class User
     {

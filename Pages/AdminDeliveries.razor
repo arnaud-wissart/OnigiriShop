@@ -1,0 +1,145 @@
+﻿@page "/admin/deliveries"
+@layout AdminLayout
+@using OnigiriShop.Data
+@using OnigiriShop.Infrastructure
+@attribute [Authorize]
+@inherits AdminDeliveriesBase
+
+<h2>Livraisons</h2>
+
+<div class="d-flex mb-3 gap-2 flex-wrap">
+    <button class="btn btn-primary" @onclick="ShowAddModal">
+        <i class="bi bi-plus-circle me-1"></i> Nouvelle livraison
+    </button>
+    <input class="form-control w-auto" style="min-width:250px;" placeholder="Recherche lieu/date"
+           @bind="SearchTerm" @bind:event="oninput" />
+</div>
+
+<table class="table table-hover table-striped">
+    <thead>
+        <tr>
+            <th>Lieu</th>
+            <th>Date & heure</th>
+            <th>Type</th>
+            <th>Commentaire</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var delivery in FilteredDeliveries)
+        {
+            <tr>
+                <td>@delivery.Place</td>
+                <td>@delivery.DeliveryAt.ToString("dddd dd/MM/yyyy HH:mm")</td>
+                <td>
+                    @if (delivery.IsRecurring)
+                    {
+                        <span class="badge bg-info">Récurrente</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Ponctuelle</span>
+                    }
+                </td>
+                <td>@delivery.Comment</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-secondary me-1"
+                            title="Éditer" @onclick="() => EditDelivery(delivery)">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger"
+                            title="Supprimer" @onclick="() => ConfirmDeleteDelivery(delivery)">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- Modal ajout/modif -->
+@if (ShowModal)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background:rgba(33,33,33,0.18);" @onclick="HideModal">
+        <div class="modal-dialog" @onclick:stopPropagation>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@ModalTitle</h5>
+                    <button type="button" class="btn-close" @onclick="HideModal"></button>
+                </div>
+                <div class="modal-body">
+                    @if (!string.IsNullOrWhiteSpace(ModalError))
+                    {
+                        <div class="alert alert-danger">@ModalError</div>
+                    }
+                    <EditForm Model="ModalModel" OnValidSubmit="HandleModalValid">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+                        <div class="mb-3">
+                            <label>Lieu</label>
+                            <InputText class="form-control" @bind-Value="ModalModel.Place" />
+                        </div>
+
+                        <div class="mb-3 row">
+                            <div class="col-6">
+                                <label>Date</label>
+                                <InputDate @bind-Value="ModalDate" class="form-control" />
+                            </div>
+                            <div class="col-6">
+                                <label>Heure</label>
+                                <input type="time" @bind="ModalTime" class="form-control" />
+                            </div>
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            <InputCheckbox class="form-check-input" @bind-Value="ModalModel.IsRecurring" />
+                            <label class="form-check-label">Livraison récurrente</label>
+                        </div>
+                        @if (ModalModel.IsRecurring)
+                        {
+                            <div class="mb-3">
+                                <label>Règle de récurrence (optionnel, ex: chaque mercredi)</label>
+                                <InputText class="form-control" @bind-Value="ModalModel.RecurrenceRule" />
+                            </div>
+                        }
+                        <div class="mb-3">
+                            <label>Commentaire</label>
+                            <InputText class="form-control" @bind-Value="ModalModel.Comment" />
+                        </div>
+                        <button class="btn btn-success w-100" type="submit" disabled="@IsBusy">
+                            @((IsEdit ? "Mettre à jour" : "Créer"))
+                            @if (IsBusy)
+                            {
+                                <span class="spinner-border spinner-border-sm ms-2"></span>
+                            }
+                        </button>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Modal confirmation suppression -->
+@if (ShowDeleteConfirm)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background:rgba(33,33,33,0.18);">
+        <div class="modal-dialog modal-dialog-centered" @onclick:stopPropagation>
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmation suppression</h5>
+                </div>
+                <div class="modal-body">
+                    <p>
+                        Confirmer la suppression de la livraison
+                        <b>@DeleteModel?.Place</b> le <b>@DeleteModel?.DeliveryAt.ToString("dd/MM/yyyy HH:mm")</b> ?
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CancelDelete">Annuler</button>
+                    <button class="btn btn-danger" @onclick="DeleteDeliveryConfirmed">Supprimer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}

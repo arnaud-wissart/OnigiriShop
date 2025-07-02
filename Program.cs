@@ -26,7 +26,10 @@ Directory.CreateDirectory(dbDir);
 
 var initScriptPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SQL", "init_db.sql");
 var seedScriptPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SQL", "seed.sql");
-DatabaseSchemaValidator.EnsureSchemaUpToDate(dbPath, initScriptPath, seedScriptPath);
+if (!File.Exists(dbPath))
+    DatabaseSchemaValidator.EnsureSchemaUpToDate(dbPath, initScriptPath, seedScriptPath);
+else
+    DatabaseSchemaValidator.EnsureSchemaUpToDate(dbPath, initScriptPath);
 
 builder.Services.AddOnigiriDatabase(dbPath);
 builder.Services.AddBlazoredToast();
@@ -45,6 +48,7 @@ builder.Services.AddScoped<UserService>();
 builder.Services.AddSession();
 builder.Services.AddScoped<CartService>();
 builder.Services.AddScoped<ProductService>();
+builder.Services.AddScoped<DeliveryService>();
 
 builder.Services.AddScoped(sp =>
 {

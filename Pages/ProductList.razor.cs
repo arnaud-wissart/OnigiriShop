@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Components.Forms;
 using OnigiriShop.Data;
 using Blazored.Toast.Services;
+using OnigiriShop.Data.Models;
 
 namespace OnigiriShop.Pages
 {

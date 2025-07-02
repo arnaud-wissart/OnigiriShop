@@ -51,15 +51,29 @@ CREATE TABLE IF NOT EXISTS ProductCatalog (
     FOREIGN KEY(CatalogId) REFERENCES Catalog(Id)
 );
 
+-- Table Livraisons (Delivery)
+CREATE TABLE IF NOT EXISTS Delivery (
+    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+    Place TEXT NOT NULL,             -- Lieu de RDV, adresse, etc.
+    DeliveryAt DATETIME NOT NULL,    -- Date ET heure de la livraison
+    IsRecurring INTEGER NOT NULL DEFAULT 0,  -- 1: récurrente, 0: exceptionnelle
+    RecurrenceRule TEXT,             -- Optionnel (ex: "WEEKLY;BYDAY=WE")
+    Comment TEXT,
+    IsDeleted INTEGER NOT NULL DEFAULT 0,
+    CreatedAt DATETIME NOT NULL
+);
+
 -- Table Commandes
 CREATE TABLE IF NOT EXISTS 'Order' (
     Id INTEGER PRIMARY KEY AUTOINCREMENT,
     UserId INTEGER NOT NULL,
+    DeliveryId INTEGER NOT NULL,           -- Lien vers Delivery
     OrderedAt DATETIME NOT NULL,
     Status TEXT NOT NULL,
     TotalAmount REAL NOT NULL,
     Comment TEXT,
-    FOREIGN KEY(UserId) REFERENCES User(Id)
+    FOREIGN KEY(UserId) REFERENCES User(Id),
+    FOREIGN KEY(DeliveryId) REFERENCES Delivery(Id)
 );
 
 -- Table Détail des Commandes

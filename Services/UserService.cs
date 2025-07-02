@@ -1,4 +1,5 @@
 ﻿using OnigiriShop.Data;
+using OnigiriShop.Data.Models;
 using OnigiriShop.Infrastructure;
 using Serilog;
 using System.Security.Cryptography;

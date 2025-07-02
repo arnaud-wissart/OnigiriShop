@@ -1,4 +1,4 @@
-﻿using OnigiriShop.Data;
+﻿using OnigiriShop.Data.Models;
 
 namespace OnigiriShop.Services
 {
