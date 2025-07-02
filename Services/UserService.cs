@@ -1,4 +1,5 @@
 ﻿using OnigiriShop.Data;
+using OnigiriShop.Infrastructure;
 using Serilog;
 using System.Security.Cryptography;
 
@@ -148,7 +149,7 @@ namespace OnigiriShop.Services
                     Id = 0,
                     Email = email,
                     Name = email,
-                    Role = "Admin",
+                    Role = AuthConstants.RoleAdmin,
                     IsActive = true
                 });
             }
@@ -322,7 +323,7 @@ namespace OnigiriShop.Services
             cmd.Parameters.AddWithValue("@Name", user.Name ?? user.Email);
             cmd.Parameters.AddWithValue("@Phone", user.Phone ?? "");
             cmd.Parameters.AddWithValue("@IsActive", user.IsActive ? 1 : 0);
-            cmd.Parameters.AddWithValue("@Role", string.IsNullOrEmpty(user.Role) ? "User" : user.Role);
+            cmd.Parameters.AddWithValue("@Role", string.IsNullOrEmpty(user.Role) ? AuthConstants.RoleUser : user.Role);
             cmd.Parameters.AddWithValue("@Id", user.Id);
 
             cmd.ExecuteNonQuery();

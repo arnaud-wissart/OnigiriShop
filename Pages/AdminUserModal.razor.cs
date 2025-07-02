@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using OnigiriShop.Data;
+using OnigiriShop.Infrastructure;
 using OnigiriShop.Services;
 
 namespace OnigiriShop.Pages
@@ -21,8 +22,8 @@ namespace OnigiriShop.Pages
 
         protected bool IsAdmin
         {
-            get => EditModel.Role == "Admin";
-            set => EditModel.Role = value ? "Admin" : "User";
+            get => EditModel.Role == AuthConstants.RoleAdmin;
+            set => EditModel.Role = value ? AuthConstants.RoleAdmin : AuthConstants.RoleUser;
         }
 
         protected override void OnParametersSet()
@@ -43,7 +44,7 @@ namespace OnigiriShop.Pages
             }
             else
             {
-                EditModel = new User { Role = "User", IsActive = true };
+                EditModel = new User { Role = AuthConstants.RoleUser, IsActive = true };
             }
         }
 

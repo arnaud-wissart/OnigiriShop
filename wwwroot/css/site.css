@@ -269,3 +269,142 @@
     outline: none;
     box-shadow: 0 0 0 2px #0d6efd44;
 }
+
+.main-title-flex {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    background: #fff;
+    z-index: 1000;
+    border-bottom: 1px solid #eceae6;
+    box-shadow: 0 4px 14px 0 rgba(100,90,80,0.11), 0 1px 0 #eceae6;
+    min-height: 68px; /* pareil qu’avant */
+    padding: 1.1rem 0 0.7rem 0;
+    margin: 0;
+    width: 100%;
+}
+
+.main-title-center {
+    flex: 0 1 auto;
+    text-align: center;
+    font-size: 2.2rem;
+    font-weight: bold;
+    letter-spacing: 0.02em;
+    margin: 0 auto;
+}
+
+.main-title-right {
+    flex: 0 0 auto;
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding-right: 2rem;
+    /* Pour éviter que ça ne colle le bord, ajuste à ton goût */
+}
+
+.main-title-flex {
+    display: flex;
+    align-items: center;
+    justify-content: stretch;
+    width: 100%;
+    position: sticky;
+    top: 0;
+    background: #fff;
+    z-index: 1000;
+    border-bottom: 1px solid #eceae6;
+    box-shadow: 0 4px 14px 0 rgba(100,90,80,0.11), 0 1px 0 #eceae6;
+    min-height: 68px;
+    padding: 1.1rem 0 0.7rem 0;
+    margin: 0;
+}
+
+.main-title-left,
+.main-title-right {
+    flex: 0 0 280px; /* même largeur, adapte selon la largeur max à droite ! */
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.main-title-center {
+    flex: 1 1 0;
+    text-align: center;
+    font-size: 2.2rem;
+    font-weight: bold;
+    letter-spacing: 0.02em;
+    margin: 0;
+    font-family: 'Noto Sans JP', 'Segoe UI', 'Arial', sans-serif;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+}
+
+@media (max-width: 600px) {
+    .main-title-left, .main-title-right {
+        flex: 0 0 80px;
+    }
+
+    .main-title-center {
+        font-size: 1.3rem;
+    }
+}
+
+.user-info {
+    font-size: 0.98rem; /* Encore plus discret */
+    font-weight: 400;
+    padding: 0.35rem 0.85rem 0.35rem 0.65rem;
+    border-radius: 16px;
+    background: #f8f6f2;
+    color: #222;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    box-shadow: 0 1px 4px 0 rgba(200,180,160,0.08);
+}
+
+
+
+.btn-admin {
+    background: #425caa;
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    padding: 0.35rem 1rem 0.35rem 0.9rem;
+    font-weight: 500;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: background .15s;
+    box-shadow: 0 1px 5px 0 rgba(66,92,170,0.09);
+}
+
+    .btn-admin:hover, .btn-admin:focus {
+        background: #32436e;
+        color: #fff;
+    }
+
+.btn-logout {
+    background: #fff;
+    color: #dc3545;
+    border: 1px solid #eceae6;
+    border-radius: 50%;
+    padding: 0.38rem 0.5rem;
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background .18s, color .14s;
+    box-shadow: 0 1px 5px 0 rgba(220,53,69,0.08);
+    width: 38px;
+    height: 38px;
+}
+
+    .btn-logout:hover, .btn-logout:focus {
+        background: #dc3545;
+        color: #fff;
+        outline: none;
+    }

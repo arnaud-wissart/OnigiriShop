@@ -1,12 +1,12 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using OnigiriShop.Infrastructure;
 
 namespace OnigiriShop.Shared
 {
     public class AdminLayoutBase : LayoutComponentBase, IDisposable
     {
         [Inject] public AuthenticationStateProvider AuthProvider { get; set; }
-
         protected bool ShowLoginModal { get; set; }
         protected bool IsAuthenticated { get; set; }
         protected bool IsAdmin { get; set; }
@@ -18,7 +18,6 @@ namespace OnigiriShop.Shared
 
         private void AuthStateChanged(Task<AuthenticationState> task)
         {
-            // On redemande à Blazor de rerendre le composant
             InvokeAsync(StateHasChanged);
         }
 
@@ -27,14 +26,11 @@ namespace OnigiriShop.Shared
             var authState = await AuthProvider.GetAuthenticationStateAsync();
             var user = authState.User;
             IsAuthenticated = user.Identity?.IsAuthenticated == true;
-            IsAdmin = user.IsInRole("Admin");
+            IsAdmin = user.IsInRole(AuthConstants.RoleAdmin);
             ShowLoginModal = !IsAuthenticated || !IsAdmin;
         }
 
-        public void Dispose()
-        {
-            AuthProvider.AuthenticationStateChanged -= AuthStateChanged;
-        }
+        public void Dispose() => AuthProvider.AuthenticationStateChanged -= AuthStateChanged;
 
         protected void HideLoginModal()
         {

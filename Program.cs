@@ -36,10 +36,10 @@ var adminsJsonPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "App_Da
 builder.Services.AddSingleton(new AllowedAdminsManager(adminsJsonPath));
 builder.Services.AddSingleton(new ActiveCatalogManager("App_Data"));
 builder.Services.AddSingleton(new OrderManager("App_Data"));
-builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<SessionAuthenticationStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider, SessionAuthenticationStateProvider>();
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddSession();

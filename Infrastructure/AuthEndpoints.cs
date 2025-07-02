@@ -1,6 +1,5 @@
-﻿using Microsoft.AspNetCore.Authentication;
+﻿using OnigiriShop.Data;
 using OnigiriShop.Services;
-using System.Security.Claims;
 
 namespace OnigiriShop.Infrastructure
 {
@@ -8,29 +7,13 @@ namespace OnigiriShop.Infrastructure
     {
         public static void MapAuthEndpoints(this WebApplication app)
         {
-            app.MapPost("/api/auth/login", async (HttpContext http, UserService userService, LoginRequest req) =>
+            app.MapPost("/api/auth/login", async (HttpContext http, UserService userService, SessionAuthenticationStateProvider authProvider, LoginRequest req) =>
             {
                 var user = await userService.AuthenticateAsync(req.Email, req.Password);
                 if (user == null)
                     return Results.Unauthorized();
 
-                var claims = new List<Claim>
-                {
-                    new(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                    new(ClaimTypes.Name, user.Name),
-                    new(ClaimTypes.Email, user.Email),
-                    new(ClaimTypes.Role, user.Role)
-                };
-                var claimsIdentity = new ClaimsIdentity(claims, "OnigiriAuth");
-
-                await http.SignInAsync(
-                    "OnigiriAuth",
-                    new ClaimsPrincipal(claimsIdentity),
-                    new AuthenticationProperties
-                    {
-                        IsPersistent = true,
-                        ExpiresUtc = DateTimeOffset.UtcNow.AddDays(7)
-                    });
+                await authProvider.SignInAsync(user);
 
                 return Results.Ok(new { user = new { user.Id, user.Name, user.Email, user.Role } });
             })
@@ -38,9 +21,9 @@ namespace OnigiriShop.Infrastructure
             .Produces(200)
             .Produces(401);
 
-            app.MapPost("/api/auth/logout", async (HttpContext http) =>
+            app.MapPost("/api/auth/logout", async (SessionAuthenticationStateProvider authProvider) =>
             {
-                await http.SignOutAsync("OnigiriAuth");
+                await authProvider.SignOutAsync();
                 return Results.Ok();
             });
         }

@@ -26,10 +26,6 @@ namespace OnigiriShop.Pages
             _user = authState.User;
 
             _canAccess = _user.Identity?.IsAuthenticated == true;
-            if (!_canAccess)
-            {
-                Nav.NavigateTo("/login");
-            }
         }
 
         private void RemoveItem(int productId)

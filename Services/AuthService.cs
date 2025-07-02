@@ -1,4 +1,5 @@
 ﻿using OnigiriShop.Data;
+using OnigiriShop.Infrastructure;
 using System.Security.Claims;
 
 namespace OnigiriShop.Services
@@ -35,12 +36,12 @@ namespace OnigiriShop.Services
         public async Task<string> GetCurrentUserRoleAsync()
         {
             var state = await _sessionAuthProvider.GetAuthenticationStateAsync();
-            return state.User.FindFirst(ClaimTypes.Role)?.Value ?? "User";
+            return state.User.FindFirst(ClaimTypes.Role)?.Value ?? AuthConstants.RoleUser;
         }
 
         public async Task<bool> IsAdminAsync()
         {
-            return (await GetCurrentUserRoleAsync()) == "Admin";
+            return (await GetCurrentUserRoleAsync()) == AuthConstants.RoleAdmin;
         }
 
         public async Task LogoutAsync()

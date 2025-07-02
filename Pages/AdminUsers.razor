@@ -1,4 +1,5 @@
 ﻿@page "/admin/users"
+@using OnigiriShop.Infrastructure
 @layout AdminLayout
 @inherits AdminUsersBase
 @attribute [Authorize]
@@ -25,7 +26,7 @@
             <tr>
                 <td>@user.Email</td>
                 <td>@user.Name</td>
-                <td>@(user.Role == "Admin" ? "Administrateur" : "Utilisateur")</td>
+                <td>@(user.Role == AuthConstants.RoleAdmin ? "Administrateur" : "Utilisateur")</td>
                 <td>@user.CreatedAt.ToString("dd/MM/yyyy")</td>
                 <td>
                     <span class="badge @(user.IsActive ? "bg-success" : "bg-secondary")">

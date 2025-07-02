@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using OnigiriShop.Data;
+using OnigiriShop.Infrastructure;
 using OnigiriShop.Services;
 
 namespace OnigiriShop.Pages
@@ -19,8 +20,8 @@ namespace OnigiriShop.Pages
         public string ModalTitle => IsEdit ? "Modifier l'utilisateur" : "Ajouter un utilisateur";
         public bool IsModalAdmin
         {
-            get => ModalModel.Role == "Admin";
-            set => ModalModel.Role = value ? "Admin" : "User";
+            get => ModalModel.Role == AuthConstants.RoleAdmin;
+            set => ModalModel.Role = value ? AuthConstants.RoleAdmin : AuthConstants.RoleUser;
         }
         protected bool ShowDeleteConfirm { get; set; }
         protected User UserToDelete { get; set; }
@@ -64,7 +65,7 @@ namespace OnigiriShop.Pages
         }
         public void ShowAddModal()
         {
-            ModalModel = new User { IsActive = true, Role = "User" };
+            ModalModel = new User { IsActive = true, Role = AuthConstants.RoleUser };
             IsEdit = false;
             ShowModal = true;
         }

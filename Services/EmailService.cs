@@ -55,7 +55,7 @@ namespace OnigiriShop.Services
         }
 
         public Task SendAdminNotificationAsync(string subject, string htmlContent, string textContent = null)
-            => SendEmailAsync(_mailjetConfig.AdminEmail, "Admin", subject, htmlContent, textContent);
+            => SendEmailAsync(_mailjetConfig.AdminEmail, AuthConstants.RoleAdmin, subject, htmlContent, textContent);
 
         // Utilitaire pour invitations, magic link, etc.
         public Task SendUserInvitationAsync(string toEmail, string toName, string invitationLink)

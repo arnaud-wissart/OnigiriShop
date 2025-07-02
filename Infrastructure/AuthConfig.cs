@@ -4,10 +4,10 @@
     {
         public static void AddOnigiriAuthentication(this IServiceCollection services)
         {
-            services.AddAuthentication("OnigiriAuth")
-                .AddCookie("OnigiriAuth", options =>
+            services.AddAuthentication(AuthConstants.Scheme)
+                .AddCookie(AuthConstants.Scheme, options =>
                 {
-                    options.Cookie.Name = "OnigiriShop.Auth";
+                    options.Cookie.Name = AuthConstants.CookieName;
                     options.Cookie.HttpOnly = true;
                     options.Cookie.SecurePolicy = CookieSecurePolicy.None; // Always 'Always' en prod !
                     options.Cookie.SameSite = SameSiteMode.Lax;
