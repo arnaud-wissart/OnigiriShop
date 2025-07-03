@@ -54,10 +54,12 @@ CREATE TABLE IF NOT EXISTS ProductCatalog (
 -- Table Livraisons (Delivery)
 CREATE TABLE IF NOT EXISTS Delivery (
     Id INTEGER PRIMARY KEY AUTOINCREMENT,
-    Place TEXT NOT NULL,             -- Lieu de RDV, adresse, etc.
-    DeliveryAt DATETIME NOT NULL,    -- Date ET heure de la livraison
-    IsRecurring INTEGER NOT NULL DEFAULT 0,  -- 1: récurrente, 0: exceptionnelle
-    RecurrenceRule TEXT,             -- Optionnel (ex: "WEEKLY;BYDAY=WE")
+    Place TEXT NOT NULL,
+    DeliveryAt DATETIME NOT NULL,
+    IsRecurring INTEGER NOT NULL DEFAULT 0,
+    RecurrenceFrequency INTEGER,    -- 1=jour, 2=semaine, 3=mois (NULL si non récurrent)
+    RecurrenceInterval INTEGER,     -- nombre d’unités (ex : tous les 2 jours, toutes les 3 semaines)
+    RecurrenceRule TEXT,            -- (optionnel, pour plus tard)
     Comment TEXT,
     IsDeleted INTEGER NOT NULL DEFAULT 0,
     CreatedAt DATETIME NOT NULL

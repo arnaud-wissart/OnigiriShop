@@ -1,6 +1,7 @@
 ﻿@page "/admin/deliveries"
 @layout AdminLayout
 @using OnigiriShop.Data
+@using OnigiriShop.Data.Models
 @using OnigiriShop.Infrastructure
 @attribute [Authorize]
 @inherits AdminDeliveriesBase
@@ -26,15 +27,17 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var delivery in FilteredDeliveries)
+        @foreach (var (delivery, date) in FilteredOccurrences)
         {
             <tr>
                 <td>@delivery.Place</td>
-                <td>@delivery.DeliveryAt.ToString("dddd dd/MM/yyyy HH:mm")</td>
+                <td>@date.ToString("dddd dd/MM/yyyy HH:mm")</td>
                 <td>
                     @if (delivery.IsRecurring)
                     {
-                        <span class="badge bg-info">Récurrente</span>
+                        <span class="badge bg-info">
+                            Récurrente&nbsp;(@GetRecurrenceLabel(delivery))
+                        </span>
                     }
                     else
                     {
@@ -56,6 +59,21 @@
         }
     </tbody>
 </table>
+
+@code {
+    string GetRecurrenceLabel(Delivery d)
+    {
+        if (!d.IsRecurring || !d.RecurrenceFrequency.HasValue || !d.RecurrenceInterval.HasValue) return "";
+        var freq = d.RecurrenceFrequency switch
+        {
+            RecurrenceFrequency.Day => "jour",
+            RecurrenceFrequency.Week => "semaine",
+            RecurrenceFrequency.Month => "mois",
+            _ => "?"
+        };
+        return $"tous les {d.RecurrenceInterval} {freq}{(d.RecurrenceInterval > 1 ? "s" : "")}";
+    }
+}
 
 <!-- Modal ajout/modif -->
 @if (ShowModal)
@@ -79,7 +97,6 @@
                             <label>Lieu</label>
                             <InputText class="form-control" @bind-Value="ModalModel.Place" />
                         </div>
-
                         <div class="mb-3 row">
                             <div class="col-6">
                                 <label>Date</label>
@@ -90,16 +107,26 @@
                                 <input type="time" @bind="ModalTime" class="form-control" />
                             </div>
                         </div>
-
                         <div class="mb-3 form-check">
                             <InputCheckbox class="form-check-input" @bind-Value="ModalModel.IsRecurring" />
                             <label class="form-check-label">Livraison récurrente</label>
                         </div>
                         @if (ModalModel.IsRecurring)
                         {
-                            <div class="mb-3">
-                                <label>Règle de récurrence (optionnel, ex: chaque mercredi)</label>
-                                <InputText class="form-control" @bind-Value="ModalModel.RecurrenceRule" />
+                            <div class="mb-3 row align-items-end">
+                                <div class="col-6">
+                                    <label>Fréquence</label>
+                                    <InputSelect class="form-select" @bind-Value="ModalModel.RecurrenceFrequency">
+                                        <option value="">Sélectionner</option>
+                                        <option value="1">Jour</option>
+                                        <option value="2">Semaine</option>
+                                        <option value="3">Mois</option>
+                                    </InputSelect>
+                                </div>
+                                <div class="col-6">
+                                    <label>Tous les...</label>
+                                    <InputNumber class="form-control" @bind-Value="ModalModel.RecurrenceInterval" min="1" />
+                                </div>
                             </div>
                         }
                         <div class="mb-3">

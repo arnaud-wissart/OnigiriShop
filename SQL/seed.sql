@@ -12,7 +12,10 @@ INSERT INTO Product (Name, Description, Price, IsOnMenu, ImagePath, IsDeleted) V
 ('Onigiri Ebi Mayo', 'Crevette et mayonnaise japonaise dans un onigiri tendre.', 4.00, 1, '/images/products/onigiri_ebi_mayo.jpg', 0);
 
 -- Livraisons (exemple de seed)
-INSERT INTO Delivery (Place, DeliveryAt, IsRecurring, RecurrenceRule, Comment, IsDeleted, CreatedAt) VALUES
-('Place de la République', '2025-07-10 14:00:00', 0, NULL, NULL, 0, CURRENT_TIMESTAMP),
-('Station métro Liberté', '2025-07-12 18:00:00', 0, NULL, 'Livraison exceptionnelle', 0, CURRENT_TIMESTAMP),
-('Place de la République', '2025-07-17 14:00:00', 1, 'WEEKLY;BYDAY=TH', 'Livraison chaque jeudi', 0, CURRENT_TIMESTAMP);
+INSERT INTO Delivery
+(Place, DeliveryAt, IsRecurring, RecurrenceFrequency, RecurrenceInterval, RecurrenceRule, Comment, IsDeleted, CreatedAt)
+VALUES
+('Place de la République', '2025-07-10 14:00:00', 0, NULL, NULL, NULL, NULL, 0, CURRENT_TIMESTAMP),
+('Station métro Liberté', '2025-07-12 18:00:00', 0, NULL, NULL, NULL, 'Livraison exceptionnelle', 0, CURRENT_TIMESTAMP),
+('Créteil Echat', '2025-07-17 14:00:00', 1, 2, 1, NULL, 'Livraison chaque jeudi', 0, CURRENT_TIMESTAMP); 
+-- Ici : IsRecurring=1, RecurrenceFrequency=2 (semaine), RecurrenceInterval=1
