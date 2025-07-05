@@ -1,0 +1,21 @@
+﻿@inherits BootstrapToastsBase
+
+<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 2000;">
+    @foreach (var toast in Toasts)
+    {
+        <div class="toast align-items-center text-white border-0 mb-2 @GetToastBg(toast.Level) show fade"
+             role="alert" style="opacity:1; transition:opacity 0.5s;">
+            <div class="d-flex">
+                <div class="toast-body">
+                    @if (!string.IsNullOrEmpty(toast.Title))
+                    {
+                        <b>@toast.Title :</b>
+                    }
+                    @toast.Message
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto"
+                        @onclick="() => RemoveToast(toast)" aria-label="Fermer"></button>
+            </div>
+        </div>
+    }
+</div>

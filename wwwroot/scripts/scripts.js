@@ -98,10 +98,11 @@ window.onigiriCalendar = {
                 day: 'Jour'
             },
             allDayText: 'Toute la journée',
-            // ⬇️ Fonction callback dynamique côté Blazor
-            events: async function(info, successCallback, failureCallback) {
+            datesSet: function () {
+                setFullCalendarTooltips();
+            },
+            events: async function (info, successCallback, failureCallback) {
                 try {
-                    // Demande à Blazor la liste des events pour cette plage
                     const events = await dotNetHelper.invokeMethodAsync(
                         'GetCalendarEventsForPeriod',
                         info.startStr,
@@ -121,17 +122,22 @@ window.onigiriCalendar = {
                 const txtColor = event.textColor || "#fff";
                 return {
                     html: `
-                        <div class="fc-event-bubble" style="background:${bgColor}; color:${txtColor};">
-                            <span class="fc-event-hour">${heure}</span>
-                            <span class="fc-event-title" title="${event.title}">${event.title}</span>
+                        <div class="fc-event-bubble"
+                             data-bs-toggle="tooltip"
+                             data-bs-placement="top"
+                             title="${event.title}"
+                             style="background:${bgColor}; color:${txtColor}; display: flex; align-items: center; gap: 0.45em; padding: 0.1em 0.7em;">
+                            <span class="fc-event-hour" style="font-size:0.98em;">${heure}</span>
+                            <span class="fc-event-title" style="font-size:0.98em;">${event.title}</span>
                         </div>
                     `
                 };
             }
+
         });
 
         window.onigiriCalInstance.render();
-
+        setFullCalendarTooltips();
         window.updateDeliveryColors();
     },
     updateEvents: function () {
@@ -148,7 +154,7 @@ window.onigiriCalendar.exists = function () {
 };
 
 window.onigiriColorModalOpenInput = function () {
-    setTimeout(function() {
+    setTimeout(function () {
         var input = document.getElementById("colorModalInput");
         if (input) input.click();
     }, 100);
@@ -244,3 +250,37 @@ window.updateDeliveryColors = function () {
         }
     });
 };
+function setFullCalendarTooltips() {
+    // Mapping [selector CSS, texte tooltip FR]
+    const tooltips = [
+        ['.fc-dayGridMonth-button', 'Vue Mois'],
+        ['.fc-timeGridWeek-button', 'Vue Semaine'],
+        ['.fc-timeGridDay-button', 'Vue Jour'],
+        ['.fc-listMonth-button', 'Vue Liste'],
+        ['.fc-today-button', 'Aujourd\'hui'],
+        ['.fc-prev-button', 'Mois précédent'],
+        ['.fc-next-button', 'Mois suivant']
+    ];
+
+    tooltips.forEach(([selector, text]) => {
+        document.querySelectorAll(selector).forEach(btn => {
+            btn.removeAttribute('title');
+            btn.setAttribute('data-bs-toggle', 'tooltip');
+            btn.setAttribute('data-bs-placement', 'bottom');
+            btn.setAttribute('title', text);
+        });
+    });
+
+    if (window.bootstrap && window.bootstrap.Tooltip) {
+        document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) {
+            // Nettoie d'abord
+            var tooltip = bootstrap.Tooltip.getInstance(el);
+            if (tooltip) tooltip.dispose();
+            new bootstrap.Tooltip(el);
+        });
+    }
+}
+    window.focusElementByName = function (name) {
+        var el = document.querySelector('[name="' + name + '"]');
+        if (el) { el.focus(); if (el.select) el.select(); }
+    };

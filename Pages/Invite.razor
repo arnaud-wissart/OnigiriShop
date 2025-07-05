@@ -1,38 +1,52 @@
 ﻿@page "/invite"
+@using OnigiriShop.Services
+@inherits InviteBase
 
-@if (!IsValidToken)
+<h2>Activation du compte</h2>
+
+@if (Success)
 {
-    <div class="alert alert-danger my-5">@Message</div>
+    <div class="alert alert-success">
+        Compte activé ! Vous pouvez maintenant vous connecter.
+    </div>
+    <button class="btn btn-primary" @onclick="GoHome">Aller à la page d'accueil</button>
+}
+else if (TokenInvalid)
+{
+    <div class="alert alert-danger">
+        Le lien d’activation est invalide ou a expiré.
+    </div>
+}
+else if (!Loaded)
+{
+    <div>
+        <span class="spinner-border"></span> Vérification du lien…
+    </div>
 }
 else
 {
-    <div class="container my-5" style="max-width:420px">
-        <h2>Création de votre mot de passe</h2>
-        <EditForm OnValidSubmit="SubmitAsync">
-            <div class="mb-3">
-                <label class="form-label">Mot de passe *</label>
-                <InputText type="password" class="form-control" @bind-Value="Password" required />
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Confirmer le mot de passe *</label>
-                <InputText type="password" class="form-control" @bind-Value="PasswordConfirm" required />
-            </div>
-            <button class="btn btn-primary" type="submit" disabled="@IsBusy">
-                @if (IsBusy)
-                {
-                    <span class="spinner-border spinner-border-sm">Validation...</span>                   
-                }
-                else
-                {
-                    <span>Enregistrer le mot de passe</span>
-                }
-            </button>
-            @if (!string.IsNullOrWhiteSpace(Message))
+    <EditForm Model="Model" OnValidSubmit="SubmitPassword">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <input type="hidden" @bind="Model.Token" />
+        <div class="mb-3">
+            <label for="password" class="form-label">Nouveau mot de passe</label>
+            <InputText type="password" id="password" class="form-control" @bind-Value="Model.Password" required />
+        </div>
+        <div class="mb-3">
+            <label for="confirm" class="form-label">Confirmer le mot de passe</label>
+            <InputText type="password" id="confirm" class="form-control" @bind-Value="Model.ConfirmPassword" required />
+        </div>
+        @if (!string.IsNullOrEmpty(Error))
+        {
+            <div class="alert alert-danger">@Error</div>
+        }
+        <button type="submit" class="btn btn-success" disabled="@IsBusy">
+            Valider
+            @if (IsBusy)
             {
-                <div class="alert @(Message.Contains("Erreur") ? "alert-danger" : "alert-success") mt-3">
-                    @Message
-                </div>
+                <span class="spinner-border spinner-border-sm ms-2"></span>
             }
-        </EditForm>
-    </div>
-}
+        </button>
+    </EditForm>
+}                              

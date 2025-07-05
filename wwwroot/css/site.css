@@ -712,3 +712,29 @@
 .tooltip-arrow {
     color: #f3f3f8 !important;
 }
+.btn-fab {
+    min-width: 50px;
+    min-height: 50px;
+    border-radius: 30px !important;
+    font-size: 1rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.16);
+    transition: background .2s;
+}
+.calendar-legend {
+    margin-bottom: 1rem;
+    font-size: 1rem;
+}
+
+    .calendar-legend .btn {
+        border: none;
+        box-shadow: none;
+    }
+
+
+.toast.fade {
+    transition: opacity 0.5s linear;
+}
+.toast.fade-out {
+    opacity: 0 !important;
+    transition: opacity 0.5s;
+}

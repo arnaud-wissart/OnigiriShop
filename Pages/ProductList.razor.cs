@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using OnigiriShop.Data;
-using Blazored.Toast.Services;
 using OnigiriShop.Data.Models;
 
 namespace OnigiriShop.Pages
@@ -10,7 +9,6 @@ namespace OnigiriShop.Pages
     {
         [Inject] protected ProductService ProductService { get; set; }
         [Inject] protected IWebHostEnvironment Environment { get; set; }
-        [Inject] protected IToastService ToastService { get; set; }
 
         protected List<Product> Products { get; set; }
         protected bool IsLoading { get; set; }
@@ -113,7 +111,7 @@ namespace OnigiriShop.Pages
             var ok = await ProductService.UpdateAsync(EditingProduct);
             if (ok)
             {
-                ToastService.ShowSuccess("Produit modifié.");
+                //ToastService.ShowSuccess("Produit modifié.");
                 // Mise à jour directe de la liste
                 var idx = Products.FindIndex(p => p.Id == EditingProduct.Id);
                 if (idx != -1) Products[idx] = EditingProduct;
@@ -121,7 +119,7 @@ namespace OnigiriShop.Pages
             }
             else
             {
-                ToastService.ShowError("Erreur lors de la sauvegarde.");
+                //ToastService.ShowError("Erreur lors de la sauvegarde.");
             }
             IsSaving = false;
         }
@@ -153,12 +151,12 @@ namespace OnigiriShop.Pages
             var ok = await ProductService.SoftDeleteAsync(DeleteProductId);
             if (ok)
             {
-                ToastService.ShowSuccess("Produit supprimé.");
+                //ToastService.ShowSuccess("Produit supprimé.");
                 Products = Products.Where(p => p.Id != DeleteProductId).ToList();
             }
             else
             {
-                ToastService.ShowError("Erreur lors de la suppression.");
+                //ToastService.ShowError("Erreur lors de la suppression.");
             }
             CloseDeleteModal();
             IsSaving = false;

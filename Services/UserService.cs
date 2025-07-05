@@ -23,6 +23,13 @@ namespace OnigiriShop.Services
             using var conn = _connectionFactory.CreateConnection();
             conn.Open();
 
+            var cmdCheck = conn.CreateCommand();
+            cmdCheck.CommandText = "SELECT COUNT(*) FROM User WHERE Email = @Email";
+            cmdCheck.Parameters.AddWithValue("@Email", email.Trim().ToLower());
+            var exists = Convert.ToInt32(cmdCheck.ExecuteScalar()) > 0;
+            if (exists)
+                throw new InvalidOperationException("Un utilisateur avec cet email existe déjà.");
+
             // 1. Création de l'utilisateur (IsActive=0, pas de mdp)
             var cmdUser = conn.CreateCommand();
             cmdUser.CommandText = @"

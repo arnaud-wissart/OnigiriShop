@@ -1,71 +1,86 @@
 ﻿using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using OnigiriShop.Services;
+using System.ComponentModel.DataAnnotations;
 
 namespace OnigiriShop.Pages
 {
-    public partial class Invite : ComponentBase
+    public class InviteBase : ComponentBase
     {
         [Inject] public UserService UserService { get; set; }
         [Inject] public NavigationManager Nav { get; set; }
-        [Parameter][SupplyParameterFromQuery(Name = "token")] public string Token { get; set; }
-        protected string Password { get; set; }
-        protected string PasswordConfirm { get; set; }
-        protected string Message { get; set; }
-        protected bool IsBusy { get; set; }
-        protected bool IsValidToken { get; set; }
-        protected int UserId { get; set; }
+        [Inject] public IJSRuntime JS { get; set; }
 
+        [Parameter] public string token { get; set; }
+
+        protected InviteModel Model { get; set; } = new();
+        protected bool Loaded { get; set; }
+        protected bool TokenInvalid { get; set; }
+        protected bool Success { get; set; }
+        protected string Error { get; set; }
+        protected bool IsBusy { get; set; }
+        protected int UserId { get; set; }
+        protected void GoHome()
+        {
+            Nav.NavigateTo("/");
+        }
         protected override async Task OnInitializedAsync()
         {
-            if (string.IsNullOrWhiteSpace(Token))
+            var uri = Nav.ToAbsoluteUri(Nav.Uri);
+            var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+            Model.Token = query["token"];
+
+            if (string.IsNullOrWhiteSpace(Model.Token))
             {
-                Message = "Lien invalide.";
-                IsValidToken = false;
+                TokenInvalid = true;
+                Loaded = true;
+                StateHasChanged();
                 return;
             }
 
-            // Vérifie le token et récupère UserId
-            var userId = await UserService.ValidateInviteTokenAsync(Token);
-            if (userId > 0)
-            {
-                UserId = userId;
-                IsValidToken = true;
-            }
-            else
-            {
-                Message = "Lien d’invitation expiré ou invalide.";
-                IsValidToken = false;
-            }
+            UserId = await UserService.ValidateInviteTokenAsync(Model.Token);
+            Loaded = true;
+            TokenInvalid = UserId == 0;
+            StateHasChanged();
         }
 
-        protected async Task SubmitAsync()
+        protected async Task SubmitPassword()
         {
-            Message = "";
-            if (Password != PasswordConfirm)
+            Error = null;
+            if (string.IsNullOrWhiteSpace(Model.Password) || Model.Password.Length < 6)
             {
-                Message = "Les mots de passe ne correspondent pas.";
+                Error = "Le mot de passe doit contenir au moins 6 caractères.";
                 return;
             }
-            if (Password.Length < 8)
+            if (Model.Password != Model.ConfirmPassword)
             {
-                Message = "Le mot de passe doit contenir au moins 8 caractères.";
+                Error = "Les mots de passe ne correspondent pas.";
                 return;
             }
             IsBusy = true;
             try
             {
-                await UserService.SetUserPasswordAsync(UserId, Password, Token);
-                Message = "Mot de passe enregistré. Votre compte est activé !";
-                // Redirige ou propose la connexion selon ta logique
+                await UserService.SetUserPasswordAsync(UserId, Model.Password, Model.Token);
+                Success = true;
             }
             catch (Exception ex)
             {
-                Message = "Erreur : " + ex.Message;
+                Error = ex.Message ?? "Erreur lors de l’activation.";
             }
             finally
             {
                 IsBusy = false;
             }
+        }
+
+        public class InviteModel
+        {
+            public string Token { get; set; }
+            [Required]
+            public string Password { get; set; }
+            [Required]
+            [Compare(nameof(Password), ErrorMessage = "Les mots de passe ne correspondent pas.")]
+            public string ConfirmPassword { get; set; }
         }
     }
 }

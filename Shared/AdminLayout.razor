@@ -5,7 +5,7 @@
 <header class="main-title main-title-flex">
     <div class="main-title-left"></div>
     <div class="main-title-center">
-        Onigiris et Sponge Cakes <span class="badge bg-dark ms-2">Admin</span>
+        Onigiris et Sponge Cakes <span class="badge bg-light text-bg-info ms-2">Administration</span>
     </div>
     <div class="main-title-right d-flex align-items-center">
         @if (IsAuthenticated)
@@ -29,6 +29,7 @@
     </div>
 </header>
 
+<BootstrapToasts />
 
 <main class="container-fluid pt-4">
     <LoginModal Visible="@ShowLoginModal" OnHide="HideLoginModal" />

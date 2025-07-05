@@ -1,4 +1,3 @@
-using Blazored.Toast;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using OnigiriShop.Data;
@@ -33,9 +32,8 @@ else
 
 builder.Services.Configure<CalendarSettings>(builder.Configuration.GetSection("Calendar"));
 builder.Services.AddOnigiriDatabase(dbPath);
-builder.Services.AddBlazoredToast();
 builder.Services.AddOnigiriAuthentication();
-
+builder.Services.AddSingleton<ToastService>();
 var adminsJsonPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "App_Data", "admins.json");
 builder.Services.AddSingleton(new AllowedAdminsManager(adminsJsonPath));
 builder.Services.AddSingleton(new ActiveCatalogManager("App_Data"));

@@ -1,52 +1,95 @@
 ﻿@page "/admin/users"
-@using OnigiriShop.Infrastructure
 @layout AdminLayout
+@using OnigiriShop.Infrastructure
 @inherits AdminUsersBase
 @attribute [Authorize]
 
-<h2>Utilisateurs</h2>
+@if (ShowAlert)
+{
+    <div class="@AlertCss" role="alert" style="min-width: 340px; max-width: 540px;">
+        @AlertMessage
+        <button type="button" class="btn-close" aria-label="Fermer" @onclick="() => ShowAlert = false"></button>
+    </div>
+}
 
-<button class="btn btn-primary mb-3" @onclick="ShowAddModal">Ajouter un utilisateur</button>
-<input class="form-control mb-2" placeholder="Recherche email/nom"
-       @bind="SearchTerm" @bind:event="oninput" />
-<table class="table table-hover">
-    <thead>
-        <tr>
-            <th>Email</th>
-            <th>Nom</th>
-            <th>Rôle</th>
-            <th>Créé le</th>
-            <th>Actif</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var user in FilteredUsers)
-        {
-            <tr>
-                <td>@user.Email</td>
-                <td>@user.Name</td>
-                <td>@(user.Role == AuthConstants.RoleAdmin ? "Administrateur" : "Utilisateur")</td>
-                <td>@user.CreatedAt.ToString("dd/MM/yyyy")</td>
-                <td>
-                    <span class="badge @(user.IsActive ? "bg-success" : "bg-secondary")">
-                        @(user.IsActive ? "Oui" : "Non")
-                    </span>
-                </td>
-                <td>
-                    <button class="btn btn-sm btn-outline-secondary me-2" @onclick="() => EditUser(user)">Éditer</button>
-                    <button class="btn btn-sm btn-outline-warning" @onclick="() => ConfirmInviteUser(user)">Renvoi invitation</button>
-                    <button class="btn btn-outline-danger btn-sm" @onclick="() => ConfirmDeleteUser(user)">Supprimer</button>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+<div class="card shadow rounded-3 overflow-hidden border mb-4" style="background:#fff;">
+    <div class="card-body p-0">
+        <h4 class="card-title p-3 mb-0 border-bottom bg-light fw-bold" style="color:#212529; letter-spacing:0.01em;">
+            Utilisateurs
+        </h4>
+        <div class="p-3 pb-0 d-flex flex-column flex-md-row align-items-md-center gap-2 gap-md-4">
+            <button class="btn btn-success mb-3" @onclick="ShowAddModal">
+                <i class="bi bi-plus-circle me-1"></i> Nouvel utilisateur
+            </button>
+            <input class="form-control ms-md-auto" style="max-width:320px;" placeholder="Recherche email, nom ou téléphone"
+                   @bind="SearchTerm" @bind:event="oninput" />
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle table-striped mb-0">
+                <thead>
+                    <tr>
+                        <th>Email</th>
+                        <th>Nom</th>
+                        <th>Téléphone</th>
+                        <th>Rôle</th>
+                        <th>Créé le</th>
+                        <th>Actif</th>
+                        <th class="text-end" style="min-width:210px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in FilteredUsers)
+                    {
+                        <tr>
+                            <td>@user.Email</td>
+                            <td>@user.Name</td>
+                            <td>@(string.IsNullOrWhiteSpace(user.Phone) ? "—" : user.Phone)</td>
+                            <td>
+                                <span class="badge @(user.Role == AuthConstants.RoleAdmin ? "bg-danger" : "bg-info")">
+                                    @(user.Role == AuthConstants.RoleAdmin ? "Admin" : "Utilisateur")
+                                </span>
+                            </td>
+                            <td>@user.CreatedAt.ToString("dd/MM/yyyy")</td>
+                            <td>
+                                <span class="badge @(user.IsActive ? "bg-success" : "bg-secondary")">
+                                    @(user.IsActive ? "Oui" : "Non")
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-outline-secondary me-2"
+                                        data-bs-toggle="tooltip"
+                                        data-bs-placement="bottom"
+                                        title="Éditer l'utilisateur"
+                                        @onclick="() => EditUser(user)">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-warning"
+                                        data-bs-toggle="tooltip"
+                                        data-bs-placement="bottom"
+                                        title="Renvoyer invitation"
+                                        @onclick="() => ConfirmInviteUser(user)">
+                                    <i class="bi bi-envelope-arrow-up"></i>
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm"
+                                        data-bs-toggle="tooltip"
+                                        data-bs-placement="bottom"
+                                        title="Supprimer l'utilisateur"
+                                        @onclick="() => ConfirmDeleteUser(user)">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 
-@* Modale ajout/modif *@
+<!-- Modale Ajout/Édition -->
 @if (ShowModal)
 {
-    <div class="modal fade show d-block" tabindex="-1" style="background:rgba(33,33,33,0.18);" @onclick="HideModal">
+    <div class="modal fade show d-block" tabindex="-1" style="background:rgba(33,33,33,0.19);">
         <div class="modal-dialog" @onclick:stopPropagation>
             <div class="modal-content">
                 <div class="modal-header">
@@ -54,16 +97,17 @@
                     <button type="button" class="btn-close" @onclick="HideModal"></button>
                 </div>
                 <div class="modal-body">
-                    <EditForm Model="ModalModel" OnValidSubmit="HandleModalValid">
+                    <EditForm EditContext="_editContext" OnValidSubmit="HandleModalValid" @key="_editFormKey">
                         <DataAnnotationsValidator />
-                        <ValidationSummary />
                         <div class="mb-3">
                             <label>Email</label>
                             <InputText class="form-control" @bind-Value="ModalModel.Email" />
+                            <ValidationMessage For="@(() => ModalModel.Email)" />
                         </div>
                         <div class="mb-3">
                             <label>Nom</label>
                             <InputText class="form-control" @bind-Value="ModalModel.Name" />
+                            <ValidationMessage For="@(() => ModalModel.Name)" />
                         </div>
                         <div class="mb-3">
                             <label>Téléphone</label>
@@ -80,7 +124,7 @@
                                 <label class="form-check-label">Compte actif</label>
                             </div>
                         }
-                        <button class="btn btn-success" type="submit" disabled="@IsBusy">
+                        <button class="btn btn-success w-100" type="submit" disabled="@IsBusy">
                             @((IsEdit ? "Mettre à jour" : "Créer"))
                             @if (IsBusy)
                             {
@@ -94,10 +138,10 @@
     </div>
 }
 
-@* Modale confirmation renvoi invitation *@
+<!-- Modale confirmation renvoi invitation -->
 @if (ShowInviteModal)
 {
-    <div class="modal fade show d-block" tabindex="-1" style="background:rgba(33,33,33,0.25);" @onclick="HideInviteModal">
+    <div class="modal fade show d-block" tabindex="-1" style="background:rgba(33,33,33,0.23);" @onclick="HideInviteModal">
         <div class="modal-dialog" @onclick:stopPropagation>
             <div class="modal-content">
                 <div class="modal-header">
@@ -105,7 +149,9 @@
                     <button type="button" class="btn-close" @onclick="HideInviteModal"></button>
                 </div>
                 <div class="modal-body">
-                    <p>Renvoyer un email d'invitation à <strong>@InviteUser?.Email</strong> ?</p>
+                    <p>
+                        Renvoyer un email d'invitation à <strong>@InviteUser?.Email</strong> ?
+                    </p>
                     <div class="d-flex justify-content-end">
                         <button class="btn btn-secondary me-2" @onclick="HideInviteModal">Annuler</button>
                         <button class="btn btn-warning" @onclick="SendInviteAsync" disabled="@IsBusy">
@@ -122,16 +168,20 @@
     </div>
 }
 
+<!-- Modale suppression -->
 @if (ShowDeleteConfirm)
 {
     <div class="modal fade show d-block" tabindex="-1" style="background:rgba(33,33,33,0.18);">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered" @onclick:stopPropagation>
             <div class="modal-content border-0 shadow-lg">
                 <div class="modal-header">
-                    <h5 class="modal-title">Confirmation</h5>
+                    <h5 class="modal-title">Confirmation suppression</h5>
                 </div>
                 <div class="modal-body">
-                    <p>Confirmer la suppression de l'utilisateur <b>@UserToDelete?.Email</b> ?</p>
+                    <p>
+                        Confirmer la suppression de l'utilisateur
+                        <b>@UserToDelete?.Email</b> ?
+                    </p>
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" @onclick="CancelDelete">Annuler</button>
