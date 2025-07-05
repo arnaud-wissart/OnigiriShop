@@ -1,8 +1,11 @@
-﻿namespace OnigiriShop.Data.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace OnigiriShop.Data.Models
 {
     public class Delivery
     {
         public int Id { get; set; }
+        [Required(ErrorMessage = "Le lieu est obligatoire.")]
         public string Place { get; set; }
         public DateTime DeliveryAt { get; set; }
         public bool IsRecurring { get; set; }
@@ -11,6 +14,7 @@
         public string Comment { get; set; }
         public bool IsDeleted { get; set; }
         public DateTime CreatedAt { get; set; }
+        public DateTime? RecurrenceEndDate { get; set; }
     }
     public enum RecurrenceFrequency
     {

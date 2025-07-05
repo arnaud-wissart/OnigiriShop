@@ -2,36 +2,34 @@
 
 @if (Visible)
 {
-    <div class="modal fade show d-block" tabindex="-1" style="background:rgba(33,33,33,0.18);">
+    <div class="modal fade show d-block" tabindex="-1" style="background:rgba(33,33,33,0.22); z-index: 6000;">
         <div class="modal-dialog modal-dialog-centered" @onclick:stopPropagation>
-            <div class="modal-content border-0 shadow-lg">
-                <div class="modal-header border-0 pb-0">
-                    <h5 class="modal-title">Connexion requise</h5>
-                    <button type="button" class="btn-close" @onclick="Hide" aria-label="Fermer"></button>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-person-fill-lock me-2"></i>Connexion</h5>
+                    <button type="button" class="btn-close" aria-label="Fermer" @onclick="Hide"></button>
                 </div>
                 <div class="modal-body">
-                    <EditForm Model="Model" OnValidSubmit="LoginAsync">
+                    @if (!string.IsNullOrEmpty(ErrorMessage))
+                    {
+                        <div class="alert alert-danger">@ErrorMessage</div>
+                    }
+                    <EditForm Model="LoginModel" OnValidSubmit="HandleLogin">
                         <DataAnnotationsValidator />
                         <ValidationSummary />
                         <div class="mb-3">
-                            <input class="form-control" placeholder="Email" @bind="Model.Email" autocomplete="username" />
+                            <label>Email</label>
+                            <InputText class="form-control" @bind-Value="LoginModel.Email" autocomplete="username" />
                         </div>
                         <div class="mb-3">
-                            <input class="form-control" type="password" placeholder="Mot de passe" @bind="Model.Password" autocomplete="current-password" />
+                            <label>Mot de passe</label>
+                            <InputText class="form-control" @bind-Value="LoginModel.Password" autocomplete="current-password" type="password" />
                         </div>
-                        @if (!string.IsNullOrEmpty(Error))
-                        {
-                            <div class="alert alert-danger">@Error</div>
-                        }
-                        <button class="btn btn-success w-100 d-flex align-items-center justify-content-center" type="submit" disabled="@IsBusy">
+                        <button class="btn btn-success w-100" type="submit" disabled="@IsBusy">
+                            Connexion
                             @if (IsBusy)
                             {
-                                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                                <span>Connexion…</span>
-                            }
-                            else
-                            {
-                                <span>Se connecter</span>
+                                <span class="spinner-border spinner-border-sm ms-2"></span>
                             }
                         </button>
                     </EditForm>

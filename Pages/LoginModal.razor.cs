@@ -10,60 +10,51 @@ namespace OnigiriShop.Pages
         [Parameter] public EventCallback OnHide { get; set; }
         [Inject] public IJSRuntime JS { get; set; }
 
-        protected LoginModel Model { get; set; } = new();
-        protected string Error { get; set; }
+        protected LoginModel LoginModel { get; set; } = new();
+        protected string ErrorMessage { get; set; }
         protected bool IsBusy { get; set; }
 
         protected void Hide()
         {
-            Visible = false;
+            ErrorMessage = null;
+            LoginModel = new LoginModel();
             OnHide.InvokeAsync();
         }
 
-        protected async Task LoginAsync()
+        protected async Task HandleLogin()
         {
-            Error = null;
+            ErrorMessage = null;
             IsBusy = true;
-            try
+            StateHasChanged();
+
+            var result = await JS.InvokeAsync<LoginResult>("onigiriAuth.login", LoginModel.Email, LoginModel.Password);
+
+            if (result != null && result.success)
             {
-                var result = await JS.InvokeAsync<LoginResult>("onigiriAuth.login", Model.Email, Model.Password);
-                if (result.Success)
-                {
-                    // Cookie OK, reload page to get authenticated state
-                    await JS.InvokeVoidAsync("location.reload");
-                }
-                else
-                {
-                    Error = result.Error;
-                }
+                await JS.InvokeVoidAsync("location.reload");
             }
-            finally
+            else
             {
+                ErrorMessage = result?.error ?? "Erreur inconnue. Veuillez réessayer.";
                 IsBusy = false;
+                StateHasChanged();
             }
         }
 
-        public class LoginResult
-        {
-            public bool Success { get; set; }
-            public string Error { get; set; }
-        }
-    }
 
+    }
     public class LoginModel
     {
-        [Required(ErrorMessage = "Email obligatoire")]
-        [EmailAddress(ErrorMessage = "Format d'email invalide")]
+        [Required(ErrorMessage = "Email requis")]
+        [EmailAddress(ErrorMessage = "Email invalide")]
         public string Email { get; set; }
-
-        [Required(ErrorMessage = "Mot de passe obligatoire")]
+        [Required(ErrorMessage = "Mot de passe requis")]
         public string Password { get; set; }
     }
 
-    public class ForgotModel
+    public class LoginResult
     {
-        [Required(ErrorMessage = "Email obligatoire")]
-        [EmailAddress(ErrorMessage = "Format d'email invalide")]
-        public string Email { get; set; }
+        public bool success { get; set; }
+        public string error { get; set; }
     }
 }

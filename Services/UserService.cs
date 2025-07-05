@@ -174,7 +174,7 @@ namespace OnigiriShop.Services
 
             // Vérification du mot de passe
             var salt = Convert.FromBase64String(saltDb);
-            using var derive = new Rfc2898DeriveBytes(password, salt, 100_000, System.Security.Cryptography.HashAlgorithmName.SHA256);
+            using var derive = new Rfc2898DeriveBytes(password, salt, 100_000, HashAlgorithmName.SHA256);
             var hashInput = Convert.ToBase64String(derive.GetBytes(64));
 
             if (!SlowEquals(hashDb, hashInput))

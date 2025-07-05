@@ -6,76 +6,90 @@
 @attribute [Authorize]
 @inherits AdminDeliveriesBase
 
-<h2>Livraisons</h2>
+<div class="card shadow rounded-3 overflow-hidden border mb-4" style="background:#fff;">
+    <div class="card-body p-0">
+        <h4 class="card-title p-3 mb-0 border-bottom bg-light fw-bold" style="color:#212529; letter-spacing:0.01em;">
+            Livraisons programmées
+        </h4>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle table-striped mb-0">
+                <thead>
+                    <tr>
+                        <th style="white-space:nowrap;">Lieu</th>
+                        <th style="white-space:nowrap;">Date &amp; heure</th>
+                        <th style="white-space:nowrap;">Type</th>
+                        <th style="min-width:120px; max-width:280px;">Commentaire</th>
+                        <th class="text-end" style="width:110px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var delivery in FilteredDeliveries)
+                    {
+                        <tr>
+                            <td>@delivery.Place</td>
+                            <td>@delivery.DeliveryAt.ToString("dddd dd/MM/yyyy HH:mm")</td>
+                            <td>
+                                @if (delivery.IsRecurring)
+                                {
+                                    <span class="onigiri-badge"
+                                          style="background:@CouleurRecurrente; color:#fff;">
+                                        Récurrente&nbsp;(@GetRecurrenceLabel(delivery))
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="onigiri-badge"
+                                          style="background:@CouleurPonctuelle; color:#fff;">
+                                        Ponctuelle
+                                    </span>
+                                }
+                            </td>
+                            <td class="text-truncate" style="max-width: 260px;">@delivery.Comment</td>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-outline-secondary me-1"
+                                        title="Éditer" @onclick="() => EditDelivery(delivery)">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger"
+                                        title="Supprimer" @onclick="() => ConfirmDeleteDelivery(delivery)">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
 
-<div class="d-flex mb-3 gap-2 flex-wrap">
-    <button class="btn btn-primary" @onclick="ShowAddModal">
-        <i class="bi bi-plus-circle me-1"></i> Nouvelle livraison
-    </button>
-    <input class="form-control w-auto" style="min-width:250px;" placeholder="Recherche lieu/date"
-           @bind="SearchTerm" @bind:event="oninput" />
+        </div>
+    </div>
 </div>
 
-<table class="table table-hover table-striped">
-    <thead>
-        <tr>
-            <th>Lieu</th>
-            <th>Date & heure</th>
-            <th>Type</th>
-            <th>Commentaire</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var (delivery, date) in FilteredOccurrences)
-        {
-            <tr>
-                <td>@delivery.Place</td>
-                <td>@date.ToString("dddd dd/MM/yyyy HH:mm")</td>
-                <td>
-                    @if (delivery.IsRecurring)
-                    {
-                        <span class="badge bg-info">
-                            Récurrente&nbsp;(@GetRecurrenceLabel(delivery))
-                        </span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-secondary">Ponctuelle</span>
-                    }
-                </td>
-                <td>@delivery.Comment</td>
-                <td>
-                    <button class="btn btn-sm btn-outline-secondary me-1"
-                            title="Éditer" @onclick="() => EditDelivery(delivery)">
-                        <i class="bi bi-pencil"></i>
-                    </button>
-                    <button class="btn btn-sm btn-outline-danger"
-                            title="Supprimer" @onclick="() => ConfirmDeleteDelivery(delivery)">
-                        <i class="bi bi-trash"></i>
-                    </button>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+<div class="card shadow rounded-3 overflow-hidden border mb-4" style="background:#fff;">
+    <div class="card-body p-3 pt-0">
+        <div id="calendar" class="shadow-none rounded-3 overflow-hidden border calendar-padding mt-3"
+             style="background:#fff; min-height: 600px"></div>
+        <div id="calendar-legend" class="d-flex gap-4 align-items-center flex-wrap legend-bar justify-content-center justify-content-md-start">
+            <span class="legend-item" data-bs-toggle="tooltip" data-bs-placement="top" title="Cliquez pour changer la couleur"
+                  @onclick="() => ShowColorModalFor(LegendType.Ponctuelle)">
+                <span class="legend-color rounded-circle me-2"
+                      style=@($"display:inline-block; width:22px; height:22px; background:{CouleurPonctuelle}; border:1px solid #dee2e6; transition:background 0.2s; cursor:pointer;")></span>
+                Ponctuelle
+            </span>
+            <span class="legend-item" data-bs-toggle="tooltip" data-bs-placement="top" title="Cliquez pour changer la couleur"
+                  @onclick="() => ShowColorModalFor(LegendType.Recurrente)">
+                <span class="legend-color rounded-circle me-2"
+                      style=@($"display:inline-block; width:22px; height:22px; background:{CouleurRecurrente}; border:1px solid #dee2e6; transition:background 0.2s; cursor:pointer;")></span>
+                Récurrente
+            </span>
+        </div>
+    </div>
+</div>
 
-@code {
-    string GetRecurrenceLabel(Delivery d)
-    {
-        if (!d.IsRecurring || !d.RecurrenceFrequency.HasValue || !d.RecurrenceInterval.HasValue) return "";
-        var freq = d.RecurrenceFrequency switch
-        {
-            RecurrenceFrequency.Day => "jour",
-            RecurrenceFrequency.Week => "semaine",
-            RecurrenceFrequency.Month => "mois",
-            _ => "?"
-        };
-        return $"tous les {d.RecurrenceInterval} {freq}{(d.RecurrenceInterval > 1 ? "s" : "")}";
-    }
-}
+<button class="fab-add-delivery"
+        @onclick="ShowAddModal" aria-label="Ajouter une livraison">
+    <i class="bi bi-plus-lg" style="font-size: 1.8rem;"></i>
+</button>
 
-<!-- Modal ajout/modif -->
 @if (ShowModal)
 {
     <div class="modal fade show d-block" tabindex="-1" style="background:rgba(33,33,33,0.18);" @onclick="HideModal">
@@ -115,17 +129,16 @@
                         {
                             <div class="mb-3 row align-items-end">
                                 <div class="col-6">
-                                    <label>Fréquence</label>
-                                    <InputSelect class="form-select" @bind-Value="ModalModel.RecurrenceFrequency">
-                                        <option value="">Sélectionner</option>
-                                        <option value="1">Jour</option>
-                                        <option value="2">Semaine</option>
-                                        <option value="3">Mois</option>
-                                    </InputSelect>
+                                    <label>Tous les</label>
+                                    <InputNumber class="form-control" @bind-Value="ModalModel.RecurrenceInterval" min="1" />
                                 </div>
                                 <div class="col-6">
-                                    <label>Tous les...</label>
-                                    <InputNumber class="form-control" @bind-Value="ModalModel.RecurrenceInterval" min="1" />
+                                    <label>Fréquence</label>
+                                    <InputSelect class="form-select" @bind-Value="ModalModel.RecurrenceFrequency">
+                                        <option value="@RecurrenceFrequency.Day">Jour</option>
+                                        <option value="@RecurrenceFrequency.Week">Semaine</option>
+                                        <option value="@RecurrenceFrequency.Month">Mois</option>
+                                    </InputSelect>
                                 </div>
                             </div>
                         }
@@ -133,6 +146,12 @@
                             <label>Commentaire</label>
                             <InputText class="form-control" @bind-Value="ModalModel.Comment" />
                         </div>
+                        @if (IsEdit)
+                        {
+                            <button class="btn btn-danger w-100 mb-2" type="button" @onclick="() => ConfirmDeleteDelivery(ModalModel)">
+                                <i class="bi bi-trash"></i> Supprimer cette livraison
+                            </button>
+                        }
                         <button class="btn btn-success w-100" type="submit" disabled="@IsBusy">
                             @((IsEdit ? "Mettre à jour" : "Créer"))
                             @if (IsBusy)
@@ -147,7 +166,6 @@
     </div>
 }
 
-<!-- Modal confirmation suppression -->
 @if (ShowDeleteConfirm)
 {
     <div class="modal fade show d-block" tabindex="-1" style="background:rgba(33,33,33,0.18);">
@@ -161,6 +179,12 @@
                         Confirmer la suppression de la livraison
                         <b>@DeleteModel?.Place</b> le <b>@DeleteModel?.DeliveryAt.ToString("dd/MM/yyyy HH:mm")</b> ?
                     </p>
+                    @if (DeleteModel?.IsRecurring == true)
+                    {
+                        <div class="alert alert-warning mt-3">
+                            Cette livraison est récurrente : toutes les occurrences futures seront supprimées.
+                        </div>
+                    }
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" @onclick="CancelDelete">Annuler</button>
@@ -170,3 +194,28 @@
         </div>
     </div>
 }
+
+@if (ShowColorModal)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background:rgba(33,33,33,0.18);">
+        <div class="modal-dialog modal-dialog-centered" @onclick:stopPropagation>
+            <div class="modal-content border-0 shadow-lg" style="border-radius:18px;">
+                <div class="modal-header">
+                    <h5 class="modal-title">@ModalColorTitle</h5>
+                    <button type="button" class="btn-close" @onclick="HideColorModal"></button>
+                </div>
+                <div class="modal-body d-flex flex-column align-items-center">
+                    <input id="colorModalInput"
+                           type="color"
+                           class="form-control form-control-color mb-4"
+                           style="width: 90px; height: 90px; border-radius: 13px; border: none; box-shadow: 0 1.5px 7px #e1e7f3;"
+                           value="@SelectedColor"
+                           @oninput="OnColorChange"
+                           autofocus />
+                    <button class="btn btn-success px-5" @onclick="ValidateColorAsync">Valider</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+

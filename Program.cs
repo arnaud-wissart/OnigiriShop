@@ -31,6 +31,7 @@ if (!File.Exists(dbPath))
 else
     DatabaseSchemaValidator.EnsureSchemaUpToDate(dbPath, initScriptPath);
 
+builder.Services.Configure<CalendarSettings>(builder.Configuration.GetSection("Calendar"));
 builder.Services.AddOnigiriDatabase(dbPath);
 builder.Services.AddBlazoredToast();
 builder.Services.AddOnigiriAuthentication();
@@ -75,4 +76,11 @@ app.MapFallbackToPage("/_Host");
 app.MapRazorPages();
 app.MapAuthEndpoints();
 
+ServiceProviderStatic = app.Services;
+
 app.Run();
+
+public partial class Program
+{
+    public static IServiceProvider ServiceProviderStatic { get; set; }
+}

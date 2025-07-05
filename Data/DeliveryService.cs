@@ -5,7 +5,6 @@ namespace OnigiriShop.Data
 {
     public class DeliveryService(ISqliteConnectionFactory connectionFactory)
     {
-
         // Lister toutes les livraisons (option: inclure supprimées)
         public async Task<List<Delivery>> GetAllAsync(bool includeDeleted = false)
         {
@@ -35,13 +34,15 @@ namespace OnigiriShop.Data
             return await conn.QueryFirstOrDefaultAsync<Delivery>(sql, new { id });
         }
 
-        // Créer une nouvelle livraison
+        // Créer une nouvelle livraison (version à jour !)
         public async Task<int> CreateAsync(Delivery d)
         {
             using var conn = connectionFactory.CreateConnection();
-            var sql = @"INSERT INTO Delivery (Place, DeliveryAt, IsRecurring, RecurrenceRule, Comment, IsDeleted, CreatedAt)
-                        VALUES (@Place, @DeliveryAt, @IsRecurring, @RecurrenceRule, @Comment, 0, CURRENT_TIMESTAMP);
-                        SELECT last_insert_rowid();";
+            var sql = @"INSERT INTO Delivery 
+                (Place, DeliveryAt, IsRecurring, RecurrenceFrequency, RecurrenceInterval, Comment, IsDeleted, CreatedAt)
+                VALUES 
+                (@Place, @DeliveryAt, @IsRecurring, @RecurrenceFrequency, @RecurrenceInterval, @Comment, 0, CURRENT_TIMESTAMP);
+                SELECT last_insert_rowid();";
             return await conn.ExecuteScalarAsync<int>(sql, d);
         }
 
@@ -51,7 +52,8 @@ namespace OnigiriShop.Data
             using var conn = connectionFactory.CreateConnection();
             var sql = @"UPDATE Delivery
                         SET Place=@Place, DeliveryAt=@DeliveryAt, IsRecurring=@IsRecurring,
-                            RecurrenceRule=@RecurrenceRule, Comment=@Comment
+                            RecurrenceFrequency=@RecurrenceFrequency, RecurrenceInterval=@RecurrenceInterval,
+                            Comment=@Comment
                         WHERE Id=@Id AND IsDeleted=0";
             return await conn.ExecuteAsync(sql, d) > 0;
         }

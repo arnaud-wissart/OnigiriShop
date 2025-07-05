@@ -10,5 +10,11 @@
       "library": "bootstrap-icons@1.13.1",
       "destination": "wwwroot/lib/bootstrap-icons/"
     }
-  ]
+  ,
+{
+  "provider": "cdnjs",
+  "library": "fullcalendar@6.1.18",
+  "destination": "wwwroot/fullcalendar/"
+}
+]
 }

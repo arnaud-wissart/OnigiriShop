@@ -57,9 +57,10 @@ CREATE TABLE IF NOT EXISTS Delivery (
     Place TEXT NOT NULL,
     DeliveryAt DATETIME NOT NULL,
     IsRecurring INTEGER NOT NULL DEFAULT 0,
-    RecurrenceFrequency INTEGER,    -- 1=jour, 2=semaine, 3=mois (NULL si non récurrent)
-    RecurrenceInterval INTEGER,     -- nombre d’unités (ex : tous les 2 jours, toutes les 3 semaines)
-    RecurrenceRule TEXT,            -- (optionnel, pour plus tard)
+    RecurrenceFrequency INTEGER,        -- 1=jour, 2=semaine, 3=mois (NULL si non récurrent)
+    RecurrenceInterval INTEGER,         -- nombre d’unités (ex : tous les 2 jours, toutes les 3 semaines)
+    RecurrenceEndDate DATETIME,         -- <-- NOUVEAU : Fin de la récurrence (NULL = pas de fin)
+    RecurrenceRule TEXT,                -- (optionnel, pour plus tard)
     Comment TEXT,
     IsDeleted INTEGER NOT NULL DEFAULT 0,
     CreatedAt DATETIME NOT NULL
