@@ -13,11 +13,11 @@ namespace OnigiriShop.Data
         {
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Name, user.Name ?? user.Email),
-                new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Role, user.Role ?? AuthConstants.RoleUser),
-                new Claim(ClaimTypes.MobilePhone, user.Phone ?? string.Empty)
+                new(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new(ClaimTypes.Name, user.Name ?? user.Email),
+                new(ClaimTypes.Email, user.Email),
+                new(ClaimTypes.Role, user.Role ?? AuthConstants.RoleUser),
+                new(ClaimTypes.MobilePhone, user.Phone ?? string.Empty)
             };
             var identity = new ClaimsIdentity(claims, "OnigiriAuth");
             var principal = new ClaimsPrincipal(identity);
