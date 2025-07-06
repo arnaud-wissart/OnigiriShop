@@ -1,12 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Components.Authorization;
+using OnigiriShop.Data.Interfaces;
 using OnigiriShop.Data.Models;
 using OnigiriShop.Infrastructure;
 using System.Security.Claims;
 
 namespace OnigiriShop.Data
 {
-    public class SessionAuthenticationStateProvider(IHttpContextAccessor httpContextAccessor) : AuthenticationStateProvider
+    public class SessionAuthenticationStateProvider(IHttpContextAccessor httpContextAccessor) : AuthenticationStateProvider, ISessionAuthenticationStateProvider
     {
         public async Task SignInAsync(User user)
         {
