@@ -107,7 +107,7 @@
 
 @if (ShowModal)
 {
-    <div class="modal fade show d-block" tabindex="-1" style="background:rgba(33,33,33,0.18);" @onclick="HideModal">
+    <div class="modal fade show d-block" tabindex="-1" style="background:rgba(33,33,33,0.18);">
         <div class="modal-dialog" @onclick:stopPropagation>
             <div class="modal-content">
                 <div class="modal-header">
@@ -121,10 +121,10 @@
                     }
                     <EditForm Model="ModalModel" OnValidSubmit="HandleModalValid">
                         <DataAnnotationsValidator />
-                        <ValidationSummary />
                         <div class="mb-3">
                             <label>Lieu</label>
                             <InputText class="form-control" @bind-Value="ModalModel.Place" />
+                            <ValidationMessage For="@(() => ModalModel.Place)" />
                         </div>
                         <div class="mb-3 row">
                             <div class="col-6">

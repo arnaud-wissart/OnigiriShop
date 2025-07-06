@@ -5,7 +5,6 @@ namespace OnigiriShop.Data
 {
     public class DeliveryService(ISqliteConnectionFactory connectionFactory)
     {
-        // Lister toutes les livraisons (option: inclure supprimées)
         public async Task<List<Delivery>> GetAllAsync(bool includeDeleted = false)
         {
             using var conn = connectionFactory.CreateConnection();
@@ -14,7 +13,6 @@ namespace OnigiriShop.Data
             return result.AsList();
         }
 
-        // Lister les prochaines livraisons à venir (hors supprimées)
         public async Task<List<Delivery>> GetUpcomingAsync(DateTime? from = null)
         {
             using var conn = connectionFactory.CreateConnection();
@@ -26,7 +24,6 @@ namespace OnigiriShop.Data
             return result.AsList();
         }
 
-        // Récupérer une livraison par Id
         public async Task<Delivery> GetByIdAsync(int id)
         {
             using var conn = connectionFactory.CreateConnection();
@@ -34,9 +31,9 @@ namespace OnigiriShop.Data
             return await conn.QueryFirstOrDefaultAsync<Delivery>(sql, new { id });
         }
 
-        // Créer une nouvelle livraison (version à jour !)
         public async Task<int> CreateAsync(Delivery d)
         {
+            EnsureDeliveryIsValid(d);
             using var conn = connectionFactory.CreateConnection();
             var sql = @"INSERT INTO Delivery 
                 (Place, DeliveryAt, IsRecurring, RecurrenceFrequency, RecurrenceInterval, Comment, IsDeleted, CreatedAt)
@@ -46,9 +43,9 @@ namespace OnigiriShop.Data
             return await conn.ExecuteScalarAsync<int>(sql, d);
         }
 
-        // Mettre à jour une livraison existante
         public async Task<bool> UpdateAsync(Delivery d)
         {
+            EnsureDeliveryIsValid(d);
             using var conn = connectionFactory.CreateConnection();
             var sql = @"UPDATE Delivery
                         SET Place=@Place, DeliveryAt=@DeliveryAt, IsRecurring=@IsRecurring,
@@ -58,12 +55,27 @@ namespace OnigiriShop.Data
             return await conn.ExecuteAsync(sql, d) > 0;
         }
 
-        // Suppression logique (soft delete)
         public async Task<bool> SoftDeleteAsync(int id)
         {
             using var conn = connectionFactory.CreateConnection();
             var sql = @"UPDATE Delivery SET IsDeleted=1 WHERE Id=@id";
             return await conn.ExecuteAsync(sql, new { id }) > 0;
+        }
+
+        private static void EnsureDeliveryIsValid(Delivery d)
+        {
+            ArgumentNullException.ThrowIfNull(d);
+            if (d.DeliveryAt == default)
+                throw new ArgumentException("La date et l'heure de livraison sont obligatoires.");
+            if (string.IsNullOrWhiteSpace(d.Place))
+                throw new ArgumentException("Le lieu est obligatoire.");
+            if (d.IsRecurring)
+            {
+                if (!d.RecurrenceFrequency.HasValue)
+                    throw new ArgumentException("Fréquence de récurrence manquante.");
+                if (!d.RecurrenceInterval.HasValue || d.RecurrenceInterval < 1)
+                    throw new ArgumentException("Intervalle de récurrence manquant ou invalide.");
+            }
         }
     }
 }

@@ -10,8 +10,8 @@ namespace OnigiriShop.Pages
         [Inject] public UserService UserService { get; set; }
         [Inject] public NavigationManager Nav { get; set; }
         [Inject] public IJSRuntime JS { get; set; }
-
-        [Parameter] public string token { get; set; }
+        [Inject] public AuthService AuthService { get; set; }
+        [Parameter] public string Token { get; set; }
 
         protected InviteModel Model { get; set; } = new();
         protected bool Loaded { get; set; }
@@ -20,12 +20,17 @@ namespace OnigiriShop.Pages
         protected string Error { get; set; }
         protected bool IsBusy { get; set; }
         protected int UserId { get; set; }
-        protected void GoHome()
-        {
-            Nav.NavigateTo("/");
-        }
+        protected void GoHome() => Nav.NavigateTo("/");
         protected override async Task OnInitializedAsync()
         {
+            // S’il y a un utilisateur loggé, déconnexion directe
+            if (await AuthService.IsAuthenticatedAsync())
+            {
+                await AuthService.LogoutAsync();
+                Nav.NavigateTo(Nav.Uri, forceLoad: true);
+                return;
+            }
+
             var uri = Nav.ToAbsoluteUri(Nav.Uri);
             var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
             Model.Token = query["token"];

@@ -12,8 +12,6 @@ namespace OnigiriShop.Pages
         [Inject] public DeliveryService DeliveryService { get; set; }
         [Inject] public IJSRuntime JS { get; set; }
         [Inject] public IOptions<CalendarSettings> CalendarConfig { get; set; }
-        // --- Ajoute ça dans ta classe AdminDeliveriesBase ---
-
         public enum LegendType { Ponctuelle, Recurrente }
         public string CouleurPonctuelle { get; set; } = "#198754";  // Vert
         public string CouleurRecurrente { get; set; } = "#0dcaf0";  // Bleu

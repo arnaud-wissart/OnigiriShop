@@ -273,8 +273,7 @@ function setFullCalendarTooltips() {
 
     if (window.bootstrap && window.bootstrap.Tooltip) {
         document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) {
-            // Nettoie d'abord
-            var tooltip = bootstrap.Tooltip.getInstance(el);
+            const tooltip = bootstrap.Tooltip.getInstance(el);
             if (tooltip) tooltip.dispose();
             new bootstrap.Tooltip(el);
         });
