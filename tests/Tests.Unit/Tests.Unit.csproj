@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\OnigiriShop\OnigiriShop.csproj" />
+    <ProjectReference Include="..\..\src\OnigiriShop\OnigiriShop.csproj" />
   </ItemGroup>
 
   <ItemGroup>
