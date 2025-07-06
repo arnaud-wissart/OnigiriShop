@@ -33,7 +33,7 @@ namespace OnigiriShop.Data
             NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
         }
 
-        public async Task SignOutAsync()
+        public virtual async Task SignOutAsync()
         {
             await httpContextAccessor.HttpContext.SignOutAsync("OnigiriAuth");
             NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()))));
