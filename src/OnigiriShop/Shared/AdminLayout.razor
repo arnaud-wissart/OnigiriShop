@@ -1,33 +1,7 @@
-﻿@using System.Security.Claims
-@using OnigiriShop.Pages
+﻿@using OnigiriShop.Pages
 @inherits AdminLayoutBase
 
-<header class="main-title main-title-flex">
-    <div class="main-title-left"></div>
-    <div class="main-title-center">
-        Onigiris et Sponge Cakes <span class="badge bg-light text-bg-info ms-2">Administration</span>
-    </div>
-    <div class="main-title-right d-flex align-items-center">
-        @if (IsAuthenticated)
-        {
-            <a href="/" class="btn btn-admin ms-2"
-               data-bs-toggle="tooltip" data-bs-placement="bottom"
-               title="Retour au site">
-                <i class="bi bi-arrow-left-circle"></i>
-            </a>
-            <button class="btn btn-logout ms-2"
-                    data-bs-toggle="tooltip" data-bs-placement="bottom"
-                    title="Se déconnecter"
-                    @onclick="ConfirmLogout">
-                <i class="bi bi-box-arrow-right"></i>
-            </button>
-            <span class="user-info ms-2">
-                <i class="bi bi-person-circle"></i>
-                @UserEmail
-            </span>
-        }
-    </div>
-</header>
+<MainHeader IsAdminContext="true" />
 
 <BootstrapToasts />
 
@@ -38,23 +12,3 @@
         @Body
     }
 </main>
-
-<div class="modal fade" id="logoutConfirmModal" tabindex="-1" aria-labelledby="logoutConfirmModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <span class="modal-title fs-5" id="logoutConfirmModalLabel">
-                    <i class="bi bi-box-arrow-right me-2"></i>Déconnexion
-                </span>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-            </div>
-            <div class="modal-body">
-                Êtes-vous sûr de vouloir vous déconnecter&nbsp;?
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                <button type="button" class="btn btn-danger" @onclick="OnConfirmLogout">Se déconnecter</button>
-            </div>
-        </div>
-    </div>
-</div>

@@ -20,33 +20,87 @@ namespace OnigiriShop.Pages
         protected string Error { get; set; }
         protected bool IsBusy { get; set; }
         protected int UserId { get; set; }
+        protected bool AlreadyActivated { get; set; }
+        protected bool CanRequestNewInvite { get; set; }
+        protected string UserEmailForRequest { get; set; }
+
         protected void GoHome() => Nav.NavigateTo("/");
         protected override async Task OnInitializedAsync()
         {
-            // S’il y a un utilisateur loggé, déconnexion directe
-            if (await AuthService.IsAuthenticatedAsync())
-            {
-                await AuthService.LogoutAsync();
-                Nav.NavigateTo(Nav.Uri, forceLoad: true);
-                return;
-            }
-
             var uri = Nav.ToAbsoluteUri(Nav.Uri);
             var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
-            Model.Token = query["token"];
+            var token = query["token"];
 
-            if (string.IsNullOrWhiteSpace(Model.Token))
+            // Si pas de token
+            if (string.IsNullOrWhiteSpace(token))
             {
+                if (await AuthService.IsAuthenticatedAsync())
+                {
+                    // Déjà loggué => rien à activer
+                    AlreadyActivated = true;
+                    Loaded = true;
+                    StateHasChanged();
+                    return;
+                }
                 TokenInvalid = true;
                 Loaded = true;
                 StateHasChanged();
                 return;
             }
 
-            UserId = await UserService.ValidateInviteTokenAsync(Model.Token);
+            // Vérifie le token
+            var userId = await UserService.ValidateInviteTokenAsync(token);
+            var user = userId > 0 ? UserService.GetAllUsers().FirstOrDefault(u => u.Id == userId) : null;
+
+            if (userId == 0)
+            {
+                // On regarde si ce token est connu mais expiré pour afficher le bouton “demander un nouveau lien”
+                var expiredUserId = await UserService.FindUserIdByToken(token);
+                if (expiredUserId > 0)
+                {
+                    CanRequestNewInvite = true;
+                    var expiredUser = UserService.GetAllUsers().FirstOrDefault(u => u.Id == expiredUserId);
+                    UserEmailForRequest = expiredUser?.Email;
+                }
+                TokenInvalid = true;
+                Loaded = true;
+                StateHasChanged();
+                return;
+            }
+
+            // Token valide mais user déjà activé
+            if (user != null && user.IsActive)
+            {
+                AlreadyActivated = true;
+                Loaded = true;
+                StateHasChanged();
+                return;
+            }
+
+            // Token valide, user pas activé, mais déjà loggué
+            if (await AuthService.IsAuthenticatedAsync())
+            {
+                await AuthService.LogoutAsync();
+                Nav.NavigateTo($"/invite?token={Uri.EscapeDataString(token)}", forceLoad: true);
+                return;
+            }
+
+            // Cas normal
+            Model.Token = token;
+            UserId = userId;
             Loaded = true;
-            TokenInvalid = UserId == 0;
+            TokenInvalid = false;
             StateHasChanged();
+        }
+        protected async Task RequestNewInvite()
+        {
+            // Envoie un mail à l’admin, ou relance un magiclink
+            if (!string.IsNullOrEmpty(UserEmailForRequest))
+            {
+                await UserService.InviteUserAsync(UserEmailForRequest, null, Nav.BaseUri);
+                // Optionnel : toast ou message pour confirmation
+                await JS.InvokeVoidAsync("alert", "Un nouveau lien d'activation a été envoyé à votre adresse email.");
+            }
         }
 
         protected async Task SubmitPassword()

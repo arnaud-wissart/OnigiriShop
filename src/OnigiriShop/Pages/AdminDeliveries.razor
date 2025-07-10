@@ -77,21 +77,17 @@
              style="background:#fff; min-height: 600px"></div>
         <div class="calendar-legend d-flex align-items-center gap-3">
             <div class="d-flex align-items-center gap-1">
-                <button class="btn btn-sm p-1" style="background:@CouleurPonctuelle;"
-                        @onclick="() => ShowColorModalFor(LegendType.Ponctuelle)"
-                        data-bs-toggle="tooltip"
-                        title="Changer la couleur Ponctuelle">
-                    <i class="bi bi-square-fill" style="color:@CouleurPonctuelle;"></i>
-                </button>
+                <span class="legend-dot" style="background:@CouleurPonctuelle;"
+                      @onclick="() => ShowColorModalFor(LegendType.Ponctuelle)"
+                      data-bs-toggle="tooltip"
+                      title="Changer la couleur Ponctuelle"></span>
                 <span style="vertical-align: middle;">Livraison ponctuelle</span>
             </div>
             <div class="d-flex align-items-center gap-1">
-                <button class="btn btn-sm p-1" style="background:@CouleurRecurrente;"
-                        @onclick="() => ShowColorModalFor(LegendType.Recurrente)"
-                        data-bs-toggle="tooltip"
-                        title="Changer la couleur Récurrente">
-                    <i class="bi bi-square-fill" style="color:@CouleurRecurrente;"></i>
-                </button>
+                <span class="legend-dot" style="background:@CouleurRecurrente;"
+                      @onclick="() => ShowColorModalFor(LegendType.Recurrente)"
+                      data-bs-toggle="tooltip"
+                      title="Changer la couleur Récurrente"></span>
                 <span style="vertical-align: middle;">Livraison récurrente</span>
             </div>
         </div>

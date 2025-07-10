@@ -17,6 +17,7 @@ Log.Logger = new LoggerConfiguration()
 builder.Host.UseSerilog();
 
 builder.Services.Configure<MailjetConfig>(builder.Configuration.GetSection("Mailjet"));
+builder.Services.Configure<MagicLinkConfig>(builder.Configuration.GetSection("MagicLink"));
 
 
 var dbDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "BDD");

@@ -53,20 +53,6 @@ namespace OnigiriShop.Shared
             StateHasChanged();
         }
 
-        // --- Logout logic ---
-        protected async Task ConfirmLogout()
-        {
-            await JS.InvokeVoidAsync("bootstrapInterop.showModal", "#logoutConfirmModal");
-        }
-
-        protected async Task OnConfirmLogout()
-        {
-            await JS.InvokeVoidAsync("bootstrapInterop.hideModal", "#logoutConfirmModal");
-            await JS.InvokeVoidAsync("onigiriAuth.logout");
-            await JS.InvokeVoidAsync("location.assign", "/");
-            StateHasChanged();
-        }
-
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
             await JS.InvokeVoidAsync("activateTooltips");

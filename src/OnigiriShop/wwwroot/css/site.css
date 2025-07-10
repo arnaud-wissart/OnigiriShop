@@ -492,44 +492,6 @@
     color: inherit !important;
 }
 
-/* ... autres styles ... */
-
-#calendar-legend .legend-bar {
-    min-height: 38px;
-}
-
-#calendar-legend .legend-item {
-    transition: background 0.16s, box-shadow 0.16s;
-    border-radius: 14px;
-    padding: 0.18rem 1rem 0.18rem 0.3rem;
-    font-size: 1.03em;
-    cursor: pointer;
-    user-select: none;
-    position: relative;
-}
-
-    #calendar-legend .legend-item:hover .legend-color {
-        box-shadow: 0 0 0 2px #0d6efd77;
-        filter: brightness(1.09);
-    }
-
-@media (max-width: 700px) {
-    #calendar-legend .legend-bar {
-        flex-direction: column !important;
-        gap: 0.4rem !important;
-        align-items: flex-start !important;
-    }
-
-    #calendar-legend {
-        text-align: left !important;
-    }
-}
-
-#calendar-legend {
-    margin-top: 0 !important;
-    padding-top: 0 !important;
-}
-
 /* ------ FLOATING ACTION BUTTON (Nouvelle livraison) ------ */
 .fab-add-delivery {
     position: fixed;
@@ -721,7 +683,6 @@
     transition: background .2s;
 }
 .calendar-legend {
-    margin-bottom: 1rem;
     font-size: 1rem;
 }
 
@@ -738,3 +699,22 @@
     opacity: 0 !important;
     transition: opacity 0.5s;
 }
+.legend-dot {
+    display: inline-block;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    margin-right: 5px;
+    border: 2.5px solid #fff;
+    box-shadow: 0 1.5px 5px rgba(30,30,30,0.09);
+    cursor: pointer;
+    vertical-align: middle;
+    transition: box-shadow .15s;
+}
+
+    .legend-dot:hover,
+    .legend-dot:focus {
+        box-shadow: 0 0 0 3px #20c99755;
+        outline: none;
+    }
+

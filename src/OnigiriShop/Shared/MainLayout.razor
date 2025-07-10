@@ -1,34 +1,6 @@
-﻿@using System.Security.Claims
-@inherits MainLayoutBase
+﻿@inherits MainLayoutBase
 
-<header class="main-title main-title-flex">
-    <div class="main-title-left"></div>
-    <div class="main-title-center">Onigiris et Sponge Cakes</div>
-    <div class="main-title-right d-flex align-items-center">
-        @if (IsAuthenticated)
-        {
-            @if (IsAdmin)
-            {
-                <a href="/admin" class="btn btn-admin ms-2"
-                   data-bs-toggle="tooltip" data-bs-placement="bottom"
-                   title="Accéder à l'administration">
-                    <i class="bi bi-tools"></i>
-                </a>
-            }
-            <button class="btn btn-logout ms-2"
-                    data-bs-toggle="tooltip" data-bs-placement="bottom"
-                    title="Se déconnecter"
-                    @onclick="ConfirmLogout">
-                <i class="bi bi-box-arrow-right"></i>
-            </button>
-            <span class="user-info ms-2">
-                <i class="bi bi-person-circle"></i>
-                @UserEmail
-            </span>
-        }
-    </div>
-</header>
-
+<MainHeader />
 
 <!-- Overlay japonais à gauche (desktop) -->
 <div class="japan-overlay d-none d-lg-flex">
@@ -54,24 +26,3 @@
 <main class="container-fluid pt-4">
     @Body
 </main>
-
-<!-- Modal de confirmation Déconnexion -->
-<div class="modal fade" id="logoutConfirmModal" tabindex="-1" aria-labelledby="logoutConfirmModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <span class="modal-title fs-5" id="logoutConfirmModalLabel">
-                    <i class="bi bi-box-arrow-right me-2"></i>Déconnexion
-                </span>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-            </div>
-            <div class="modal-body">
-                Êtes-vous sûr de vouloir vous déconnecter&nbsp;?
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                <button type="button" class="btn btn-danger" @onclick="OnConfirmLogout">Se déconnecter</button>
-            </div>
-        </div>
-    </div>
-</div>

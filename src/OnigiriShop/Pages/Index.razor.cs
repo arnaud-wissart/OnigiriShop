@@ -27,7 +27,7 @@ namespace OnigiriShop.Pages
             var user = state.User;
             var isAuth = user.Identity?.IsAuthenticated;
             var activeCatalog = await ActiveCatalogManager.GetActiveCatalogAsync();
-            _products = await ProductService.GetAllAsync();
+            _products = await ProductService.GetMenuProductsAsync();
             CartService.CartChanged += OnCartChanged;
         }
         private void OnCartChanged() => InvokeAsync(StateHasChanged);

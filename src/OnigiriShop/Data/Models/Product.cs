@@ -20,5 +20,6 @@ namespace OnigiriShop.Data.Models
 
         [StringLength(256)]
         public string ImagePath { get; set; }
+        public bool IsDeleted { get; internal set; }
     }
 }

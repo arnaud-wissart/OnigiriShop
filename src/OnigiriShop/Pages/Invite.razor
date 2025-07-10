@@ -1,52 +1,73 @@
 ﻿@page "/invite"
 @using OnigiriShop.Services
+@layout InviteLayout
 @inherits InviteBase
 
-<h2>Activation du compte</h2>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12 p-3">
+            <h2>Activation du compte</h2>
 
-@if (Success)
-{
-    <div class="alert alert-success">
-        Compte activé ! Vous pouvez maintenant vous connecter.
-    </div>
-    <button class="btn btn-primary" @onclick="GoHome">Aller à la page d'accueil</button>
-}
-else if (TokenInvalid)
-{
-    <div class="alert alert-danger">
-        Le lien d’activation est invalide ou a expiré.
-    </div>
-}
-else if (!Loaded)
-{
-    <div>
-        <span class="spinner-border"></span> Vérification du lien…
-    </div>
-}
-else
-{
-    <EditForm Model="Model" OnValidSubmit="SubmitPassword">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
-        <input type="hidden" @bind="Model.Token" />
-        <div class="mb-3">
-            <label for="password" class="form-label">Nouveau mot de passe</label>
-            <InputText type="password" id="password" class="form-control" @bind-Value="Model.Password" required />
-        </div>
-        <div class="mb-3">
-            <label for="confirm" class="form-label">Confirmer le mot de passe</label>
-            <InputText type="password" id="confirm" class="form-control" @bind-Value="Model.ConfirmPassword" required />
-        </div>
-        @if (!string.IsNullOrEmpty(Error))
-        {
-            <div class="alert alert-danger">@Error</div>
-        }
-        <button type="submit" class="btn btn-success" disabled="@IsBusy">
-            Valider
-            @if (IsBusy)
+            @if (Success)
             {
-                <span class="spinner-border spinner-border-sm ms-2"></span>
+                <div class="alert alert-success">
+                    Compte activé ! Vous pouvez maintenant vous connecter.
+                </div>
+                <button class="btn btn-primary" @onclick="GoHome">Aller à la page d'accueil</button>
             }
-        </button>
-    </EditForm>
-}                              
+            else if (AlreadyActivated)
+            {
+                <div class="alert alert-info">
+                    Votre compte est déjà activé. <br />
+                    <button class="btn btn-primary mt-2" @onclick="GoHome">Retour à l'accueil</button>
+                </div>
+            }
+            else if (TokenInvalid && CanRequestNewInvite)
+            {
+                <div class="alert alert-warning">
+                    Ce lien d'activation a expiré.<br />
+                    <button class="btn btn-success mt-2" @onclick="RequestNewInvite">Demander un nouveau lien d'activation</button>
+                </div>
+            }
+            else if (TokenInvalid)
+            {
+                <div class="alert alert-danger">
+                    Le lien d’activation est invalide ou a expiré.
+                </div>
+            }
+            else if (!Loaded)
+            {
+                <div>
+                    <span class="spinner-border">Vérification du lien…</span>
+                </div>
+            }
+            else
+            {
+                <EditForm Model="Model" OnValidSubmit="SubmitPassword">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+                    <input type="hidden" @bind="Model.Token" />
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Nouveau mot de passe</label>
+                        <InputText type="password" id="password" class="form-control" @bind-Value="Model.Password" required />
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirm" class="form-label">Confirmer le mot de passe</label>
+                        <InputText type="password" id="confirm" class="form-control" @bind-Value="Model.ConfirmPassword" required />
+                    </div>
+                    @if (!string.IsNullOrEmpty(Error))
+                    {
+                        <div class="alert alert-danger">@Error</div>
+                    }
+                    <button type="submit" class="btn btn-success" disabled="@IsBusy">
+                        Valider
+                        @if (IsBusy)
+                        {
+                            <span class="spinner-border spinner-border-sm ms-2"></span>
+                        }
+                    </button>
+                </EditForm>
+            }
+        </div>
+    </div>
+</div>

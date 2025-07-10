@@ -1,4 +1,5 @@
-﻿using OnigiriShop.Data;
+﻿using Microsoft.Extensions.Options;
+using OnigiriShop.Data;
 using OnigiriShop.Data.Models;
 using OnigiriShop.Infrastructure;
 using Serilog;
@@ -11,14 +12,16 @@ namespace OnigiriShop.Services
         private readonly ISqliteConnectionFactory _connectionFactory;
         private readonly EmailService _emailService;
         private readonly AllowedAdminsManager _adminsManager;
-        public UserService(ISqliteConnectionFactory connectionFactory, EmailService emailService, AllowedAdminsManager adminsManager)
+        private readonly int _expiryMinutes;
+        public UserService(ISqliteConnectionFactory connectionFactory, EmailService emailService, AllowedAdminsManager adminsManager, IOptions<MagicLinkConfig> magicLinkConfig)
         {
             _connectionFactory = connectionFactory;
             _emailService = emailService;
             _adminsManager = adminsManager;
+            _expiryMinutes = magicLinkConfig.Value.ExpiryMinutes;
         }
 
-        public async Task InviteUserAsync(string email, string name, string siteBaseUrl, int expiryMinutes = 60)
+        public async Task InviteUserAsync(string email, string name, string siteBaseUrl)
         {
             using var conn = _connectionFactory.CreateConnection();
             conn.Open();
@@ -44,7 +47,7 @@ namespace OnigiriShop.Services
 
             // 2. Génération du token magic link (usage unique, sécurisé)
             var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(48));
-            var expiry = DateTime.UtcNow.AddMinutes(expiryMinutes);
+            var expiry = DateTime.UtcNow.AddMinutes(_expiryMinutes);
 
             var cmdToken = conn.CreateCommand();
             cmdToken.CommandText = @"
@@ -74,6 +77,17 @@ namespace OnigiriShop.Services
             await _emailService.SendUserInvitationAsync(email, name, inviteUrl);
 
             Log.Information("Invitation envoyée à {Email}, userId={UserId}, token={Token}", email, userId, token);
+        }
+
+        public async Task<int> FindUserIdByToken(string token)
+        {
+            using var conn = _connectionFactory.CreateConnection();
+            conn.Open();
+            var cmd = conn.CreateCommand();
+            cmd.CommandText = "SELECT UserId FROM MagicLinkToken WHERE Token = @Token";
+            cmd.Parameters.AddWithValue("@Token", token);
+            var userId = cmd.ExecuteScalar();
+            return userId != null ? Convert.ToInt32(userId) : 0;
         }
 
         public Task SetUserPasswordAsync(int userId, string password, string token)

@@ -1,0 +1,159 @@
+﻿@page "/admin/products"
+@layout AdminLayout
+@using OnigiriShop.Data
+@using OnigiriShop.Data.Models
+@attribute [Authorize]
+@inherits AdminProductsBase
+
+<div class="card shadow rounded-3 overflow-hidden border mb-4" style="background:#fff;">
+    <div class="card-body p-0">
+        <h4 class="card-title p-3 mb-0 border-bottom bg-light fw-bold" style="color:#212529; letter-spacing:0.01em;">
+            Produits du menu
+        </h4>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle table-striped mb-0">
+                <thead>
+                    <tr>
+                        <th style="white-space:nowrap;">Nom</th>
+                        <th style="white-space:nowrap;">Description</th>
+                        <th style="white-space:nowrap;">Prix (€)</th>
+                        <th style="white-space:nowrap;">Menu</th>
+                        <th style="white-space:nowrap;">Image</th>
+                        <th class="text-end" style="width:110px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var product in FilteredProducts)
+                    {
+                        <tr>
+                            <td>@product.Name</td>
+                            <td class="text-truncate" style="max-width: 280px;">@product.Description</td>
+                            <td>@product.Price.ToString("0.00")</td>
+                            <td>
+                                @if (product.IsOnMenu)
+                                {
+                                    <span class="onigiri-badge" style="background:#20c997; color:#fff;">Oui</span>
+                                }
+                                else
+                                {
+                                    <span class="onigiri-badge" style="background:#e5e5e5; color:#222;">Non</span>
+                                }
+                            </td>
+                            <td>
+                                @if (!string.IsNullOrWhiteSpace(product.ImagePath))
+                                {
+                                    <img src="@product.ImagePath" style="width:48px;height:48px;border-radius:10px;object-fit:cover;border:1px solid #eceae6;" alt="@product.Name" />
+                                }
+                            </td>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-outline-secondary me-2"
+                                        data-bs-toggle="tooltip"
+                                        data-bs-placement="bottom"
+                                        title="Éditer le produit"
+                                        @onclick="() => EditProduct(product)">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger"
+                                        data-bs-toggle="tooltip"
+                                        data-bs-placement="bottom"
+                                        title="Supprimer le produit"
+                                        @onclick="() => ConfirmDeleteProduct(product)">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<button class="btn btn-success btn-fab d-flex align-items-center px-3 py-2 shadow"
+        style="position:fixed; top:112px; right:24px; z-index:1030; border-radius:30px; font-size:1rem;"
+        @onclick="ShowAddModal">
+    <i class="bi bi-plus-circle me-2" style="font-size:1.4rem;"></i>
+    <span class="d-none d-md-inline" style="font-size:1rem;">Nouveau produit</span>
+</button>
+
+@* Modale ajout/édition *@
+@if (ShowModal)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background:rgba(33,33,33,0.18);">
+        <div class="modal-dialog" @onclick:stopPropagation>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@ModalTitle</h5>
+                    <button type="button" class="btn-close" @onclick="HideModal"></button>
+                </div>
+                <div class="modal-body">
+                    @if (!string.IsNullOrWhiteSpace(ModalError))
+                    {
+                        <div class="alert alert-danger">@ModalError</div>
+                    }
+                    <EditForm Model="ModalModel" OnValidSubmit="HandleModalValid">
+                        <DataAnnotationsValidator />
+                        <div class="mb-3">
+                            <label>Nom</label>
+                            <InputText class="form-control" @bind-Value="ModalModel.Name" required />
+                            <ValidationMessage For="@(() => ModalModel.Name)" />
+                        </div>
+                        <div class="mb-3">
+                            <label>Description</label>
+                            <InputText class="form-control" @bind-Value="ModalModel.Description" />
+                        </div>
+                        <div class="mb-3">
+                            <label>Prix (€)</label>
+                            <InputNumber class="form-control" @bind-Value="ModalModel.Price" min="0" step="0.01" required />
+                            <ValidationMessage For="@(() => ModalModel.Price)" />
+                        </div>
+                        <div class="mb-3 form-check">
+                            <InputCheckbox class="form-check-input" @bind-Value="ModalModel.IsOnMenu" />
+                            <label class="form-check-label">Afficher sur le menu</label>
+                        </div>
+                        <div class="mb-3">
+                            <label>Image (url ou chemin)</label>
+                            <InputText class="form-control" @bind-Value="ModalModel.ImagePath" />
+                        </div>
+                        @if (IsEdit)
+                        {
+                            <button class="btn btn-danger w-100 mb-2" type="button" @onclick="() => ConfirmDeleteProduct(ModalModel)">
+                                <i class="bi bi-trash"></i> Supprimer ce produit
+                            </button>
+                        }
+                        <button class="btn btn-success w-100" type="submit" disabled="@IsBusy">
+                            @((IsEdit ? "Mettre à jour" : "Créer"))
+                            @if (IsBusy)
+                            {
+                                <span class="spinner-border spinner-border-sm ms-2"></span>
+                            }
+                        </button>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (ShowDeleteConfirm)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background:rgba(33,33,33,0.18);">
+        <div class="modal-dialog modal-dialog-centered" @onclick:stopPropagation>
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmation suppression</h5>
+                </div>
+                <div class="modal-body">
+                    <p>
+                        Confirmer la suppression du produit
+                        <b>@DeleteModel?.Name</b> ?
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CancelDelete">Annuler</button>
+                    <button class="btn btn-danger" @onclick="DeleteProductConfirmed">Supprimer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
