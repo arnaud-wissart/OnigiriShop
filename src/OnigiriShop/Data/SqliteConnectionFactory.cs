@@ -1,4 +1,5 @@
 ﻿using Microsoft.Data.Sqlite;
+using OnigiriShop.Data.Interfaces;
 
 namespace OnigiriShop.Data
 {

@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
-using OnigiriShop.Data;
 using OnigiriShop.Data.Models;
 using OnigiriShop.Services;
 
@@ -11,7 +10,6 @@ namespace OnigiriShop.Pages
         [Inject] public CartService CartService { get; set; }
         [Inject] public IServiceProvider ServiceProvider { get; set; }
         [Inject] public NavigationManager Nav { get; set; }
-        [Inject] public ActiveCatalogManager ActiveCatalogManager { get; set; }
         [Inject] public ProductService ProductService { get; set; }
         [CascadingParameter] public Task<AuthenticationState> AuthenticationStateTask { get; set; }
 
@@ -26,7 +24,6 @@ namespace OnigiriShop.Pages
             var state = await AuthenticationStateTask;
             var user = state.User;
             var isAuth = user.Identity?.IsAuthenticated;
-            var activeCatalog = await ActiveCatalogManager.GetActiveCatalogAsync();
             _products = await ProductService.GetMenuProductsAsync();
             CartService.CartChanged += OnCartChanged;
         }

@@ -20,6 +20,13 @@ namespace OnigiriShop.Services
             var state = await _sessionAuthProvider.GetAuthenticationStateAsync();
             return state.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         }
+        public async Task<int?> GetCurrentUserIdIntAsync()
+        {
+            var idString = await GetCurrentUserIdAsync();
+            if (int.TryParse(idString, out var id))
+                return id;
+            return null;
+        }
 
         public async Task<string> GetCurrentUserNameAsync()
         {

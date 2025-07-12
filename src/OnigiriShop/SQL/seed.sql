@@ -20,20 +20,20 @@ VALUES
 ('Créteil Echat', '2025-07-17 14:00:00', 1, 2, 1, NULL, 'Livraison chaque jeudi', 0, CURRENT_TIMESTAMP); 
 -- Ici : IsRecurring=1, RecurrenceFrequency=2 (semaine), RecurrenceInterval=1
 
--- Utilisateur standard (Arnaud Wissart)
+-- Utilisateur admin (Arnaud Wissart)
 INSERT INTO User
 (Email, Name, Phone, CreatedAt, IsActive, PasswordHash, PasswordSalt, Role)
 VALUES
 ('arnaud.wissart@live.fr', 'Arnaud Wissart', '0601020304', CURRENT_TIMESTAMP, 1,
  'CS6YXiyM+5VPk4xTnt3GHclQxdkUcMveS6dDeJN3lJIuFQHAS2EEBrEu4kj25mozrOWoLkvcjkJezZUehSmeeQ==',
  '4IoHzu9DqwZjVKYT22TOd9XKGRAd1rYdJkuLPv3IMiAvqdjByM2aTPtKQvTFwGJNHvk4y9UPnt1z1IrQAlQcrw==',
- 'User');
+ 'Admin');
 
--- Utilisateur admin (Tri Lestari)
+-- Utilisateur standart (Tri Lestari)
 INSERT INTO User
 (Email, Name, Phone, CreatedAt, IsActive, PasswordHash, PasswordSalt, Role)
 VALUES
 ('trilestari@hotmail.fr', 'Tri Lestari', '0605060708', CURRENT_TIMESTAMP, 1,
  'CS6YXiyM+5VPk4xTnt3GHclQxdkUcMveS6dDeJN3lJIuFQHAS2EEBrEu4kj25mozrOWoLkvcjkJezZUehSmeeQ==',
  '4IoHzu9DqwZjVKYT22TOd9XKGRAd1rYdJkuLPv3IMiAvqdjByM2aTPtKQvTFwGJNHvk4y9UPnt1z1IrQAlQcrw==',
- 'Admin');
+ 'User');

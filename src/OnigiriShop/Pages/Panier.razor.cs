@@ -1,19 +1,19 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
-using OnigiriShop.Data;
 using OnigiriShop.Data.Models;
 using OnigiriShop.Services;
 using System.Security.Claims;
 
 namespace OnigiriShop.Pages
 {
+    [Authorize]
     public partial class Panier : ComponentBase
     {
         [Inject] public CartService CartService { get; set; }
-        [Inject] public OrderManager OrderManager { get; set; }
-        [Inject] public IServiceProvider ServiceProvider { get; set; }
+        [Inject] public OrderService OrderService { get; set; }
+        [Inject] public AuthenticationStateProvider AuthProvider { get; set; }
         [Inject] public NavigationManager Nav { get; set; }
-        [CascadingParameter] public Task<AuthenticationState> AuthenticationStateTask { get; set; }
 
         private bool _canAccess;
         private bool _orderSent;
@@ -23,9 +23,8 @@ namespace OnigiriShop.Pages
 
         protected override async Task OnInitializedAsync()
         {
-            var authState = await AuthenticationStateTask;
+            var authState = await AuthProvider.GetAuthenticationStateAsync();
             _user = authState.User;
-
             _canAccess = _user.Identity?.IsAuthenticated == true;
         }
 
@@ -37,40 +36,55 @@ namespace OnigiriShop.Pages
 
         private async Task SubmitOrder()
         {
-            // Sécurité : on vérifie encore l’état utilisateur avant commande
-            if (_user == null || !_user.Identity?.IsAuthenticated == true)
+            _resultMessage = null;
+            if (!_canAccess)
             {
                 _resultMessage = "Veuillez vous connecter.";
                 return;
             }
-            if (CartService.TotalCount() == 0)
+            if (!CartService.HasItems())
             {
                 _resultMessage = "Votre panier est vide.";
                 return;
             }
-            var userId = _user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var username = _user.Identity?.Name;
-            var email = _user.FindFirst(ClaimTypes.Email)?.Value;
+
+            var userIdStr = _user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out var userId))
+            {
+                _resultMessage = "Erreur d'identification utilisateur.";
+                return;
+            }
+
+            // Livraison : à personnaliser, par défaut 1.
+            int deliveryId = 1;
+            decimal total = CartService.TotalPrice();
 
             var order = new Order
             {
-                OrderId = Guid.NewGuid().ToString(),
                 UserId = userId,
-                UserDisplayName = username,
-                UserEmail = email,
-                OrderDate = DateTime.UtcNow,
+                DeliveryId = deliveryId,
+                OrderedAt = DateTime.UtcNow,
+                Status = "En attente",
+                TotalAmount = total,
+                Comment = "",
                 Items = CartService.Items.Select(i => new OrderItem
                 {
-                    ProductName = i.Product.Name,
+                    ProductId = i.Product.Id,
                     Quantity = i.Quantity,
                     UnitPrice = i.Product.Price
                 }).ToList()
             };
-            await OrderManager.AddOrderAsync(order);
+
+            await OrderService.CreateOrderAsync(order, order.Items);
             _orderSent = true;
             CartService.Clear();
             _resultMessage = "Commande validée ! Merci pour votre achat.";
             StateHasChanged();
+        }
+
+        private void GoToHome()
+        {
+            Nav.NavigateTo("/");
         }
     }
 }

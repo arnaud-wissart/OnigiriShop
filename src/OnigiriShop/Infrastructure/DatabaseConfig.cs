@@ -1,4 +1,5 @@
 ﻿using OnigiriShop.Data;
+using OnigiriShop.Data.Interfaces;
 
 namespace OnigiriShop.Infrastructure
 {

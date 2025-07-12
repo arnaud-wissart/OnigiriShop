@@ -1,7 +1,8 @@
 ﻿using Dapper;
+using OnigiriShop.Data.Interfaces;
 using OnigiriShop.Data.Models;
 
-namespace OnigiriShop.Data
+namespace OnigiriShop.Services
 {
     public class ProductService
     {

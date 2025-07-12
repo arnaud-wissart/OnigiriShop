@@ -1,5 +1,6 @@
-﻿using Microsoft.Extensions.Options;
-using OnigiriShop.Data;
+﻿using Dapper;
+using Microsoft.Extensions.Options;
+using OnigiriShop.Data.Interfaces;
 using OnigiriShop.Data.Models;
 using OnigiriShop.Infrastructure;
 using Serilog;
@@ -11,13 +12,11 @@ namespace OnigiriShop.Services
     {
         private readonly ISqliteConnectionFactory _connectionFactory;
         private readonly EmailService _emailService;
-        private readonly AllowedAdminsManager _adminsManager;
         private readonly int _expiryMinutes;
-        public UserService(ISqliteConnectionFactory connectionFactory, EmailService emailService, AllowedAdminsManager adminsManager, IOptions<MagicLinkConfig> magicLinkConfig)
+        public UserService(ISqliteConnectionFactory connectionFactory, EmailService emailService, IOptions<MagicLinkConfig> magicLinkConfig)
         {
             _connectionFactory = connectionFactory;
             _emailService = emailService;
-            _adminsManager = adminsManager;
             _expiryMinutes = magicLinkConfig.Value.ExpiryMinutes;
         }
 
@@ -88,6 +87,20 @@ namespace OnigiriShop.Services
             cmd.Parameters.AddWithValue("@Token", token);
             var userId = cmd.ExecuteScalar();
             return userId != null ? Convert.ToInt32(userId) : 0;
+        }
+        public async Task<User> GetByIdAsync(int userId)
+        {
+            using var conn = _connectionFactory.CreateConnection();
+            var sql = "SELECT Id, Email, Name, Phone, CreatedAt, IsActive, Role FROM User WHERE Id = @userId";
+            var user = await conn.QueryFirstOrDefaultAsync<User>(sql, new { userId });
+            return user;
+        }
+
+        public async Task<bool> UpdateUserProfileAsync(int userId, string name, string phone)
+        {
+            using var conn = _connectionFactory.CreateConnection();
+            var sql = @"UPDATE User SET Name = @name, Phone = @phone WHERE Id = @userId";
+            return await conn.ExecuteAsync(sql, new { name, phone, userId }) > 0;
         }
 
         public Task SetUserPasswordAsync(int userId, string password, string token)
@@ -163,20 +176,6 @@ namespace OnigiriShop.Services
         }
         public Task<User> AuthenticateAsync(string email, string password)
         {
-            // 1. Vérifie dans le fichier JSON d'abord
-            if (_adminsManager.Validate(email, password))
-            {
-                return Task.FromResult(new User
-                {
-                    Id = 0,
-                    Email = email,
-                    Name = email,
-                    Role = AuthConstants.RoleAdmin,
-                    IsActive = true
-                });
-            }
-
-            // 2. Sinon, comportement habituel : check DB
             using var conn = _connectionFactory.CreateConnection();
             conn.Open();
             var cmd = conn.CreateCommand();

@@ -1,41 +1,57 @@
-﻿window.onigiriAuth = {
+﻿// ==================== AUTH (Login / Logout) ====================
+
+window.onigiriAuth = {
+    /**
+     * Authentifie un utilisateur via email/mot de passe.
+     * @param {string} email 
+     * @param {string} password 
+     * @returns {Promise<{success: boolean, error?: string}>}
+     */
     login: async function (email, password) {
         try {
             const response = await fetch("/api/auth/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                credentials: "same-origin"
-                , body: JSON.stringify({ email, password })
+                credentials: "same-origin",
+                body: JSON.stringify({ email, password })
             });
-            if (response.ok) {
-                return { success: true };
-            } else if (response.status === 401) {
-                return { success: false, error: "Email ou mot de passe incorrect." };
-            } else {
-                return { success: false, error: `Erreur serveur (${response.status})` };
-            }
+            if (response.ok) return { success: true };
+            if (response.status === 401) return { success: false, error: "Email ou mot de passe incorrect." };
+            return { success: false, error: `Erreur serveur (${response.status})` };
         } catch (err) {
             return { success: false, error: "Erreur : " + err };
         }
-    }
-};
-window.onigiriAuth.logout = async function () {
-    try {
-        const response = await fetch("/api/auth/logout", {
-            method: "POST",
-            credentials: "same-origin"
-        });
-        if (response.ok) {
-            location.reload();
-        } else {
-            alert("Erreur lors de la déconnexion (" + response.status + ")");
+    },
+
+    /**
+     * Déconnecte l'utilisateur et redirige si succès.
+     * @param {string} redirectUrl 
+     */
+    logout: async function (redirectUrl = "/") {
+        try {
+            const response = await fetch("/api/auth/logout", {
+                method: "POST",
+                credentials: "same-origin"
+            });
+            if (response.ok) {
+                window.location.href = redirectUrl;
+            } else {
+                alert("Erreur lors de la déconnexion (" + response.status + ")");
+            }
+        } catch (err) {
+            alert("Erreur lors de la déconnexion : " + err);
         }
-    } catch (err) {
-        alert("Erreur lors de la déconnexion : " + err);
     }
 };
 
+
+// ==================== Bootstrap Interop / Tooltips ====================
+
 window.bootstrapInterop = {
+    /**
+     * Affiche une modale Bootstrap (par sélecteur CSS).
+     * @param {string} selector 
+     */
     showModal: function (selector) {
         var modalEl = document.querySelector(selector);
         if (modalEl) {
@@ -43,6 +59,10 @@ window.bootstrapInterop = {
             modal.show();
         }
     },
+    /**
+     * Masque une modale Bootstrap (par sélecteur CSS).
+     * @param {string} selector 
+     */
     hideModal: function (selector) {
         var modalEl = document.querySelector(selector);
         if (modalEl) {
@@ -51,27 +71,36 @@ window.bootstrapInterop = {
         }
     }
 };
-window.activateTooltips = () => {
+
+/**
+ * Réactive tous les tooltips Bootstrap.
+ */
+window.activateTooltips = function () {
+    // Clean tooltips existants
     document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) {
         var tooltip = bootstrap.Tooltip.getInstance(el);
         if (tooltip) tooltip.dispose();
     });
-
     document.querySelectorAll('.tooltip').forEach(function (el) {
         el.parentNode && el.parentNode.removeChild(el);
     });
-
+    // Re-init
     document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) {
         bootstrap.Tooltip.getOrCreateInstance(el);
     });
 };
 
 
+// ==================== Calendar (FullCalendar) ====================
+
 window.onigiriCalendar = {
+    /**
+     * Initialise FullCalendar avec .NET helper.
+     */
     init: function (dotNetHelper, weekStartDay) {
-        // Détruire une ancienne instance si elle existe
         if (window.onigiriCalInstance) window.onigiriCalInstance.destroy();
 
+        // Valeurs par défaut pour les couleurs de légende
         if (!window.onigiriLegendColors) {
             window.onigiriLegendColors = {
                 ponctuelle: '#198754',
@@ -79,7 +108,6 @@ window.onigiriCalendar = {
             };
         }
 
-        // Nouvelle instance FullCalendar avec events fonction callback
         window.onigiriCalInstance = new FullCalendar.Calendar(document.getElementById('calendar'), {
             locale: 'fr',
             themeSystem: 'bootstrap5',
@@ -98,9 +126,7 @@ window.onigiriCalendar = {
                 day: 'Jour'
             },
             allDayText: 'Toute la journée',
-            datesSet: function () {
-                setFullCalendarTooltips();
-            },
+            datesSet: setFullCalendarTooltips,
             events: async function (info, successCallback, failureCallback) {
                 try {
                     const events = await dotNetHelper.invokeMethodAsync(
@@ -113,8 +139,8 @@ window.onigiriCalendar = {
                     failureCallback(e);
                 }
             },
-            dateClick: function (info) { dotNetHelper.invokeMethodAsync('OnCalendarDateClick', info.dateStr); },
-            eventClick: function (info) { dotNetHelper.invokeMethodAsync('OnCalendarEventClick', info.event.id); },
+            dateClick: info => dotNetHelper.invokeMethodAsync('OnCalendarDateClick', info.dateStr),
+            eventClick: info => dotNetHelper.invokeMethodAsync('OnCalendarEventClick', info.event.id),
             eventContent: function (arg) {
                 const event = arg.event;
                 const heure = new Date(event.start).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
@@ -133,26 +159,33 @@ window.onigiriCalendar = {
                     `
                 };
             }
-
         });
 
         window.onigiriCalInstance.render();
         setFullCalendarTooltips();
         window.updateDeliveryColors();
     },
+
     updateEvents: function () {
         if (window.onigiriCalInstance) {
             window.onigiriCalInstance.refetchEvents();
             window.updateDeliveryColors();
         }
+    },
+
+    exists: function () {
+        return !!document.getElementById('calendar');
+    },
+
+    setLegendColors: function (ponctuelle, recurrente) {
+        window.onigiriLegendColors = { ponctuelle, recurrente };
+        window.updateDeliveryColors();
     }
 };
 
-
-window.onigiriCalendar.exists = function () {
-    return !!document.getElementById('calendar');
-};
-
+/**
+ * Déclenche l'ouverture du color picker custom.
+ */
 window.onigiriColorModalOpenInput = function () {
     setTimeout(function () {
         var input = document.getElementById("colorModalInput");
@@ -160,16 +193,13 @@ window.onigiriColorModalOpenInput = function () {
     }, 100);
 };
 
-window.onigiriCalendar.setLegendColors = function (ponctuelle, recurrente) {
-    window.onigiriLegendColors = {
-        ponctuelle: ponctuelle,
-        recurrente: recurrente
-    };
-    window.updateDeliveryColors();
-};
 
+// ==================== Color Modal / Utils ====================
 
-// Modale sélecteur de couleur custom
+/**
+ * Ouvre une modale de sélection de couleur pour le calendrier.
+ * @param {"ponctuelle"|"recurrente"} type 
+ */
 window.openColorModal = function (type) {
     if (document.getElementById('onigiriColorModal')) return; // déjà affichée
 
@@ -190,12 +220,9 @@ window.openColorModal = function (type) {
     `;
     document.body.appendChild(modal);
 
-    // Fermer avec la croix
     document.getElementById('colorModalCloseBtn').onclick = function () {
         document.body.removeChild(modal);
     };
-
-    // Validation
     document.getElementById('colorModalOkBtn').onclick = function () {
         const val = document.getElementById('colorModalInput').value;
         window.onigiriLegendColors[type] = val;
@@ -203,25 +230,40 @@ window.openColorModal = function (type) {
         window.updateDeliveryColors();
     };
 
-    // Focus sur input + simule le click pour ouvrir la palette direct
+    // Focus sur input + ouverture auto du picker (Chrome/Edge/Opera)
     setTimeout(() => {
         const input = document.getElementById("colorModalInput");
         input.focus();
-        // Cette astuce déclenche l’ouverture de la palette (chrome, edge, opera… pas toujours sur Firefox)
         input.click();
     }, 120);
 
     // Empêche fermeture sur clic overlay
-    modal.onclick = function (e) {
-        if (e.target === modal) {
-            // Rien, la modale ne se ferme pas ici
-        }
-    };
+    modal.onclick = function (e) { if (e.target === modal) {/* pas de close */} };
 };
 
+/**
+ * Mets à jour la couleur des events du calendrier selon leur type.
+ */
+window.updateDeliveryColors = function () {
+    if (!window.onigiriCalInstance) return;
+    window.onigiriCalInstance.getEvents().forEach(ev => {
+        const isRec = ev.extendedProps && ev.extendedProps.isRecurring;
+        if (isRec !== undefined) {
+            if (isRec)
+                ev.setProp('backgroundColor', window.onigiriLegendColors.recurrente);
+            else
+                ev.setProp('backgroundColor', window.onigiriLegendColors.ponctuelle);
+            ev.setProp('borderColor', '#dee2e6');
+            ev.setProp('textColor', '#fff');
+        }
+    });
+};
 
-
-// Pour convertir rgb() -> #xxxxxx au cas où (protection)
+/**
+ * Convertit une couleur rgb() en hexa.
+ * @param {string} color 
+ * @returns {string}
+ */
 function rgbToHex(color) {
     if (color.startsWith('#')) return color;
     const rgb = color.match(/\d+/g);
@@ -234,34 +276,19 @@ function rgbToHex(color) {
     );
 }
 
-// Mets à jour les couleurs des events selon le type
-window.updateDeliveryColors = function () {
-    if (!window.onigiriCalInstance) return;
-    window.onigiriCalInstance.getEvents().forEach(ev => {
-        // isRecurring est sur extendedProps
-        const isRec = ev.extendedProps && ev.extendedProps.isRecurring;
-        if (isRec !== undefined) {
-            if (isRec)
-                ev.setProp('backgroundColor', window.onigiriLegendColors.recurrente);
-            else
-                ev.setProp('backgroundColor', window.onigiriLegendColors.ponctuelle);
-            ev.setProp('borderColor', '#dee2e6');
-            ev.setProp('textColor', '#fff');
-        }
-    });
-};
+/**
+ * Applique les tooltips custom sur FullCalendar (FR).
+ */
 function setFullCalendarTooltips() {
-    // Mapping [selector CSS, texte tooltip FR]
     const tooltips = [
         ['.fc-dayGridMonth-button', 'Vue Mois'],
         ['.fc-timeGridWeek-button', 'Vue Semaine'],
         ['.fc-timeGridDay-button', 'Vue Jour'],
         ['.fc-listMonth-button', 'Vue Liste'],
-        ['.fc-today-button', 'Aujourd\'hui'],
+        ['.fc-today-button', "Aujourd'hui"],
         ['.fc-prev-button', 'Mois précédent'],
         ['.fc-next-button', 'Mois suivant']
     ];
-
     tooltips.forEach(([selector, text]) => {
         document.querySelectorAll(selector).forEach(btn => {
             btn.removeAttribute('title');
@@ -270,7 +297,6 @@ function setFullCalendarTooltips() {
             btn.setAttribute('title', text);
         });
     });
-
     if (window.bootstrap && window.bootstrap.Tooltip) {
         document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) {
             const tooltip = bootstrap.Tooltip.getInstance(el);
@@ -279,7 +305,15 @@ function setFullCalendarTooltips() {
         });
     }
 }
-    window.focusElementByName = function (name) {
-        var el = document.querySelector('[name="' + name + '"]');
-        if (el) { el.focus(); if (el.select) el.select(); }
-    };
+
+
+// ==================== Utilitaires divers ====================
+
+/**
+ * Focus un élément par son name (input, etc.)
+ * @param {string} name 
+ */
+window.focusElementByName = function (name) {
+    var el = document.querySelector('[name="' + name + '"]');
+    if (el) { el.focus(); if (el.select) el.select(); }
+};

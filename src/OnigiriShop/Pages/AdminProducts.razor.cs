@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
-using OnigiriShop.Data;
 using OnigiriShop.Data.Models;
+using OnigiriShop.Services;
 
 namespace OnigiriShop.Pages
 {

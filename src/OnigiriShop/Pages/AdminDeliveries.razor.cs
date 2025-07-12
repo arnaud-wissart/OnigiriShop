@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
-using OnigiriShop.Data;
 using OnigiriShop.Data.Models;
 using OnigiriShop.Infrastructure;
+using OnigiriShop.Services;
 
 namespace OnigiriShop.Pages
 {

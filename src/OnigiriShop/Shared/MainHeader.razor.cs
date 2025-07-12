@@ -30,8 +30,7 @@ namespace OnigiriShop.Shared
         protected async Task OnConfirmLogout()
         {
             await JS.InvokeVoidAsync("bootstrapInterop.hideModal", "#logoutConfirmModal");
-            await AuthService.LogoutAsync();
-            Nav.NavigateTo("/", true); // force reload
+            await JS.InvokeVoidAsync("onigiriAuth.logout", "/");
         }
     }
 }

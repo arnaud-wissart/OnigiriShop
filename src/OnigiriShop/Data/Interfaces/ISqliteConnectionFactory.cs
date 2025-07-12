@@ -1,6 +1,6 @@
 ﻿using Microsoft.Data.Sqlite;
 
-namespace OnigiriShop.Data
+namespace OnigiriShop.Data.Interfaces
 {
     public interface ISqliteConnectionFactory
     {
