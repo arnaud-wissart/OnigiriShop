@@ -125,6 +125,8 @@
     bottom: 40px;
     right: 20px;
     width: 280px;
+    max-width: 280px;
+    min-width: 280px;
     z-index: 2000;
     pointer-events: none;
 }
@@ -142,7 +144,7 @@
 
 @media (max-width: 1200px) {
     .cart-sticky {
-        width: 220px;
+        width:220px;
     }
 }
 
@@ -718,3 +720,10 @@
         outline: none;
     }
 
+.btn-xs {
+    padding: 0;
+    font-size: .85em;
+    border-radius: .2rem;
+    height: 22px;
+    min-width: 22px;
+}

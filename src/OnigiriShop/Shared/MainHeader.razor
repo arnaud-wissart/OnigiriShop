@@ -36,10 +36,15 @@
                     @onclick="ConfirmLogout">
                 <i class="bi bi-box-arrow-right"></i>
             </button>
-            <span class="user-info ms-2">
+            <a class="user-info ms-2 text-decoration-none"
+               href="/profile"
+               style="cursor:pointer;"
+               data-bs-toggle="tooltip"
+               data-bs-placement="bottom"
+               title="Voir mon profil">
                 <i class="bi bi-person-circle"></i>
                 @UserEmail
-            </span>
+            </a>
         }
     </div>
 </header>

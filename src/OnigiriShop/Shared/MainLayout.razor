@@ -7,22 +7,11 @@
     <div class="japan-vertical">おにぎりとスポンジケーキ</div>
 </div>
 
-<!-- Overlay panier sticky à droite (desktop) -->
-<div class="cart-sticky d-none d-lg-block">
-    <CartSticky />
-    @if (CartService.Items.Count > 0)
-    {
-        <div class="cart-fab d-lg-none" @onclick="GoToCart">
-            <span class="cart-fab-icon">
-                <i class="bi bi-cart-fill"></i>
-                <span class="cart-fab-count">@CartService.Items.Count</span>
-            </span>
-        </div>
-    }
-</div>
-
 <BootstrapToasts />
 
 <main class="container-fluid pt-4">
-    @Body
+    <CascadingValue Value="ShowCartSticky">
+        <CartSticky ShowCart="@ShowCartSticky" />
+        @Body
+    </CascadingValue>
 </main>

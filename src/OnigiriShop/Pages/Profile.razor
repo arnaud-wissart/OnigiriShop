@@ -2,119 +2,220 @@
 @attribute [Authorize]
 @inherits ProfileBase
 
-<div class="card shadow rounded-3 overflow-hidden border mb-4" style="background:#fff;">
-    <div class="card-body">
-        <h4 class="card-title mb-3 fw-bold" style="color:#212529;">
-            Mon profil
-        </h4>
-        @if (EditSuccess)
-        {
-            <div class="alert alert-success">Modifications enregistrées !</div>
-        }
-        @if (EditError != null)
-        {
-            <div class="alert alert-danger">@EditError</div>
-        }
-        <EditForm Model="UserModel" OnValidSubmit="UpdateUser">
-            <DataAnnotationsValidator />
-            <div class="mb-3">
-                <label>Nom</label>
-                <InputText class="form-control" @bind-Value="UserModel.Name" />
-            </div>
-            <div class="mb-3">
-                <label>Téléphone</label>
-                <InputText class="form-control" @bind-Value="UserModel.Phone" />
-            </div>
-            <div class="mb-3">
-                <label>Email</label>
-                <InputText class="form-control" @bind-Value="UserModel.Email" disabled />
-            </div>
-            <button class="btn btn-success" type="submit" disabled="@IsBusy">Enregistrer</button>
-        </EditForm>
-    </div>
-</div>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-1 d-none d-lg-block"></div>
+        <div class="col-12 col-lg-9 pt-3">
 
-<div class="card shadow rounded-3 overflow-hidden border mb-4" style="background:#fff;">
-    <div class="card-body">
-        <h4 class="card-title mb-3 fw-bold" style="color:#212529;">
-            Historique de mes commandes
-        </h4>
-        @if (Orders == null)
-        {
-            <div><span class="spinner-border"></span> Chargement…</div>
-        }
-        else if (Orders.Count == 0)
-        {
-            <div>Aucune commande trouvée.</div>
-        }
-        else
-        {
-            <div class="table-responsive">
-                <table class="table table-hover align-middle table-striped mb-0">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Montant</th>
-                            <th>Status</th>
-                            <th>Détail</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var order in Orders)
+            @if (IsLoading)
+            {
+                <div><span class="spinner-border"></span> Chargement du profil…</div>
+            }
+            else
+            {
+                <div class="card shadow rounded-3 overflow-hidden border mb-4" style="background:#fff;">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="fw-bold fs-4">Mon compte</span>
+                            <a href="/"
+                               class="btn btn-outline-secondary"
+                               data-bs-toggle="tooltip"
+                               data-bs-placement="left"
+                               title="Retour à la boutique">
+                                <i class="bi bi-arrow-left"></i>
+                            </a>
+                        </div>
+                        @if (EditSuccess)
                         {
-                            <tr>
-                                <td>@order.OrderedAt.ToString("dd/MM/yyyy HH:mm")</td>
-                                <td>@order.TotalAmount.ToString("C")</td>
-                                <td>@order.Status</td>
-                                <td>
-                                    <button class="btn btn-sm btn-outline-primary" @onclick="@(() => ShowOrderDetail(order))">
-                                        Voir
-                                    </button>
-                                </td>
-                            </tr>
+                            <div class="alert alert-success">Modifications enregistrées !</div>
                         }
-                    </tbody>
-                </table>
-            </div>
-        }
+                        @if (!string.IsNullOrEmpty(EditError))
+                        {
+                            <div class="alert alert-danger">@EditError</div>
+                        }
+                        <EditForm EditContext="@EditContext" OnValidSubmit="UpdateUser">
+                            <DataAnnotationsValidator />
+                            <div class="mb-3">
+                                <label>Nom</label>
+                                <InputText class="form-control" @bind-Value="UserModel.Name" />
+                                <ValidationMessage For="@(() => UserModel.Name)" />
+                            </div>
+                            <div class="mb-3">
+                                <label>Téléphone</label>
+                                <InputText class="form-control" @bind-Value="UserModel.Phone" type="tel" />
+                                <ValidationMessage For="@(() => UserModel.Phone)" />
+                            </div>
+                            <div class="mb-3">
+                                <label>Email</label>
+                                <InputText class="form-control" @bind-Value="UserModel.Email" disabled />
+                            </div>
+                            <div class="row mt-3 align-items-center">
+                                <div class="col-auto">
+                                    <button class="btn btn-success px-4"
+                                            type="submit"
+                                            disabled="@(IsBusy || !IsModified)"
+                                            data-bs-toggle="tooltip"
+                                            data-bs-placement="right"
+                                            title="Enregistrer les modifications">
+                                        Enregistrer (@IsModified) (@IsBusy)
+                                    </button>
+                                </div>
+                                <div class="col text-end">
+                                    <button class="btn btn-danger"
+                                            type="button"
+                                            @onclick="ShowResetConfirmModal">
+                                        <i class="bi bi-key"></i> Réinitialisation de mot de passe
+                                    </button>
+                                </div>
+                            </div>
+                            @if (!string.IsNullOrEmpty(ResetResult))
+                            {
+                                <div class="alert alert-info mt-2">
+                                    <i class="bi bi-envelope-check"></i>
+                                    @ResetResult
+                                </div>
+                            }
+                        </EditForm>
+                    </div>
+                </div>
+
+                <div class="card shadow rounded-3 overflow-hidden border mb-4" style="background:#fff;">
+                    <div class="card-body">
+                        <h4 class="card-title mb-3 fw-bold" style="color:#212529;">
+                            Mes commandes
+                        </h4>
+                        @if (Orders == null)
+                        {
+                            <div><span class="spinner-border"></span> Chargement…</div>
+                        }
+                        else if (Orders.Count == 0)
+                        {
+                            <div>Aucune commande trouvée.</div>
+                        }
+                        else
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle table-striped mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Montant</th>
+                                            <th>Status</th>
+                                            <th>Détail</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var order in Orders)
+                                        {
+                                            <tr>
+                                                <td>@order.OrderedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                                                <td>@order.TotalAmount.ToString("C")</td>
+                                                <td>
+                                                    <i class="bi @(GetOrderStatusIcon(order.Status))"></i>
+                                                    @order.Status
+                                                </td>
+                                                <td>
+                                                    <button class="btn btn-link p-0"
+                                                            @onclick="@(() => ShowOrderDetail(order))"
+                                                            data-bs-toggle="tooltip"
+                                                            data-bs-placement="left"
+                                                            title="Voir le détail">
+                                                        <i class="bi bi-search" style="font-size:1.2rem;"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+            }
+
+            @if (OrderDetail != null)
+            {
+                <div class="modal fade show d-block" tabindex="-1" style="background:rgba(33,33,33,0.18);">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content border-0 shadow-lg">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Détail commande @OrderDetail.OrderedAt.ToString("dd/MM/yyyy")</h5>
+                                <button type="button" class="btn-close" @onclick="HideOrderDetail"></button>
+                            </div>
+                            <div class="modal-body">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Produit</th>
+                                            <th>Qté</th>
+                                            <th>Prix unitaire</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in OrderDetail.Items)
+                                        {
+                                            <tr>
+                                                <td>@item.ProductName</td>
+                                                <td>@item.Quantity</td>
+                                                <td>@item.UnitPrice.ToString("C")</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                                <div class="text-end fw-bold">Total : @OrderDetail.TotalAmount.ToString("C")</div>
+                            </div>
+                            <div class="modal-footer">
+                                <button class="btn btn-secondary" @onclick="HideOrderDetail">Fermer</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        <div class="col-2 d-none d-lg-block"></div>
     </div>
 </div>
 
-@if (OrderDetail != null)
+@if (ShowResetModal)
 {
     <div class="modal fade show d-block" tabindex="-1" style="background:rgba(33,33,33,0.18);">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg">
                 <div class="modal-header">
-                    <h5 class="modal-title">Détail commande @OrderDetail.OrderedAt.ToString("dd/MM/yyyy")</h5>
-                    <button type="button" class="btn-close" @onclick="HideOrderDetail"></button>
+                    <span class="modal-title fs-5">
+                        <i class="bi bi-key me-2"></i>Réinitialiser le mot de passe
+                    </span>
+                    <button type="button" class="btn-close" @onclick="HideResetConfirmModal"></button>
                 </div>
                 <div class="modal-body">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Produit</th>
-                                <th>Qté</th>
-                                <th>Prix unitaire</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var item in OrderDetail.Items)
-                            {
-                                <tr>
-                                    <td>@item.ProductName</td>
-                                    <td>@item.Quantity</td>
-                                    <td>@item.UnitPrice.ToString("C")</td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                    <div class="text-end fw-bold">Total : @OrderDetail.TotalAmount.ToString("C")</div>
+                    <p>
+                        Un e-mail de réinitialisation de mot de passe va être envoyé à <b>@UserModel.Email</b>.<br />
+                        Voulez-vous continuer ?
+                    </p>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" @onclick="HideOrderDetail">Fermer</button>
+                    <button type="button" class="btn btn-secondary" @onclick="HideResetConfirmModal">Annuler</button>
+                    <button type="button" class="btn btn-danger" @onclick="ConfirmResetPassword">
+                        Envoyer l'e-mail
+                    </button>
                 </div>
             </div>
         </div>
     </div>
+}
+
+
+@functions {
+    string GetOrderStatusIcon(string status)
+    {
+        return status switch
+        {
+            "En attente" => "bi-hourglass-split text-warning",
+            "Validée" => "bi-check-circle-fill text-success",
+            "Livrée" => "bi-truck text-primary",
+            "Annulée" => "bi-x-circle-fill text-danger",
+            _ => "bi-question-circle text-secondary"
+        };
+    }
 }

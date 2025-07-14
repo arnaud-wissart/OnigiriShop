@@ -37,3 +37,7 @@ VALUES
  'CS6YXiyM+5VPk4xTnt3GHclQxdkUcMveS6dDeJN3lJIuFQHAS2EEBrEu4kj25mozrOWoLkvcjkJezZUehSmeeQ==',
  '4IoHzu9DqwZjVKYT22TOd9XKGRAd1rYdJkuLPv3IMiAvqdjByM2aTPtKQvTFwGJNHvk4y9UPnt1z1IrQAlQcrw==',
  'User');
+
+ INSERT INTO 'Order' (UserId, DeliveryId, OrderedAt, Status, TotalAmount, Comment) VALUES
+(1, 1, '2025-07-12 12:34:56', 'En attente', 15.80, ''),
+(1, 2, '2025-07-13 10:01:24', 'Livrée', 8.70, '')

@@ -99,9 +99,17 @@ namespace OnigiriShop.Services
         public async Task<bool> UpdateUserProfileAsync(int userId, string name, string phone)
         {
             using var conn = _connectionFactory.CreateConnection();
+
+            // Vérifier si un autre utilisateur possède déjà ce nom
+            var sqlCheck = "SELECT COUNT(*) FROM User WHERE Name = @name AND Id <> @userId";
+            var count = await conn.ExecuteScalarAsync<int>(sqlCheck, new { name, userId });
+            if (count > 0)
+                throw new InvalidOperationException("Ce nom est déjà utilisé par un autre utilisateur.");
+
             var sql = @"UPDATE User SET Name = @name, Phone = @phone WHERE Id = @userId";
             return await conn.ExecuteAsync(sql, new { name, phone, userId }) > 0;
         }
+
 
         public Task SetUserPasswordAsync(int userId, string password, string token)
         {
@@ -294,8 +302,8 @@ namespace OnigiriShop.Services
             // 4. Génération du lien
             var resetUrl = $"{siteBaseUrl.TrimEnd('/')}/invite?token={Uri.EscapeDataString(token)}";
 
-            // 5. Envoi email (tu peux créer un template spécial)
-            await _emailService.SendUserInvitationAsync(email, name, resetUrl);
+            // 5. Envoi email
+            await _emailService.SendPasswordResetAsync(email, name, resetUrl);
         }
 
         public void SetUserActive(int userId, bool isActive)

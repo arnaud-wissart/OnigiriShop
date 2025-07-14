@@ -193,6 +193,17 @@ window.onigiriColorModalOpenInput = function () {
     }, 100);
 };
 
+window.onigiriCart = {
+    save: function (cart) {
+        localStorage.setItem("onigiriCart", JSON.stringify(cart));
+    },
+    load: function () {
+        return JSON.parse(localStorage.getItem("onigiriCart") || "[]");
+    },
+    clear: function () {
+        localStorage.removeItem("onigiriCart");
+    }
+};
 
 // ==================== Color Modal / Utils ====================
 

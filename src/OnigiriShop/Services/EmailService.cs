@@ -70,6 +70,21 @@ namespace OnigiriShop.Services
                        $"{invitationLink}\n\nCe lien expire dans 1 heure.";
             return SendEmailAsync(toEmail, toName, subject, html, text);
         }
-    }
 
+        public Task SendPasswordResetAsync(string toEmail, string toName, string resetLink)
+        {
+            var subject = "Réinitialisation de votre mot de passe OnigiriShop";
+            var html = $"<p>Bonjour {(string.IsNullOrEmpty(toName) ? toEmail : toName)},<br>" +
+                       $"Une demande de réinitialisation de mot de passe a été effectuée sur OnigiriShop.<br>" +
+                       $"Pour choisir un nouveau mot de passe, cliquez ici&nbsp;: <br>" +
+                       $"<a href=\"{resetLink}\">{resetLink}</a><br><br>" +
+                       $"Si vous n’êtes pas à l’origine de cette demande, ignorez simplement ce message.<br>" +
+                       $"Ce lien est valable 1 heure.</p>";
+            var text = $"Bonjour {(string.IsNullOrEmpty(toName) ? toEmail : toName)},\n" +
+                       $"Une demande de réinitialisation de mot de passe a été faite sur OnigiriShop.\n" +
+                       $"Pour choisir un nouveau mot de passe, cliquez sur ce lien :\n" +
+                       $"{resetLink}\n\nCe lien est valable 1 heure.";
+            return SendEmailAsync(toEmail, toName, subject, html, text);
+        }
+    }
 }

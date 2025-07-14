@@ -11,7 +11,4 @@ namespace OnigiriShop.Services
     }
 
     public enum ToastLevel { Success, Info, Warning, Error }
-
-
-
 }
