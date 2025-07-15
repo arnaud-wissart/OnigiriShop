@@ -16,7 +16,7 @@
         {
             @if (IsAdmin && !IsAdminContext)
             {
-                <button class="header-btn header-btn-primary ms-2"
+                <button class="header-btn header-btn-primary me-2"
                         data-bs-toggle="tooltip"
                         data-bs-placement="bottom"
                         title="Administration"
@@ -27,7 +27,7 @@
             }
             @if (IsAdmin && IsAdminContext)
             {
-                <button class="header-btn header-btn-primary ms-2"
+                <button class="header-btn header-btn-primary me-2"
                         data-bs-toggle="tooltip"
                         data-bs-placement="bottom"
                         title="Retour à la boutique"
@@ -38,7 +38,7 @@
             }
             @if (IsAdminContext)
             {
-                <div class="d-flex align-items-center gap-2 ms-2">
+                <div class="d-flex align-items-center gap-2 ms-2 me-2">
                     <button class="header-btn header-btn-success"
                             data-bs-toggle="tooltip"
                             data-bs-placement="bottom"
@@ -70,11 +70,11 @@
                     @onclick="ConfirmLogout">
                 <i class="bi bi-box-arrow-right"></i>
             </button>
-            <a class="user-info ms-2 text-decoration-none"
+            <a class="user-info ms-2 me-2 text-decoration-none"
                href="/profile"
                data-bs-toggle="tooltip" title="Voir mon profil">
                 <i class="bi bi-person-circle"></i>
-                @UserNameOrEmail
+                <span class="text-nowrap">@UserNameOrEmail</span>
             </a>
         }
     </div>

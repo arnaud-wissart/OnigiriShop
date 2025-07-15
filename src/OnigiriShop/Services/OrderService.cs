@@ -84,6 +84,7 @@ namespace OnigiriShop.Services
         public async Task<int> CreateOrderAsync(Order order, List<OrderItem> items)
         {
             using var conn = _connectionFactory.CreateConnection();
+            conn.Open();
             using var tran = conn.BeginTransaction();
 
             var sql = @"INSERT INTO 'Order' (UserId, DeliveryId, OrderedAt, Status, TotalAmount, Comment)

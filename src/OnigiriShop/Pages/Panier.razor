@@ -7,7 +7,7 @@
     <div class="row">
         <div class="col-1 d-none d-lg-block"></div>
         <div class="col-12 col-lg-9 pt-3">
-            <div class="card shadow rounded-3 overflow-hidden border mb-4" style="background:#fff;">
+            <div class="card shadow rounded-3 overflow-hidden border mb-4 me-3" style="background:#fff;">
 
                 <h4 class="card-title px-4 pt-4 pb-3 mb-0 border-bottom bg-light fw-bold" style="color:#212529; letter-spacing:0.01em;">
                     Votre panier
@@ -123,10 +123,10 @@
                             <div class="alert alert-danger m-3">@_resultMessage</div>
                         }
                         <div class="d-flex justify-content-end p-3">
-                            <button class="btn btn-success px-4"
-                                    @onclick="SubmitOrder"
-                                    disabled="@(SelectedDeliveryId == null)">
-                                <i class="bi bi-check2-circle"></i> Valider la commande
+                            <button class="btn btn-success fw-semibold px-4 py-2 mt-3"
+                                    @onclick="ShowConfirmation"
+                                    disabled="@(!_canAccess || _items == null || !_items.Any())">
+                                Valider la commande
                             </button>
                         </div>
                     }
@@ -157,4 +157,41 @@
             </div>
         </div>
     </div>
+}
+@if (ShowConfirmationModal)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background:rgba(30,30,36,0.23); z-index: 9999;">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content p-3" style="border-radius:18px;">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold">Confirmation de la commande</h5>
+                    <button type="button" class="btn-close" aria-label="Fermer" @onclick="CloseConfirmation"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-3">Merci de bien vouloir confirmer la commande suivante :</p>
+                    <ul class="list-group mb-3">
+                        @foreach (var item in _items)
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center" style="border-radius: 10px;">
+                                <span>@item.Quantity x @item.Product.Name</span>
+                                <span class="fw-semibold">@($"{item.Quantity * item.Product.Price:C2}")</span>
+                            </li>
+                        }
+                    </ul>
+                    <div class="d-flex justify-content-between border-top pt-3 mb-2 fw-bold">
+                        <span>Total</span>
+                        <span>@($"{_totalPrice:C2}")</span>
+                    </div>
+                    <div class="mb-1">
+                        Livraison prévue&nbsp;: <span class="fw-semibold">@SelectedPlace</span>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button class="btn btn-secondary" @onclick="CloseConfirmation">Annuler</button>
+                    <button class="btn btn-success ms-2" @onclick="SubmitOrder">Confirmer la commande</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
 }

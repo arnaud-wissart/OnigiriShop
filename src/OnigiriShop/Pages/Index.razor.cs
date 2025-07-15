@@ -25,6 +25,8 @@ namespace OnigiriShop.Pages
             _products = await ProductService.GetMenuProductsAsync();
             CartState.OnChanged += RefreshCartFromEvent;
 
+            CartState.NotifyChanged();
+
             var userId = await AuthService.GetCurrentUserIdIntAsync();
             if (userId.HasValue)
                 _cartItems = await CartService.GetCartItemsWithProductsAsync(userId.Value);
@@ -34,6 +36,7 @@ namespace OnigiriShop.Pages
             var userId = await AuthService.GetCurrentUserIdIntAsync();
             if (userId.HasValue)
                 _cartItems = await CartService.GetCartItemsWithProductsAsync(userId.Value);
+            
             await InvokeAsync(StateHasChanged);
         }
         protected int GetProductCartQty(int productId) => _cartItems.FirstOrDefault(x => x.ProductId == productId)?.Quantity ?? 0;
@@ -49,7 +52,6 @@ namespace OnigiriShop.Pages
             }
             await CartService.AddItemAsync(userId.Value, product.Id, 1);
 
-            // Reload cart
             _cartItems = await CartService.GetCartItemsWithProductsAsync(userId.Value);
 
             CartState.NotifyChanged();

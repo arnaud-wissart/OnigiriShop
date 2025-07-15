@@ -7,6 +7,7 @@ namespace OnigiriShop.Services
 {
     public class CartService(ISqliteConnectionFactory connectionFactory)
     {
+        public event Action CartChanged;
         private static (IDbConnection Conn, bool Owns) GetOrCreateConnection(IDbConnection connection, ISqliteConnectionFactory factory)
         {
             if (connection != null)
@@ -149,6 +150,8 @@ namespace OnigiriShop.Services
             {
                 if (owns)
                     conn.Dispose();
+                cart.Items.Clear();
+                CartChanged?.Invoke();
             }
         }
 

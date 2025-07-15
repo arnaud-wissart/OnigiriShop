@@ -32,6 +32,8 @@ namespace OnigiriShop.Pages
         protected int? SelectedDeliveryId;
         protected CartItemWithProduct ItemToRemove { get; set; }
         protected bool ShowRemoveModal { get; set; }
+        protected bool ShowConfirmationModal { get; set; }
+
 
         protected List<CartItemWithProduct> _items = new();
         protected decimal _totalPrice = 0;
@@ -55,6 +57,10 @@ namespace OnigiriShop.Pages
                 }
             }
         }
+        public void ShowConfirmation() => ShowConfirmationModal = true;
+
+        public void CloseConfirmation() => ShowConfirmationModal = false;
+
         protected override async Task OnInitializedAsync()
         {
             var authState = await AuthProvider.GetAuthenticationStateAsync();
@@ -63,6 +69,8 @@ namespace OnigiriShop.Pages
 
             var userIdStr = _user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             _userId = int.TryParse(userIdStr, out var tmpId) ? tmpId : null;
+
+            CartService.CartChanged += OnCartChanged;
 
             await RefreshCartAsync();
 
@@ -81,7 +89,11 @@ namespace OnigiriShop.Pages
 
             SetCartStickyVisible?.Invoke(false);
         }
-
+        private async void OnCartChanged()
+        {
+            await RefreshCartAsync();
+            StateHasChanged();
+        }
         protected async Task RefreshCartAsync()
         {
             if (_userId.HasValue)
@@ -156,6 +168,7 @@ namespace OnigiriShop.Pages
 
         protected async Task SubmitOrder()
         {
+            ShowConfirmationModal = false;
             _resultMessage = null;
             if (!_canAccess)
             {
@@ -202,7 +215,6 @@ namespace OnigiriShop.Pages
             await OrderService.CreateOrderAsync(order, order.Items);
             _orderSent = true;
             await CartService.ClearCartAsync(_userId.Value);
-            await RefreshCartAsync();
             _resultMessage = "Commande validée ! Merci pour votre achat.";
             StateHasChanged();
         }
