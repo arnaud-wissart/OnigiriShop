@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
+using OnigiriShop.Infrastructure;
 
 namespace OnigiriShop.Pages
 {

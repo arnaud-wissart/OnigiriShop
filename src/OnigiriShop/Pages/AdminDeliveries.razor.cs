@@ -349,7 +349,7 @@ namespace OnigiriShop.Pages
         // ========== JSInvokable (pour clics) =============
 
         [JSInvokable]
-        public async Task OnCalendarEventClick(string eventId)
+        public Task OnCalendarEventClick(string eventId)
         {
             var idPart = eventId.Split('_')[0];
             if (int.TryParse(idPart, out int deliveryId))
@@ -361,10 +361,11 @@ namespace OnigiriShop.Pages
                     StateHasChanged();
                 }
             }
+            return Task.CompletedTask;
         }
 
         [JSInvokable]
-        public async Task OnCalendarDateClick(string dateStr)
+        public Task OnCalendarDateClick(string dateStr)
         {
             if (DateTime.TryParse(dateStr, out var date))
             {
@@ -373,6 +374,7 @@ namespace OnigiriShop.Pages
                 ModalTime = date.Hour == 0 && date.Minute == 0 ? new TimeOnly(12, 0) : new TimeOnly(date.Hour, date.Minute);
                 StateHasChanged();
             }
+            return Task.CompletedTask;
         }
 
         // ========== Helper pour Razor ============

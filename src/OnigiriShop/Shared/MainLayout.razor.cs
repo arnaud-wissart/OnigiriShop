@@ -1,12 +1,14 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.JSInterop;
 using OnigiriShop.Services;
 using System.Security.Claims;
+using OnigiriShop.Data.Models;
 
 namespace OnigiriShop.Shared
 {
-    public class MainLayoutBase : LayoutComponentBase
+    public class MainLayoutBase : LayoutComponentBase, IDisposable
     {
         [Inject] public AuthenticationStateProvider AuthProvider { get; set; }
         [Inject] public CartService CartService { get; set; }
@@ -20,6 +22,9 @@ namespace OnigiriShop.Shared
         protected bool IsAuthenticated { get; set; }
         protected bool ShowCartSticky { get; set; } = true;
 
+        // Si tu veux avoir une copie du panier global ici (pour menu ou résumé par ex)
+        protected List<CartItemWithProduct> CartItems { get; set; } = new();
+
         protected override async Task OnInitializedAsync()
         {
             var authState = await AuthProvider.GetAuthenticationStateAsync();
@@ -27,8 +32,22 @@ namespace OnigiriShop.Shared
             IsAuthenticated = User.Identity?.IsAuthenticated == true;
             IsAdmin = User.IsInRole("Admin");
             UserEmail = User.FindFirstValue(ClaimTypes.Email) ?? "";
-            var products = await ProductService.GetAllAsync();
-            await CartService.InitializeAsync(id => products.FirstOrDefault(p => p.Id == id));
+
+            // Charger le panier SQL si connecté
+            if (IsAuthenticated)
+            {
+                var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                CartItems = await CartService.GetCartItemsWithProductsAsync(userId);
+            }
+
+            Nav.LocationChanged += OnLocationChanged;
+            ShowCartSticky = !Nav.Uri.Contains("/panier");
+        }
+
+        private void OnLocationChanged(object sender, LocationChangedEventArgs e)
+        {
+            ShowCartSticky = !e.Location.Contains("/panier");
+            StateHasChanged();
         }
 
         protected void GoToCart()
@@ -38,10 +57,12 @@ namespace OnigiriShop.Shared
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
-            ShowCartSticky = !Nav.Uri.Contains("/panier");
-            StateHasChanged();
             await JS.InvokeVoidAsync("activateTooltips");
         }
 
+        public void Dispose()
+        {
+            Nav.LocationChanged -= OnLocationChanged;
+        }
     }
 }

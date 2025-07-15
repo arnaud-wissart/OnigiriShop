@@ -1,53 +1,68 @@
 ﻿using Microsoft.AspNetCore.Components;
+using OnigiriShop.Data.Models;
 using OnigiriShop.Services;
-using static OnigiriShop.Services.CartService;
 
 namespace OnigiriShop.Shared
 {
     public partial class CartSticky : ComponentBase, IDisposable
     {
         [Inject] public CartService CartService { get; set; }
+        [Inject] public AuthService AuthService { get; set; }
         [Inject] public NavigationManager Nav { get; set; }
-        protected List<CartItem> _items = [];
+        [Inject] public CartState CartState { get; set; }
+
+        protected List<CartItemWithProduct> _items = new();
         protected decimal _totalPrice = 0;
         protected bool _hasItems = false;
         [Parameter] public bool ShowCart { get; set; } = true;
 
-        protected override void OnInitialized()
+        private int _userId;
+
+        protected override async Task OnInitializedAsync()
         {
-            RefreshCart();
-            CartService.CartChanged += OnCartChanged;
+            var id = await AuthService.GetCurrentUserIdIntAsync();
+            if (id.HasValue)
+            {
+                _userId = id.Value;
+                await RefreshCartAsync();
+            }
+            // S'abonner aux notifs
+            CartState.OnChanged += OnCartChanged;
         }
 
-        private void OnCartChanged()
+        private async void OnCartChanged() => await RefreshCartAsync();
+
+        protected async Task IncrementItem(CartItemWithProduct item)
         {
-            InvokeAsync(RefreshCart); // thread-safe pour Blazor
+            if (_userId != 0)
+            {
+                await CartService.AddItemAsync(_userId, item.ProductId, 1);
+                CartState.NotifyChanged();
+            }
         }
 
-        protected void IncrementItem(CartItem item)
+        protected async Task DecrementItem(CartItemWithProduct item)
         {
-            CartService.Add(item.Product, 1);
-            // Pas besoin de StateHasChanged, il est appelé via RefreshCart (CartChanged event)
+            if (_userId != 0)
+            {
+                await CartService.RemoveItemAsync(_userId, item.ProductId, 1);
+                CartState.NotifyChanged();
+            }
         }
 
-        protected void DecrementItem(CartItem item)
+        public async Task RefreshCartAsync()
         {
-            if (item.Quantity <= 1)
-                CartService.Remove(item.Product.Id, 1);
-            else
-                CartService.Remove(item.Product.Id, 1);
-        }
-
-        public void Dispose() => CartService.CartChanged -= OnCartChanged;
-
-        protected void RefreshCart()
-        {
-            _items = CartService.Items.ToList();
-            _hasItems = _items.Count != 0;
-            _totalPrice = _items.Sum(x => x.Product.Price * x.Quantity);
-            StateHasChanged();
+            if (_userId != 0)
+            {
+                _items = await CartService.GetCartItemsWithProductsAsync(_userId);
+                _hasItems = _items.Count != 0;
+                _totalPrice = _items.Sum(x => x.Quantity * x.Product.Price);
+                StateHasChanged();
+            }
         }
 
         protected void GoToHome() => Nav.NavigateTo("/");
+
+        public void Dispose() => CartState.OnChanged -= OnCartChanged;
     }
 }

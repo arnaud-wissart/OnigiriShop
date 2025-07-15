@@ -1,9 +1,9 @@
-﻿using Microsoft.Data.Sqlite;
+﻿using System.Data;
 
 namespace OnigiriShop.Data.Interfaces
 {
     public interface ISqliteConnectionFactory
     {
-        SqliteConnection CreateConnection();
+        IDbConnection CreateConnection();
     }
 }

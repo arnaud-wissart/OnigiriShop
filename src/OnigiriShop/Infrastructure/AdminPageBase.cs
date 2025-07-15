@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
 using OnigiriShop.Services;
 
-namespace OnigiriShop.Pages
+namespace OnigiriShop.Infrastructure
 {
     public class AdminPageBase : ComponentBase
     {

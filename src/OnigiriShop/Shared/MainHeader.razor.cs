@@ -26,7 +26,6 @@ namespace OnigiriShop.Shared
         {
             await JS.InvokeVoidAsync("bootstrapInterop.showModal", "#logoutConfirmModal");
         }
-
         protected async Task OnConfirmLogout()
         {
             await JS.InvokeVoidAsync("bootstrapInterop.hideModal", "#logoutConfirmModal");

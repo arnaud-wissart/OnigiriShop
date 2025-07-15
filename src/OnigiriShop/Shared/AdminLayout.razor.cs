@@ -16,9 +16,10 @@ namespace OnigiriShop.Shared
         protected bool IsAdmin { get; set; }
         protected string UserEmail { get; set; } = "";
 
-        protected override void OnInitialized()
+        protected override Task OnInitializedAsync()
         {
             AuthProvider.AuthenticationStateChanged += AuthStateChanged;
+            return Task.CompletedTask;
         }
 
         private void AuthStateChanged(Task<AuthenticationState> task)

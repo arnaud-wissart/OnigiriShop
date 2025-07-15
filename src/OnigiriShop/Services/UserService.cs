@@ -4,6 +4,7 @@ using OnigiriShop.Data.Interfaces;
 using OnigiriShop.Data.Models;
 using OnigiriShop.Infrastructure;
 using Serilog;
+using System.Data;
 using System.Security.Cryptography;
 
 namespace OnigiriShop.Services
@@ -13,11 +14,21 @@ namespace OnigiriShop.Services
         private readonly ISqliteConnectionFactory _connectionFactory;
         private readonly EmailService _emailService;
         private readonly int _expiryMinutes;
+
         public UserService(ISqliteConnectionFactory connectionFactory, EmailService emailService, IOptions<MagicLinkConfig> magicLinkConfig)
         {
             _connectionFactory = connectionFactory;
             _emailService = emailService;
             _expiryMinutes = magicLinkConfig.Value.ExpiryMinutes;
+        }
+
+        // --------- AJOUTER CETTE MÉTHODE ---------
+        private static void AddParam(IDbCommand cmd, string name, object value)
+        {
+            var p = cmd.CreateParameter();
+            p.ParameterName = name;
+            p.Value = value ?? DBNull.Value;
+            cmd.Parameters.Add(p);
         }
 
         public async Task InviteUserAsync(string email, string name, string siteBaseUrl)
@@ -27,7 +38,7 @@ namespace OnigiriShop.Services
 
             var cmdCheck = conn.CreateCommand();
             cmdCheck.CommandText = "SELECT COUNT(*) FROM User WHERE Email = @Email";
-            cmdCheck.Parameters.AddWithValue("@Email", email.Trim().ToLower());
+            AddParam(cmdCheck, "@Email", email.Trim().ToLower());
             var exists = Convert.ToInt32(cmdCheck.ExecuteScalar()) > 0;
             if (exists)
                 throw new InvalidOperationException("Un utilisateur avec cet email existe déjà.");
@@ -38,9 +49,9 @@ namespace OnigiriShop.Services
             INSERT INTO User (Email, Name, CreatedAt, IsActive, Role)
             VALUES (@Email, @Name, @CreatedAt, 0, 'User');
             SELECT last_insert_rowid();";
-            cmdUser.Parameters.AddWithValue("@Email", email);
-            cmdUser.Parameters.AddWithValue("@Name", string.IsNullOrWhiteSpace(name) ? email : name);
-            cmdUser.Parameters.AddWithValue("@CreatedAt", DateTime.UtcNow);
+            AddParam(cmdUser, "@Email", email);
+            AddParam(cmdUser, "@Name", string.IsNullOrWhiteSpace(name) ? email : name);
+            AddParam(cmdUser, "@CreatedAt", DateTime.UtcNow);
 
             var userId = Convert.ToInt32(cmdUser.ExecuteScalar());
 
@@ -52,10 +63,10 @@ namespace OnigiriShop.Services
             cmdToken.CommandText = @"
             INSERT INTO MagicLinkToken (UserId, Token, Expiry, CreatedAt)
             VALUES (@UserId, @Token, @Expiry, @CreatedAt);";
-            cmdToken.Parameters.AddWithValue("@UserId", userId);
-            cmdToken.Parameters.AddWithValue("@Token", token);
-            cmdToken.Parameters.AddWithValue("@Expiry", expiry);
-            cmdToken.Parameters.AddWithValue("@CreatedAt", DateTime.UtcNow);
+            AddParam(cmdToken, "@UserId", userId);
+            AddParam(cmdToken, "@Token", token);
+            AddParam(cmdToken, "@Expiry", expiry);
+            AddParam(cmdToken, "@CreatedAt", DateTime.UtcNow);
             cmdToken.ExecuteNonQuery();
 
             // 3. Audit log
@@ -63,10 +74,10 @@ namespace OnigiriShop.Services
             cmdAudit.CommandText = @"
             INSERT INTO AuditLog (UserId, Action, TargetType, TargetId, Timestamp, Details)
             VALUES (@UserId, 'Invite', 'User', @TargetId, @Timestamp, @Details);";
-            cmdAudit.Parameters.AddWithValue("@UserId", DBNull.Value); // AdminId si disponible
-            cmdAudit.Parameters.AddWithValue("@TargetId", userId);
-            cmdAudit.Parameters.AddWithValue("@Timestamp", DateTime.UtcNow);
-            cmdAudit.Parameters.AddWithValue("@Details", $"Invitation envoyée à {email}");
+            AddParam(cmdAudit, "@UserId", DBNull.Value); // AdminId si disponible
+            AddParam(cmdAudit, "@TargetId", userId);
+            AddParam(cmdAudit, "@Timestamp", DateTime.UtcNow);
+            AddParam(cmdAudit, "@Details", $"Invitation envoyée à {email}");
             cmdAudit.ExecuteNonQuery();
 
             // 4. Génération du lien d'invitation
@@ -78,15 +89,15 @@ namespace OnigiriShop.Services
             Log.Information("Invitation envoyée à {Email}, userId={UserId}, token={Token}", email, userId, token);
         }
 
-        public async Task<int> FindUserIdByToken(string token)
+        public Task<int> FindUserIdByToken(string token)
         {
             using var conn = _connectionFactory.CreateConnection();
             conn.Open();
             var cmd = conn.CreateCommand();
             cmd.CommandText = "SELECT UserId FROM MagicLinkToken WHERE Token = @Token";
-            cmd.Parameters.AddWithValue("@Token", token);
+            AddParam(cmd, "@Token", token);
             var userId = cmd.ExecuteScalar();
-            return userId != null ? Convert.ToInt32(userId) : 0;
+            return userId != null ? Task.FromResult(Convert.ToInt32(userId)) : Task.FromResult(0);
         }
         public async Task<User> GetByIdAsync(int userId)
         {
@@ -128,17 +139,17 @@ namespace OnigiriShop.Services
             var cmdUser = conn.CreateCommand();
             cmdUser.CommandText = @"
                 UPDATE User SET PasswordHash = @Hash, PasswordSalt = @Salt, IsActive = 1 WHERE Id = @UserId";
-            cmdUser.Parameters.AddWithValue("@Hash", hash);
-            cmdUser.Parameters.AddWithValue("@Salt", saltBase64);
-            cmdUser.Parameters.AddWithValue("@UserId", userId);
+            AddParam(cmdUser, "@Hash", hash);
+            AddParam(cmdUser, "@Salt", saltBase64);
+            AddParam(cmdUser, "@UserId", userId);
             cmdUser.ExecuteNonQuery();
 
             // Marque le token comme utilisé
             var cmdToken = conn.CreateCommand();
             cmdToken.CommandText = @"
                 UPDATE MagicLinkToken SET UsedAt = @Now WHERE Token = @Token";
-            cmdToken.Parameters.AddWithValue("@Token", token);
-            cmdToken.Parameters.AddWithValue("@Now", DateTime.UtcNow);
+            AddParam(cmdToken, "@Token", token);
+            AddParam(cmdToken, "@Now", DateTime.UtcNow);
             cmdToken.ExecuteNonQuery();
 
             txn.Commit();
@@ -154,8 +165,8 @@ namespace OnigiriShop.Services
             cmd.CommandText = @"
                 SELECT UserId FROM MagicLinkToken
                 WHERE Token = @Token AND UsedAt IS NULL AND Expiry >= @Now";
-            cmd.Parameters.AddWithValue("@Token", token);
-            cmd.Parameters.AddWithValue("@Now", DateTime.UtcNow);
+            AddParam(cmd, "@Token", token);
+            AddParam(cmd, "@Now", DateTime.UtcNow);
 
             var userId = cmd.ExecuteScalar();
 
@@ -168,7 +179,7 @@ namespace OnigiriShop.Services
 
             var cmd = conn.CreateCommand();
             cmd.CommandText = @"UPDATE User SET IsActive = 0 WHERE Id = @UserId";
-            cmd.Parameters.AddWithValue("@UserId", userId);
+            AddParam(cmd, "@UserId", userId);
             cmd.ExecuteNonQuery();
 
             // Audit log
@@ -176,10 +187,10 @@ namespace OnigiriShop.Services
             cmdAudit.CommandText = @"
         INSERT INTO AuditLog (UserId, Action, TargetType, TargetId, Timestamp, Details)
         VALUES (@UserId, 'SoftDelete', 'User', @TargetId, @Timestamp, @Details);";
-            cmdAudit.Parameters.AddWithValue("@UserId", DBNull.Value);
-            cmdAudit.Parameters.AddWithValue("@TargetId", userId);
-            cmdAudit.Parameters.AddWithValue("@Timestamp", DateTime.UtcNow);
-            cmdAudit.Parameters.AddWithValue("@Details", "Suppression logique (désactivation)");
+            AddParam(cmdAudit, "@UserId", DBNull.Value);
+            AddParam(cmdAudit, "@TargetId", userId);
+            AddParam(cmdAudit, "@Timestamp", DateTime.UtcNow);
+            AddParam(cmdAudit, "@Details", "Suppression logique (désactivation)");
             cmdAudit.ExecuteNonQuery();
         }
         public Task<User> AuthenticateAsync(string email, string password)
@@ -188,7 +199,7 @@ namespace OnigiriShop.Services
             conn.Open();
             var cmd = conn.CreateCommand();
             cmd.CommandText = "SELECT Id, Email, Name, PasswordHash, PasswordSalt, IsActive, Role FROM User WHERE Email = @Email AND IsActive = 1";
-            cmd.Parameters.AddWithValue("@Email", email);
+            AddParam(cmd, "@Email", email);
             using var reader = cmd.ExecuteReader();
 
             if (!reader.Read())
@@ -239,7 +250,7 @@ namespace OnigiriShop.Services
             if (!string.IsNullOrWhiteSpace(search))
             {
                 cmd.CommandText += " WHERE Email LIKE @Search OR Name LIKE @Search";
-                cmd.Parameters.AddWithValue("@Search", "%" + search + "%");
+                AddParam(cmd, "@Search", "%" + search + "%");
             }
             using var reader = cmd.ExecuteReader();
             var users = new List<User>();
@@ -267,7 +278,7 @@ namespace OnigiriShop.Services
             // 1. Trouver le user
             var cmdFind = conn.CreateCommand();
             cmdFind.CommandText = "SELECT Id FROM User WHERE Email = @Email";
-            cmdFind.Parameters.AddWithValue("@Email", email);
+            AddParam(cmdFind, "@Email", email);
             var userIdObj = cmdFind.ExecuteScalar();
             if (userIdObj == null)
                 throw new Exception("Utilisateur non trouvé");
@@ -282,10 +293,10 @@ namespace OnigiriShop.Services
             cmdToken.CommandText = @"
         INSERT INTO MagicLinkToken (UserId, Token, Expiry, CreatedAt)
         VALUES (@UserId, @Token, @Expiry, @CreatedAt);";
-            cmdToken.Parameters.AddWithValue("@UserId", userId);
-            cmdToken.Parameters.AddWithValue("@Token", token);
-            cmdToken.Parameters.AddWithValue("@Expiry", expiry);
-            cmdToken.Parameters.AddWithValue("@CreatedAt", DateTime.UtcNow);
+            AddParam(cmdToken, "@UserId", userId);
+            AddParam(cmdToken, "@Token", token);
+            AddParam(cmdToken, "@Expiry", expiry);
+            AddParam(cmdToken, "@CreatedAt", DateTime.UtcNow);
             cmdToken.ExecuteNonQuery();
 
             // 3. Audit log
@@ -293,10 +304,10 @@ namespace OnigiriShop.Services
             cmdAudit.CommandText = @"
         INSERT INTO AuditLog (UserId, Action, TargetType, TargetId, Timestamp, Details)
         VALUES (@UserId, 'ResetPassword', 'User', @TargetId, @Timestamp, @Details);";
-            cmdAudit.Parameters.AddWithValue("@UserId", DBNull.Value);
-            cmdAudit.Parameters.AddWithValue("@TargetId", userId);
-            cmdAudit.Parameters.AddWithValue("@Timestamp", DateTime.UtcNow);
-            cmdAudit.Parameters.AddWithValue("@Details", $"Lien de réinitialisation envoyé à {email}");
+            AddParam(cmdAudit, "@UserId", DBNull.Value);
+            AddParam(cmdAudit, "@TargetId", userId);
+            AddParam(cmdAudit, "@Timestamp", DateTime.UtcNow);
+            AddParam(cmdAudit, "@Details", $"Lien de réinitialisation envoyé à {email}");
             cmdAudit.ExecuteNonQuery();
 
             // 4. Génération du lien
@@ -314,8 +325,8 @@ namespace OnigiriShop.Services
             // Update de l’état actif
             var cmd = conn.CreateCommand();
             cmd.CommandText = @"UPDATE User SET IsActive = @IsActive WHERE Id = @UserId";
-            cmd.Parameters.AddWithValue("@IsActive", isActive ? 1 : 0);
-            cmd.Parameters.AddWithValue("@UserId", userId);
+            AddParam(cmd, "@IsActive", isActive ? 1 : 0);
+            AddParam(cmd, "@UserId", userId);
             cmd.ExecuteNonQuery();
 
             // Audit log
@@ -323,11 +334,11 @@ namespace OnigiriShop.Services
             cmdAudit.CommandText = @"
         INSERT INTO AuditLog (UserId, Action, TargetType, TargetId, Timestamp, Details)
         VALUES (@UserId, @Action, 'User', @TargetId, @Timestamp, @Details);";
-            cmdAudit.Parameters.AddWithValue("@UserId", DBNull.Value); // Tu peux renseigner l’admin si tu l’as
-            cmdAudit.Parameters.AddWithValue("@Action", isActive ? "Activate" : "Deactivate");
-            cmdAudit.Parameters.AddWithValue("@TargetId", userId);
-            cmdAudit.Parameters.AddWithValue("@Timestamp", DateTime.UtcNow);
-            cmdAudit.Parameters.AddWithValue("@Details", isActive ? "Compte activé" : "Compte désactivé");
+            AddParam(cmdAudit, "@UserId", DBNull.Value); // Tu peux renseigner l’admin si tu l’as
+            AddParam(cmdAudit, "@Action", isActive ? "Activate" : "Deactivate");
+            AddParam(cmdAudit, "@TargetId", userId);
+            AddParam(cmdAudit, "@Timestamp", DateTime.UtcNow);
+            AddParam(cmdAudit, "@Details", isActive ? "Compte activé" : "Compte désactivé");
             cmdAudit.ExecuteNonQuery();
 
             Log.Information("Changement état actif pour userId={UserId}: {NewState}", userId, isActive ? "Actif" : "Inactif");
@@ -348,12 +359,12 @@ namespace OnigiriShop.Services
             IsActive = @IsActive,
             Role = @Role
         WHERE Id = @Id";
-            cmd.Parameters.AddWithValue("@Email", user.Email);
-            cmd.Parameters.AddWithValue("@Name", user.Name ?? user.Email);
-            cmd.Parameters.AddWithValue("@Phone", user.Phone ?? "");
-            cmd.Parameters.AddWithValue("@IsActive", user.IsActive ? 1 : 0);
-            cmd.Parameters.AddWithValue("@Role", string.IsNullOrEmpty(user.Role) ? AuthConstants.RoleUser : user.Role);
-            cmd.Parameters.AddWithValue("@Id", user.Id);
+            AddParam(cmd, "@Email", user.Email);
+            AddParam(cmd, "@Name", user.Name ?? user.Email);
+            AddParam(cmd, "@Phone", user.Phone ?? "");
+            AddParam(cmd, "@IsActive", user.IsActive ? 1 : 0);
+            AddParam(cmd, "@Role", string.IsNullOrEmpty(user.Role) ? AuthConstants.RoleUser : user.Role);
+            AddParam(cmd, "@Id", user.Id);
 
             cmd.ExecuteNonQuery();
 
@@ -362,10 +373,10 @@ namespace OnigiriShop.Services
             cmdAudit.CommandText = @"
         INSERT INTO AuditLog (UserId, Action, TargetType, TargetId, Timestamp, Details)
         VALUES (@UserId, 'Update', 'User', @TargetId, @Timestamp, @Details);";
-            cmdAudit.Parameters.AddWithValue("@UserId", DBNull.Value); // Admin à compléter si besoin
-            cmdAudit.Parameters.AddWithValue("@TargetId", user.Id);
-            cmdAudit.Parameters.AddWithValue("@Timestamp", DateTime.UtcNow);
-            cmdAudit.Parameters.AddWithValue("@Details", $"Mise à jour de l'utilisateur {user.Email}");
+            AddParam(cmdAudit, "@UserId", DBNull.Value); // Admin à compléter si besoin
+            AddParam(cmdAudit, "@TargetId", user.Id);
+            AddParam(cmdAudit, "@Timestamp", DateTime.UtcNow);
+            AddParam(cmdAudit, "@Details", $"Mise à jour de l'utilisateur {user.Email}");
             cmdAudit.ExecuteNonQuery();
 
             txn.Commit();

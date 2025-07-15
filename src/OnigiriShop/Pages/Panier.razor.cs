@@ -5,7 +5,6 @@ using Microsoft.JSInterop;
 using OnigiriShop.Data.Models;
 using OnigiriShop.Services;
 using System.Security.Claims;
-using static OnigiriShop.Services.CartService;
 
 namespace OnigiriShop.Pages
 {
@@ -19,7 +18,6 @@ namespace OnigiriShop.Pages
         [Inject] public ProductService ProductService { get; set; }
         [Inject] public AuthenticationStateProvider AuthProvider { get; set; }
         [Inject] public NavigationManager Nav { get; set; }
-        [Inject] public ToastService ToastService { get; set; }
         [Inject] IJSRuntime JS { get; set; }
 
         protected ClaimsPrincipal _user;
@@ -31,8 +29,14 @@ namespace OnigiriShop.Pages
         protected List<Delivery> FilteredDeliveries = [];
         protected List<string> DistinctPlaces = [];
 
-        // Produits en mémoire pour résolution rapide
-        private List<Product> _allProducts = [];
+        protected int? SelectedDeliveryId;
+        protected CartItemWithProduct ItemToRemove { get; set; }
+        protected bool ShowRemoveModal { get; set; }
+
+        protected List<CartItemWithProduct> _items = new();
+        protected decimal _totalPrice = 0;
+
+        protected int? _userId;
 
         private string _selectedPlace = "";
         protected string SelectedPlace
@@ -51,24 +55,17 @@ namespace OnigiriShop.Pages
                 }
             }
         }
-
-        protected int? SelectedDeliveryId;
-        protected CartItem ItemToRemove { get; set; }
-        protected bool ShowRemoveModal { get; set; }
-
         protected override async Task OnInitializedAsync()
         {
             var authState = await AuthProvider.GetAuthenticationStateAsync();
             _user = authState.User;
             _canAccess = _user.Identity?.IsAuthenticated == true;
 
-            // 1. Charger tous les produits (tu peux faire GetAllAsync ou GetMenuProductsAsync selon ton besoin)
-            _allProducts = await ProductService.GetAllAsync();
+            var userIdStr = _user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            _userId = int.TryParse(userIdStr, out var tmpId) ? tmpId : null;
 
-            // 2. Charger le panier depuis le localStorage JS
-            await CartService.LoadFromLocalStorageAsync(ResolveProductById);
+            await RefreshCartAsync();
 
-            // 3. Charger les livraisons à venir
             Deliveries = await DeliveryService.GetUpcomingAsync();
             DistinctPlaces = Deliveries
                 .Select(d => d.Place)
@@ -85,51 +82,61 @@ namespace OnigiriShop.Pages
             SetCartStickyVisible?.Invoke(false);
         }
 
-        // Méthode de résolution rapide du produit par Id (pas d’appel DB !)
-        private Product ResolveProductById(int id)
-            => _allProducts.FirstOrDefault(p => p.Id == id);
-
-        protected void IncrementQuantity(CartItem item)
+        protected async Task RefreshCartAsync()
         {
-            CartService.Add(item.Product, 1);
-            StateHasChanged();
-        }
-
-        protected void DecrementQuantity(CartItem item)
-        {
-            if (item.Quantity == 1)
-                PromptRemoveItem(item);
-            else
+            if (_userId.HasValue)
             {
-                CartService.Remove(item.Product.Id, 1);
+                _items = await CartService.GetCartItemsWithProductsAsync(_userId.Value) ?? [];
+                _totalPrice = _items.Sum(x => x.Quantity * (x.Product?.Price ?? 0));
                 StateHasChanged();
             }
         }
 
-        protected void PromptRemoveItem(CartItem item)
+        protected async Task IncrementQuantity(CartItemWithProduct item)
+        {
+            if (_userId.HasValue)
+            {
+                await CartService.AddItemAsync(_userId.Value, item.ProductId, 1);
+                await RefreshCartAsync();
+            }
+        }
+
+        protected async Task DecrementQuantity(CartItemWithProduct item)
+        {
+            if (_userId.HasValue)
+            {
+                if (item.Quantity == 1)
+                    PromptRemoveItem(item);
+                else
+                {
+                    await CartService.RemoveItemAsync(_userId.Value, item.ProductId, 1);
+                    await RefreshCartAsync();
+                }
+            }
+        }
+
+        protected void PromptRemoveItem(CartItemWithProduct item)
         {
             ItemToRemove = item;
             ShowRemoveModal = true;
             StateHasChanged();
         }
 
-        protected void CancelRemove()
+        protected async Task CancelRemove()
         {
             ShowRemoveModal = false;
             ItemToRemove = null;
+            await RefreshCartAsync();
         }
 
-        protected void ConfirmRemove()
+        protected async Task ConfirmRemove()
         {
-            if (ItemToRemove != null)
-            {
-                CartService.Remove(ItemToRemove.Product.Id, ItemToRemove.Quantity);
-                ToastService.ShowToast(
-                    $"Produit retiré du panier : {ItemToRemove.Product.Name}", "Panier", ToastLevel.Info);
-            }
+            if (_userId.HasValue && ItemToRemove != null)
+                await CartService.RemoveItemAsync(_userId.Value, ItemToRemove.ProductId, ItemToRemove.Quantity);
+                
             ShowRemoveModal = false;
             ItemToRemove = null;
-            StateHasChanged();
+            await RefreshCartAsync();
         }
 
         protected void OnDeliveryChanged(ChangeEventArgs e)
@@ -156,7 +163,7 @@ namespace OnigiriShop.Pages
                 StateHasChanged();
                 return;
             }
-            if (!CartService.HasItems())
+            if (_items.Count == 0)
             {
                 _resultMessage = "Votre panier est vide.";
                 StateHasChanged();
@@ -169,8 +176,7 @@ namespace OnigiriShop.Pages
                 return;
             }
 
-            var userIdStr = _user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            if (!int.TryParse(userIdStr, out var userId))
+            if (!_userId.HasValue)
             {
                 _resultMessage = "Erreur d'identification utilisateur.";
                 StateHasChanged();
@@ -179,25 +185,25 @@ namespace OnigiriShop.Pages
 
             var order = new Order
             {
-                UserId = userId,
+                UserId = _userId.Value,
                 DeliveryId = SelectedDeliveryId.Value,
                 OrderedAt = DateTime.UtcNow,
                 Status = "En attente",
-                TotalAmount = CartService.TotalPrice(),
+                TotalAmount = _totalPrice,
                 Comment = "",
-                Items = CartService.Items.Select(i => new OrderItem
+                Items = _items.Select(i => new OrderItem
                 {
-                    ProductId = i.Product.Id,
+                    ProductId = i.ProductId,
                     Quantity = i.Quantity,
-                    UnitPrice = i.Product.Price
+                    UnitPrice = i.Product?.Price ?? 0
                 }).ToList()
             };
 
             await OrderService.CreateOrderAsync(order, order.Items);
             _orderSent = true;
-            CartService.Clear();
+            await CartService.ClearCartAsync(_userId.Value);
+            await RefreshCartAsync();
             _resultMessage = "Commande validée ! Merci pour votre achat.";
-            ToastService.ShowToast("Commande validée !", "Panier", ToastLevel.Success);
             StateHasChanged();
         }
 

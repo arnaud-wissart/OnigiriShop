@@ -10,9 +10,10 @@ namespace OnigiriShop.Shared
         public List<ToastMessage> Toasts { get; set; } = new();
         private const int ToastDuration = 4000;
 
-        protected override void OnInitialized()
+        protected override Task OnInitializedAsync()
         {
             ToastService.OnEnqueue += AddToast;
+            return Task.CompletedTask;
         }
 
         private void AddToast(ToastMessage toast)

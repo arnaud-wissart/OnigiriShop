@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Authorization;
 using OnigiriShop.Data.Models;
 using OnigiriShop.Services;
 
@@ -7,71 +6,75 @@ namespace OnigiriShop.Pages
 {
     public class IndexBase : ComponentBase, IDisposable
     {
+        [Inject] public CartState CartState { get; set; }
         [Inject] public CartService CartService { get; set; }
-        [Inject] public IServiceProvider ServiceProvider { get; set; }
-        [Inject] public NavigationManager Nav { get; set; }
         [Inject] public ProductService ProductService { get; set; }
-        [CascadingParameter] public Task<AuthenticationState> AuthenticationStateTask { get; set; }
+        [Inject] public AuthService AuthService { get; set; }
+        [Inject] public NavigationManager Nav { get; set; }
 
         protected List<Product> _products;
         protected HashSet<int> _addedProductIds = [];
         protected bool _showLoginModal;
+        protected List<CartItemWithProduct> _cartItems = new();
+
         protected void ShowLoginModal() => _showLoginModal = true;
         protected void HideLoginModal() => _showLoginModal = false;
 
         protected override async Task OnInitializedAsync()
         {
-            var state = await AuthenticationStateTask;
-            var user = state.User;
-            var isAuth = user.Identity?.IsAuthenticated;
             _products = await ProductService.GetMenuProductsAsync();
-            CartService.CartChanged += OnCartChanged;
+            CartState.OnChanged += RefreshCartFromEvent;
+
+            var userId = await AuthService.GetCurrentUserIdIntAsync();
+            if (userId.HasValue)
+                _cartItems = await CartService.GetCartItemsWithProductsAsync(userId.Value);
         }
-        private void OnCartChanged() => InvokeAsync(StateHasChanged);
-        public void Dispose() => CartService.CartChanged -= OnCartChanged;
+        private async void RefreshCartFromEvent()
+        {
+            var userId = await AuthService.GetCurrentUserIdIntAsync();
+            if (userId.HasValue)
+                _cartItems = await CartService.GetCartItemsWithProductsAsync(userId.Value);
+            await InvokeAsync(StateHasChanged);
+        }
+        protected int GetProductCartQty(int productId) => _cartItems.FirstOrDefault(x => x.ProductId == productId)?.Quantity ?? 0;
         protected string GetCartIconClass(int qty) => qty > 0 ? "bi bi-cart-check-fill" : "bi bi-cart-plus";
+
         public async Task TryAddToCart(Product product)
         {
-            var authState = await AuthenticationStateTask;
-            var user = authState.User;
-
-            if (user == null || !user.Identity?.IsAuthenticated == true)
+            var userId = await AuthService.GetCurrentUserIdIntAsync();
+            if (userId is null)
             {
                 ShowLoginModal();
                 return;
             }
-            CartService.Add(product);
+            await CartService.AddItemAsync(userId.Value, product.Id, 1);
+
+            // Reload cart
+            _cartItems = await CartService.GetCartItemsWithProductsAsync(userId.Value);
+
+            CartState.NotifyChanged();
+
             _addedProductIds.Add(product.Id);
             StateHasChanged();
-            // Attendre 200ms puis retirer la classe effet
             await Task.Delay(200);
             _addedProductIds.Remove(product.Id);
             StateHasChanged();
         }
-        public async Task AddToCart(Product product)
-        {
-            var authState = await AuthenticationStateTask;
-            if (authState.User.Identity?.IsAuthenticated != true)
-            {
-                ShowLoginModal();
-                return;
-            }
-            CartService.Add(product, 1);
-            StateHasChanged();
-        }
+
         public async Task RemoveFromCart(Product product)
         {
-            var authState = await AuthenticationStateTask;
-            if (authState.User.Identity?.IsAuthenticated != true)
+            var userId = await AuthService.GetCurrentUserIdIntAsync();
+            if (userId is null)
             {
                 ShowLoginModal();
                 return;
             }
-            if (CartService.GetProductCount(product.Id) > 0)
-            {
-                CartService.Remove(product.Id, 1);
-                StateHasChanged();
-            }
+            await CartService.RemoveItemAsync(userId.Value, product.Id, 1);
+            CartState.NotifyChanged();
+            // Reload cart
+            _cartItems = await CartService.GetCartItemsWithProductsAsync(userId.Value);
+            StateHasChanged();
         }
+        public void Dispose() => CartState.OnChanged -= RefreshCartFromEvent;
     }
 }

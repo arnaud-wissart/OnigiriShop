@@ -1,91 +1,134 @@
-﻿using Microsoft.JSInterop;
+﻿using Dapper;
 using OnigiriShop.Data.Models;
+using OnigiriShop.Data.Interfaces;
 
 namespace OnigiriShop.Services
 {
-    public class CartService(IJSRuntime js)
+    public class CartService(ISqliteConnectionFactory connectionFactory)
     {
-        private List<CartItem> _items = [];
-
-        public IReadOnlyList<CartItem> Items => _items.AsReadOnly();
-        public event Action CartChanged;
-
-        public void Add(Product product, int quantity = 1)
+        public async Task<Cart> GetActiveCartAsync(int userId)
         {
-            var item = _items.Find(i => i.Product.Id == product.Id);
-            if (item != null)
-                item.Quantity += quantity;
+            using var conn = connectionFactory.CreateConnection();
+            var cart = await conn.QueryFirstOrDefaultAsync<Cart>(
+                "SELECT * FROM Cart WHERE UserId = @UserId AND IsActive = 1 ORDER BY DateUpdated DESC LIMIT 1", new { UserId = userId });
+
+            if (cart != null)
+            {
+                var items = await conn.QueryAsync<CartItem>("SELECT * FROM CartItem WHERE CartId = @CartId", new { CartId = cart.Id });
+                cart.Items = items.ToList();
+            }
+
+            return cart;
+        }
+
+        public async Task<Cart> CreateOrGetActiveCartAsync(int userId)
+        {
+            var cart = await GetActiveCartAsync(userId);
+            if (cart != null) return cart;
+
+            using var conn = connectionFactory.CreateConnection();
+            var now = DateTime.UtcNow;
+            var cartId = await conn.ExecuteScalarAsync<long>(
+                @"INSERT INTO Cart (UserId, DateCreated, DateUpdated, IsActive) VALUES (@UserId, @Now, @Now, 1);
+                  SELECT last_insert_rowid();",
+                new { UserId = userId, Now = now });
+
+            return new Cart
+            {
+                Id = (int)cartId,
+                UserId = userId,
+                DateCreated = now,
+                DateUpdated = now,
+                IsActive = true,
+                Items = []
+            };
+        }
+
+        public async Task AddItemAsync(int userId, int productId, int quantity)
+        {
+            var cart = await CreateOrGetActiveCartAsync(userId);
+            using var conn = connectionFactory.CreateConnection();
+            var existing = await conn.QueryFirstOrDefaultAsync<CartItem>(
+                "SELECT * FROM CartItem WHERE CartId = @CartId AND ProductId = @ProductId",
+                new { CartId = cart.Id, ProductId = productId });
+
+            if (existing == null)
+            {
+                await conn.ExecuteAsync(
+                    @"INSERT INTO CartItem (CartId, ProductId, Quantity, DateAdded)
+                      VALUES (@CartId, @ProductId, @Quantity, @Now)",
+                    new { CartId = cart.Id, ProductId = productId, Quantity = quantity, Now = DateTime.UtcNow });
+            }
             else
-                _items.Add(new CartItem { Product = product, Quantity = quantity });
-
-            CartChanged?.Invoke();
-            _ = SaveToLocalStorageAsync();
-        }
-        public void Remove(int productId, int quantity = 1)
-        {
-            var item = _items.FirstOrDefault(i => i.Product.Id == productId);
-            if (item != null)
             {
-                item.Quantity -= quantity;
-                if (item.Quantity <= 0)
-                    _items.Remove(item);
-                CartChanged?.Invoke();
-                _ = SaveToLocalStorageAsync();
+                await conn.ExecuteAsync(
+                    @"UPDATE CartItem SET Quantity = Quantity + @Quantity WHERE Id = @Id",
+                    new { Quantity = quantity, Id = existing.Id });
             }
+
+            await conn.ExecuteAsync("UPDATE Cart SET DateUpdated = @Now WHERE Id = @Id", new { Now = DateTime.UtcNow, Id = cart.Id });
         }
-        public void Clear()
+
+        public async Task RemoveItemAsync(int userId, int productId, int quantity)
         {
-            _items.Clear();
-            CartChanged?.Invoke();
-            _ = SaveToLocalStorageAsync();
-        }
-        public async Task InitializeAsync(Func<int, Product> productResolver)
-        {
-            if (_items.Count == 0) // pour éviter double chargement
-                await LoadFromLocalStorageAsync(productResolver);
-        }
-        public async Task LoadFromLocalStorageAsync(Func<int, Product> productResolver)
-        {
-            var loaded = await js.InvokeAsync<List<CartJsItem>>("onigiriCart.load");
-            if (loaded != null && loaded.Any())
+            var cart = await GetActiveCartAsync(userId);
+            if (cart == null) return;
+            using var conn = connectionFactory.CreateConnection();
+            var existing = await conn.QueryFirstOrDefaultAsync<CartItem>(
+                "SELECT * FROM CartItem WHERE CartId = @CartId AND ProductId = @ProductId",
+                new { CartId = cart.Id, ProductId = productId });
+
+            if (existing == null) return;
+            if (existing.Quantity <= quantity)
             {
-                _items = loaded
-                    .Select(i => new CartItem
-                    {
-                        Product = productResolver(i.ProductId),
-                        Quantity = i.Quantity
-                    })
-                    .Where(i => i.Product != null)
-                    .ToList();
-                CartChanged?.Invoke();
+                await conn.ExecuteAsync("DELETE FROM CartItem WHERE Id = @Id", new { Id = existing.Id });
             }
-        }
-
-        private async Task SaveToLocalStorageAsync()
-        {
-            var serializableCart = _items.Select(i => new
+            else
             {
-                ProductId = i.Product.Id,
-                i.Quantity
-            }).ToList();
+                await conn.ExecuteAsync("UPDATE CartItem SET Quantity = Quantity - @Quantity WHERE Id = @Id",
+                    new { Quantity = quantity, Id = existing.Id });
+            }
 
-            await js.InvokeVoidAsync("onigiriCart.save", serializableCart);
+            await conn.ExecuteAsync("UPDATE Cart SET DateUpdated = @Now WHERE Id = @Id", new { Now = DateTime.UtcNow, Id = cart.Id });
         }
 
-        public int GetProductCount(int productId) => _items.FirstOrDefault(i => i.Product.Id == productId)?.Quantity ?? 0;
-        public int TotalCount() => _items.Sum(i => i.Quantity);
-        public decimal TotalPrice() => _items.Sum(i => i.Quantity * i.Product.Price);
-        public bool HasItems() => _items.Any();
-
-        public class CartItem
+        public async Task ClearCartAsync(int userId)
         {
-            public Product Product { get; set; }
-            public int Quantity { get; set; }
+            var cart = await GetActiveCartAsync(userId);
+            if (cart == null) return;
+            using var conn = connectionFactory.CreateConnection();
+            await conn.ExecuteAsync("DELETE FROM CartItem WHERE CartId = @CartId", new { CartId = cart.Id });
+            await conn.ExecuteAsync("UPDATE Cart SET DateUpdated = @Now WHERE Id = @Id", new { Now = DateTime.UtcNow, Id = cart.Id });
         }
-        public class CartJsItem
+
+        public async Task<List<CartItem>> GetCartItemsAsync(int userId)
         {
-            public int ProductId { get; set; }
-            public int Quantity { get; set; }
+            var cart = await GetActiveCartAsync(userId);
+            if (cart == null) return [];
+            using var conn = connectionFactory.CreateConnection();
+            var items = await conn.QueryAsync<CartItem>("SELECT * FROM CartItem WHERE CartId = @CartId", new { CartId = cart.Id });
+            return items.ToList();
         }
+
+        public async Task<List<CartItemWithProduct>> GetCartItemsWithProductsAsync(int userId)
+        {
+            var cart = await GetActiveCartAsync(userId);
+            if (cart == null) return [];
+
+            using var conn = connectionFactory.CreateConnection();
+            var sql = @"
+        SELECT ci.*, 
+               p.Id, p.Name, p.Description, p.Price, p.IsOnMenu, p.ImagePath, p.IsDeleted
+        FROM CartItem ci
+        INNER JOIN Product p ON ci.ProductId = p.Id
+        WHERE ci.CartId = @CartId";
+            var results = await conn.QueryAsync<CartItemWithProduct, Product, CartItemWithProduct>(
+                sql,
+                (ci, p) => { ci.Product = p; return ci; },
+                new { CartId = cart.Id }
+            );
+            return results.ToList();
+        }
+
     }
 }

@@ -27,7 +27,7 @@
                             Veuillez vous connecter pour accéder à votre panier.
                         </div>
                     }
-                    else if (!CartService.HasItems())
+                    else if (_items == null || !_items.Any())
                     {
                         <div class="alert alert-info p-3 m-3 rounded">
                             Votre panier est vide.
@@ -47,12 +47,12 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach (var item in CartService.Items)
+                                    @foreach (var item in _items)
                                     {
                                         <tr>
                                             <td>
-                                                <div class="fw-bold">@item.Product.Name</div>
-                                                <div class="small text-muted">@item.Product.Description</div>
+                                                <div class="fw-bold">@item.Product?.Name</div>
+                                                <div class="small text-muted">@item.Product?.Description</div>
                                             </td>
                                             <td class="text-center">
                                                 <div class="btn-group" role="group">
@@ -67,13 +67,10 @@
                                                     </button>
                                                 </div>
                                             </td>
-                                            <td class="text-end">@item.Product.Price.ToString("0.00") €</td>
-                                            <td class="text-end">@((item.Quantity * item.Product.Price).ToString("0.00")) €</td>
+                                            <td class="text-end">@item.Product?.Price.ToString("0.00") €</td>
+                                            <td class="text-end">@((item.Quantity * (item.Product?.Price ?? 0)).ToString("0.00")) €</td>
                                             <td class="text-end">
                                                 <button class="btn btn-sm btn-outline-danger"
-                                                        data-bs-toggle="tooltip"
-                                                        data-bs-placement="left"
-                                                        title="Retirer"
                                                         @onclick="() => PromptRemoveItem(item)">
                                                     <i class="bi bi-trash"></i>
                                                 </button>
@@ -83,12 +80,15 @@
                                 </tbody>
                             </table>
                         </div>
-                        <div class="rounded-3 p-3 my-3 shadow-sm border border-success bg-light text-success-emphasis d-flex align-items-center justify-content-between" style="font-size:1.3rem;">
-                            <i class="bi bi-cash-stack me-2"></i>
-                            <span class="fw-bold">Total :</span>
-                            <span class="fw-bold" style="font-size:1.4rem;">@CartService.TotalPrice().ToString("0.00") €</span>
+                        <div class="rounded-3 p-3 my-3 shadow-sm border border-success bg-light text-success-emphasis d-flex align-items-center justify-content-between" style="font-size:1.08rem;">
+                            <div class="d-flex align-items-center" style="gap:0.5em;">
+                                <i class="bi bi-cash-stack fs-5" style="color:#34a853;"></i>
+                                <span class="fw-bold" style="font-size:1.05rem;">Total à payer</span>
+                            </div>
+                            <span class="fw-bold" style="font-size:1.25rem; letter-spacing:0.01em; min-width:85px; text-align:right;">
+                                @_totalPrice.ToString("0.00") €
+                            </span>
                         </div>
-
                         <!-- Bloc livraison -->
                         <div class="border-top p-3">
                             <label class="fw-bold mb-2">Sélectionner une livraison</label>
@@ -147,7 +147,7 @@
                 </div>
                 <div class="modal-body">
                     Êtes-vous sûr(e) de vouloir retirer
-                    <b>@ItemToRemove?.Product.Name</b>
+                    <b>@ItemToRemove?.Product?.Name</b>
                     de votre panier ?
                 </div>
                 <div class="modal-footer">

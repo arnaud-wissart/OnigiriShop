@@ -43,6 +43,7 @@ builder.Services.AddScoped<OrderService>();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddSession();
+builder.Services.AddSingleton<CartState>();
 builder.Services.AddScoped<CartService>();
 builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<DeliveryService>();

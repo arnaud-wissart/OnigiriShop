@@ -113,3 +113,30 @@ CREATE TABLE IF NOT EXISTS Notification (
     ReadAt DATETIME,
     FOREIGN KEY(UserId) REFERENCES User(Id)
 );
+
+-- Ajout des tables pour gestion du panier persistant lié à l'utilisateur
+CREATE TABLE IF NOT EXISTS Cart (
+    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+    UserId INTEGER NOT NULL,
+    DateCreated DATETIME NOT NULL DEFAULT (CURRENT_TIMESTAMP),
+    DateUpdated DATETIME NOT NULL DEFAULT (CURRENT_TIMESTAMP),
+    IsActive INTEGER NOT NULL DEFAULT 1,
+    FOREIGN KEY (UserId) REFERENCES User(Id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS CartItem (
+    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+    CartId INTEGER NOT NULL,
+    ProductId INTEGER NOT NULL,
+    Quantity INTEGER NOT NULL DEFAULT 1,
+    DateAdded DATETIME NOT NULL DEFAULT (CURRENT_TIMESTAMP),
+    FOREIGN KEY (CartId) REFERENCES Cart(Id) ON DELETE CASCADE,
+    FOREIGN KEY (ProductId) REFERENCES Product(Id) ON DELETE CASCADE
+);
+
+-- Index rapide pour retrouver le panier actif d'un user
+CREATE INDEX IF NOT EXISTS idx_cart_userid ON Cart(UserId);
+CREATE INDEX IF NOT EXISTS idx_cartitem_cartid ON CartItem(CartId);
+
+-- (optionnel) Ajout d'une contrainte d'unicité sur le combo (CartId, ProductId)
+CREATE UNIQUE INDEX IF NOT EXISTS idx_cartitem_unique_product ON CartItem(CartId, ProductId);

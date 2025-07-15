@@ -15,7 +15,7 @@
                 {
                     @foreach (var product in _products)
                     {
-                        var qty = CartService.GetProductCount(product.Id);
+                        var qty = GetProductCartQty(product.Id);
 
                         <div class="col-6-custom mb-4">
                             <div class="onigiri-card">

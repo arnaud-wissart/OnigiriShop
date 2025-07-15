@@ -34,12 +34,13 @@ namespace OnigiriShop.Pages
         protected User UserToDelete { get; set; }
         protected EditContext _editContext;
         private ValidationMessageStore _messageStore;
-        protected override void OnInitialized()
+        protected override Task OnInitializedAsync()
         {
             _editContext = new EditContext(ModalModel);
             _messageStore = new ValidationMessageStore(_editContext);
             _editContext.OnFieldChanged += EditContext_OnFieldChanged;
             ReloadUsers();
+            return Task.CompletedTask;
         }
         private void EditContext_OnFieldChanged(object sender, FieldChangedEventArgs e)
         {

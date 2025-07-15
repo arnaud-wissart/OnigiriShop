@@ -5,15 +5,20 @@
             <h4 class="mb-3 card-title">Mon panier</h4>
             @if (_items == null || _items.Count == 0)
             {
-                <div class="alert alert-info mb-0 text-center">Votre panier est vide…</div>
+                <div class="text-center py-4">
+                    <span style="font-size:3rem;">🛒</span>
+                    <div class="alert alert-info mt-4 mb-2">
+                        Votre panier est vide…<br />
+                        <span class="small text-secondary">C’est l’heure de craquer pour un onigiri ou deux !</span>
+                    </div>
+                </div>
             }
             else
             {
                 <table class="table table-sm align-middle mb-2" style="background: #fff;">
                     <tbody>
-                        @for (int i = 0; i < _items.Count; i++)
+                        @foreach (var item in _items)
                         {
-                            var item = _items[i];
                             <tr style="background:none;">
                                 <td style="vertical-align:middle; min-width:90px; padding-left:0.8rem;">
                                     <b>@item.Product.Name</b>
@@ -43,7 +48,6 @@
                     </tbody>
                 </table>
 
-
                 <div class="d-flex justify-content-between pt-2 px-1 mb-2" style="font-size:1.1em;">
                     <span class="fw-bold">Total</span>
                     <span class="fw-bold">@($"{_totalPrice:C2}")</span>
@@ -53,19 +57,17 @@
         }
         else
         {
-            <div class="cart-box" style="max-width:340px;width:100%;margin:0 auto;">
-                <div class="d-flex flex-column align-items-center my-4">
-                    <div class="fw-semibold text-center mb-4 mt-3" style="font-size:1.16rem; color:#3a3a3a;">
-                        Vous avez oublié quelque chose&nbsp;?<br>
-                        <span style="font-size:0.97rem; color:#60a5fa;">Pas de souci, la boutique reste ouverte juste pour vous 24/24h et 7/7j&nbsp;😉</span>
-                    </div>
-                    <button class="btn btn-success rounded-pill px-4 py-2 fw-semibold shadow-sm"
-                            style="font-size:1rem;letter-spacing:0.01em;"
-                            @onclick="GoToHome">
-                        <i class="bi bi-arrow-left-circle me-2"></i>
-                        Retour à la boutique
-                    </button>
+            <div class="d-flex flex-column align-items-center my-4">
+                <div class="fw-semibold text-center mb-4 mt-3" style="font-size:1.16rem; color:#3a3a3a;">
+                    Vous avez oublié quelque chose&nbsp;?<br>
+                    <span style="font-size:0.97rem; color:#60a5fa;">Pas de souci, la boutique reste ouverte juste pour vous 24/24h et 7/7j&nbsp;😉</span>
                 </div>
+                <button class="btn btn-success rounded-pill px-4 py-2 fw-semibold shadow-sm"
+                        style="font-size:1rem;letter-spacing:0.01em;"
+                        @onclick="GoToHome">
+                    <i class="bi bi-arrow-left-circle me-2"></i>
+                    Retour à la boutique
+                </button>
             </div>
         }
     </div>

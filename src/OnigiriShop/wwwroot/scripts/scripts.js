@@ -44,7 +44,6 @@ window.onigiriAuth = {
     }
 };
 
-
 // ==================== Bootstrap Interop / Tooltips ====================
 
 window.bootstrapInterop = {
@@ -193,18 +192,6 @@ window.onigiriColorModalOpenInput = function () {
     }, 100);
 };
 
-window.onigiriCart = {
-    save: function (cart) {
-        localStorage.setItem("onigiriCart", JSON.stringify(cart));
-    },
-    load: function () {
-        return JSON.parse(localStorage.getItem("onigiriCart") || "[]");
-    },
-    clear: function () {
-        localStorage.removeItem("onigiriCart");
-    }
-};
-
 // ==================== Color Modal / Utils ====================
 
 /**
@@ -249,7 +236,7 @@ window.openColorModal = function (type) {
     }, 120);
 
     // Empêche fermeture sur clic overlay
-    modal.onclick = function (e) { if (e.target === modal) {/* pas de close */} };
+    modal.onclick = function (e) { if (e.target === modal) {/* pas de close */ } };
 };
 
 /**
