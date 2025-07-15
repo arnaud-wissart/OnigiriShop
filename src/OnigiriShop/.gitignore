@@ -427,3 +427,4 @@ App_Data/allowed_users.json
 
 wwwroot/bootstrap/
 wwwroot/lib/
+wwwroot/fullcalendar/
