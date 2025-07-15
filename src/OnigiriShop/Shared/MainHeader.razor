@@ -3,47 +3,78 @@
 <header class="main-title main-title-flex">
     <div class="main-title-left"></div>
     <div class="main-title-center d-flex align-items-center justify-content-center">
-        Onigiris et Sponge Cakes
         @if (IsAdminContext)
         {
-            <span class="badge bg-danger ms-3" style="font-size:1rem;">
+            <span class="badge bg-danger me-3" style="font-size:1rem;">
                 <i class="bi bi-shield-lock"></i> ADMIN
             </span>
         }
+        Onigiris et Sponge Cakes
     </div>
     <div class="main-title-right d-flex align-items-center">
         @if (IsAuthenticated)
         {
+            @if (IsAdmin && !IsAdminContext)
+            {
+                <button class="header-btn header-btn-primary ms-2"
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="bottom"
+                        title="Administration"
+                        @onclick="GotoAdmin">
+                    <i class="bi bi-shield-lock-fill"></i>
+                </button>
+                <span class="header-separator-dots"></span>
+            }
+            @if (IsAdmin && IsAdminContext)
+            {
+                <button class="header-btn header-btn-primary ms-2"
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="bottom"
+                        title="Retour à la boutique"
+                        @onclick="GotoShop">
+                    <i class="bi bi-shop"></i>
+                </button>
+                <span class="header-separator-dots"></span>
+            }
             @if (IsAdminContext)
             {
-                <a href="/" class="btn btn-outline-primary ms-2"
-                   data-bs-toggle="tooltip" data-bs-placement="bottom"
-                   title="Retour au site">
-                    <i class="bi bi-house"></i>
-                </a>
+                <div class="d-flex align-items-center gap-2 ms-2">
+                    <button class="header-btn header-btn-success"
+                            data-bs-toggle="tooltip"
+                            data-bs-placement="bottom"
+                            title="Gérer les utilisateurs"
+                            @onclick="GotoUsers">
+                        <i class="bi bi-people-fill"></i>
+                    </button>
+                    <button class="header-btn header-btn-success"
+                            data-bs-toggle="tooltip"
+                            data-bs-placement="bottom"
+                            title="Gérer le catalogue produits"
+                            @onclick="GotoCatalog">
+                        <i class="bi bi-basket"></i>
+                    </button>
+                    <button class="header-btn header-btn-success"
+                            data-bs-toggle="tooltip"
+                            data-bs-placement="bottom"
+                            title="Gérer les livraisons"
+                            @onclick="GotoDeliveries">
+                        <i class="bi bi-truck"></i>
+                    </button>
+                </div>
+                <span class="header-separator-dots"></span>
             }
-            else if (IsAdmin)
-            {
-                <a href="/admin" class="btn btn-admin ms-2"
-                   data-bs-toggle="tooltip" data-bs-placement="bottom"
-                   title="Accéder à l'administration">
-                    <i class="bi bi-tools"></i>
-                </a>
-            }
-            <button class="btn btn-logout ms-2"
-                    data-bs-toggle="tooltip" data-bs-placement="bottom"
+            <button class="header-btn header-btn-danger ms-2"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="bottom" 
                     title="Se déconnecter"
                     @onclick="ConfirmLogout">
                 <i class="bi bi-box-arrow-right"></i>
             </button>
             <a class="user-info ms-2 text-decoration-none"
                href="/profile"
-               style="cursor:pointer;"
-               data-bs-toggle="tooltip"
-               data-bs-placement="bottom"
-               title="Voir mon profil">
+               data-bs-toggle="tooltip" title="Voir mon profil">
                 <i class="bi bi-person-circle"></i>
-                @UserEmail
+                @UserNameOrEmail
             </a>
         }
     </div>

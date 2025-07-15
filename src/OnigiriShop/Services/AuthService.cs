@@ -28,7 +28,7 @@ namespace OnigiriShop.Services
             return null;
         }
 
-        public async Task<string> GetCurrentUserNameAsync()
+        private async Task<string> GetCurrentUserNameAsync()
         {
             var state = await _sessionAuthProvider.GetAuthenticationStateAsync();
             return state.User.Identity?.Name;
@@ -38,6 +38,15 @@ namespace OnigiriShop.Services
         {
             var state = await _sessionAuthProvider.GetAuthenticationStateAsync();
             return state.User.FindFirst(ClaimTypes.Email)?.Value;
+        }
+
+        public async Task<string> GetCurrentUserNameOrEmailAsync()
+        {
+            var name = await GetCurrentUserNameAsync();
+            if (name == null)
+                return await GetCurrentUserEmailAsync();
+
+            return name;
         }
 
         public async Task<string> GetCurrentUserRoleAsync()

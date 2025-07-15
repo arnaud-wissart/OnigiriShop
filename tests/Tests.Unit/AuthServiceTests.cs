@@ -7,7 +7,7 @@ namespace Tests.Unit
 {
     public class AuthServiceTests
     {
-        private AuthService BuildService(ClaimsPrincipal user)
+        private static AuthService BuildService(ClaimsPrincipal user)
         {
             var mockProvider = new Mock<SessionAuthenticationStateProvider>(null);
             mockProvider.Setup(x => x.GetAuthenticationStateAsync())
@@ -43,9 +43,24 @@ namespace Tests.Unit
         }
 
         [Fact]
+        public async Task GetCurrentUserNameOrEmailAsync_Returns_Email()
+        {
+            var claims = new[] { 
+                new Claim(ClaimTypes.Email, "john@doe.com"),
+                new Claim(ClaimTypes.Name, "Toto")
+            };
+            var principal = new ClaimsPrincipal(new ClaimsIdentity(claims, "TestAuth"));
+            var service = BuildService(principal);
+
+            var result = await service.GetCurrentUserNameOrEmailAsync();
+
+            Assert.Equal("Toto", result);
+        }
+
+        [Fact]
         public async Task GetCurrentUserRoleAsync_DefaultsToUser_IfMissing()
         {
-            var claims = new Claim[0];
+            var claims = Array.Empty<Claim>();
             var principal = new ClaimsPrincipal(new ClaimsIdentity(claims, "TestAuth"));
             var service = BuildService(principal);
 

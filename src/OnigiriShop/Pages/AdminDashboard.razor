@@ -3,37 +3,97 @@
 @inherits AdminDashboardBase
 @attribute [Authorize]
 
-<div class="container my-5">
-    <div class="row">
-        <div class="col-md-6 mb-3">
-            <div class="card shadow-sm h-100">
-                <div class="card-body">
-                    <h5 class="card-title">Gestion des utilisateurs</h5>
-                    <p class="card-text">Créer, inviter, activer/désactiver, réinitialiser un mot de passe…</p>
-                    <button class="btn btn-primary" @onclick="GotoUsers">Gérer les utilisateurs</button>
+<div class="card shadow rounded-3 overflow-hidden border mb-4" style="background:#fff;">
+    <div class="card-body p-0">
+        <h4 class="card-title p-3 mb-0 border-bottom bg-light fw-bold"
+            style="color:#212529; letter-spacing:0.01em;">
+            Commandes
+        </h4>
+
+        <!-- Filtres en ligne, démarqués -->
+        <div class="p-3 pb-2" style="background:#f9fafc; border-bottom:1.5px solid #f3f3f7; border-radius:0 0 10px 10px; box-shadow:0 2px 8px rgba(68,88,110,0.06); margin-bottom: -1px;">
+            <div class="row align-items-end gy-2 gx-3">
+
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <label class="fw-semibold" style="min-width:80px;">Statut :</label>
+                    <select class="form-select form-select-sm d-inline-block w-auto"
+                            @bind="FilterStatus">
+                        <option value="">Tous</option>
+                        @foreach (var status in StatusList)
+                        {
+                            <option value="@status">@status</option>
+                        }
+                    </select>
                 </div>
-            </div>
-        </div>
-        <div class="col-md-6 mb-3">
-            <div class="card shadow-sm h-100">
-                <div class="card-body">
-                    <h5 class="card-title">Catalogue produits</h5>
-                    <p class="card-text">Ajouter/modifier/supprimer des produits, gérer le menu du jour…</p>
-                    <button class="btn btn-secondary" @onclick="GotoCatalog">Gérer le catalogue</button>
+
+                <div class="col-auto">
+                    <label class="fw-semibold mb-1" for="dateFilter">Date livraison</label>
+                    <input class="form-control"
+                           type="date"
+                           style="min-width:160px;"
+                           @bind="FilterDeliveryDate"
+                           @bind:format="yyyy-MM-dd" />
                 </div>
-            </div>
-        </div>
-        <div class="col-md-6 mb-3">
-            <div class="card shadow-sm h-100">
-                <div class="card-body">
-                    <h5 class="card-title">Gestion des livraisons</h5>
-                    <p class="card-text">Créer, planifier ou dupliquer une livraison (lieu, date, récurrence)…</p>
-                    <button class="btn btn-info text-white" @onclick="GotoDeliveries">
-                        Gérer les livraisons
+                <div class="col-auto">
+                    <button class="btn btn-link btn-sm px-2 mt-3" @onclick="ResetFilters" title="Réinitialiser les filtres">
+                        <i class="bi bi-x-circle"></i>
+                        <span class="d-none d-md-inline">Réinitialiser</span>
                     </button>
                 </div>
             </div>
         </div>
 
+        <div class="table-responsive">
+            <table class="table table-hover align-middle table-striped mb-0">
+                <thead>
+                    <tr>
+                        <th>Livraison</th>
+                        <th>Lieu</th>
+                        <th>Client</th>
+                        <th>Email</th>
+                        <th class="text-end">Total</th>
+                        <th>Statut</th>
+                        <th>Passée le</th>
+                        <th class="text-end" style="width:90px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!FilteredOrders.Any())
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center text-muted py-5">
+                                <i class="bi bi-inbox fs-2"></i><br />
+                                Aucune commande trouvée
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var order in FilteredOrders)
+                        {
+                            <tr>
+                                <td>@order.DeliveryAt.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>@order.DeliveryPlace</td>
+                                <td>@order.UserDisplayName</td>
+                                <td>@order.UserEmail</td>
+                                <td class="text-end">@($"{order.TotalAmount:C2}")</td>
+                                <td>
+                                    <span class="badge @(GetStatusBadge(order.Status))">@order.Status</span>
+                                </td>
+                                <td>@order.OrderedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-outline-primary"
+                                            data-bs-toggle="tooltip"
+                                            title="Voir le détail"
+                                            @onclick="() => ShowOrderDetails(order.Id)">
+                                        <i class="bi bi-search"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>

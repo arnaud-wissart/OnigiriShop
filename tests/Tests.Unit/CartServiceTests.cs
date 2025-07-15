@@ -1,72 +1,19 @@
 ﻿using OnigiriShop.Services;
-using OnigiriShop.Data.Interfaces;
-using Dapper;
-using Microsoft.Data.Sqlite;
-using System.Data;
 
 namespace Tests.Unit
 {
     public class CartServiceSqlTests
     {
-        private class SqliteTestConnectionFactory(string connectionString) : ISqliteConnectionFactory
-        {
-            public IDbConnection CreateConnection()
-            {
-                var conn = new SqliteConnection(connectionString);
-                conn.Open();
-                return conn;
-            }
-        }
-
-        private readonly string _schema = @"
-            CREATE TABLE IF NOT EXISTS Cart (
-                Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                UserId INTEGER NOT NULL,
-                DateCreated DATETIME NOT NULL,
-                DateUpdated DATETIME NOT NULL,
-                IsActive BOOLEAN NOT NULL
-            );
-            CREATE TABLE IF NOT EXISTS CartItem (
-                Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                CartId INTEGER NOT NULL,
-                ProductId INTEGER NOT NULL,
-                Quantity INTEGER NOT NULL,
-                DateAdded DATETIME NOT NULL
-            );
-            CREATE TABLE IF NOT EXISTS Product (
-                Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                Name TEXT NOT NULL,
-                Description TEXT,
-                Price REAL NOT NULL,
-                IsOnMenu BOOLEAN NOT NULL,
-                ImagePath TEXT,
-                IsDeleted BOOLEAN NOT NULL DEFAULT 0
-            );";
-
-        private CartService MakeCartService(SqliteConnection conn)
-        {
-            // Tu peux ici injecter le ProductService si tu veux tester les jointures aussi
-            return new CartService(new SqliteTestConnectionFactory(conn.ConnectionString));
-        }
-
-        private async Task<SqliteConnection> InitDbAsync()
-        {
-            var conn = new SqliteConnection("Data Source=:memory:");
-            await conn.OpenAsync();
-            await conn.ExecuteAsync(_schema);
-            await conn.ExecuteAsync("INSERT INTO Product (Name, Description, Price, IsOnMenu, ImagePath, IsDeleted) VALUES ('Test', 'desc', 3.5, 1, '', 0);");
-            return conn;
-        }
-
         [Fact]
         public async Task AddItemAsync_Ajoute_Produit()
         {
-            var conn = await InitDbAsync();
-            var cartService = MakeCartService(conn);
+            using var conn = await InMemorySqliteDbHelper.CreateOpenDbFromSchemaFileAsync();
 
-            await cartService.AddItemAsync(1, 1, 2); // userId=1, productId=1, qty=2
+            var cartService = new CartService(new FakeSqliteConnectionFactory(conn));
 
-            var cart = await cartService.GetActiveCartAsync(1);
+            await cartService.AddItemAsync(1, 1, 2, conn);
+
+            var cart = await cartService.GetActiveCartAsync(1, conn);
             Assert.NotNull(cart);
             Assert.Single(cart.Items);
             Assert.Equal(2, cart.Items.First().Quantity);
@@ -76,34 +23,98 @@ namespace Tests.Unit
         [Fact]
         public async Task RemoveItemAsync_Decremente_Produit_Ou_Supprime()
         {
-            var conn = await InitDbAsync();
-            var cartService = MakeCartService(conn);
+            using var conn = await InMemorySqliteDbHelper.CreateOpenDbFromSchemaFileAsync();
 
-            await cartService.AddItemAsync(1, 1, 2);
-            await cartService.RemoveItemAsync(1, 1, 1);
+            var cartService = new CartService(new FakeSqliteConnectionFactory(conn));
 
-            var cart = await cartService.GetActiveCartAsync(1);
+            await cartService.AddItemAsync(1, 1, 2, conn);
+            await cartService.RemoveItemAsync(1, 1, 1, conn);
+
+            var cart = await cartService.GetActiveCartAsync(1, conn);
             Assert.Single(cart.Items);
             Assert.Equal(1, cart.Items.First().Quantity);
 
-            await cartService.RemoveItemAsync(1, 1, 1);
-            cart = await cartService.GetActiveCartAsync(1);
+            await cartService.RemoveItemAsync(1, 1, 1, conn);
+            cart = await cartService.GetActiveCartAsync(1, conn);
             Assert.Empty(cart.Items);
         }
 
         [Fact]
         public async Task ClearCartAsync_Vide_Le_Panier()
         {
-            var conn = await InitDbAsync();
-            var cartService = MakeCartService(conn);
+            using var conn = await InMemorySqliteDbHelper.CreateOpenDbFromSchemaFileAsync();
 
-            await cartService.AddItemAsync(1, 1, 2);
-            await cartService.ClearCartAsync(1);
+            var cartService = new CartService(new FakeSqliteConnectionFactory(conn));
 
-            var cart = await cartService.GetActiveCartAsync(1);
+            await cartService.AddItemAsync(1, 1, 2, conn);
+            await cartService.ClearCartAsync(1, conn);
+
+            var cart = await cartService.GetActiveCartAsync(1, conn);
             Assert.Empty(cart.Items);
         }
 
-        // Ajoute d'autres tests pour GetCartItemsWithProductsAsync, etc.
+        [Fact]
+        public async Task GetActiveCartAsync_AucunPanier_RetourneNull()
+        {
+            using var conn = await InMemorySqliteDbHelper.CreateOpenDbFromSchemaFileAsync();
+
+            var cartService = new CartService(new FakeSqliteConnectionFactory(conn));
+            var cart = await cartService.GetActiveCartAsync(1, conn);
+            Assert.Null(cart);
+        }
+
+        [Fact]
+        public async Task CreateOrGetActiveCartAsync_CreeEtRetrouveLePanier()
+        {
+            using var conn = await InMemorySqliteDbHelper.CreateOpenDbFromSchemaFileAsync();
+
+            var cartService = new CartService(new FakeSqliteConnectionFactory(conn));
+
+            var cart1 = await cartService.CreateOrGetActiveCartAsync(1, conn);
+            Assert.NotNull(cart1);
+            Assert.True(cart1.IsActive);
+
+            var cart2 = await cartService.CreateOrGetActiveCartAsync(1, conn);
+            Assert.NotNull(cart2);
+            Assert.Equal(cart1.Id, cart2.Id); // Doit retourner le même panier actif
+        }
+
+        [Fact]
+        public async Task AddItemAsync_AjouteDeuxProduitsDifferents()
+        {
+            using var conn = await InMemorySqliteDbHelper.CreateOpenDbFromSchemaFileAsync();
+
+            var cartService = new CartService(new FakeSqliteConnectionFactory(conn));
+            await cartService.AddItemAsync(1, 1, 2, conn);
+            await cartService.AddItemAsync(1, 2, 1, conn);
+
+            var cart = await cartService.GetActiveCartAsync(1, conn);
+            Assert.NotNull(cart);
+            Assert.Equal(2, cart.Items.Count);
+            Assert.Contains(cart.Items, x => x.ProductId == 1 && x.Quantity == 2);
+            Assert.Contains(cart.Items, x => x.ProductId == 2 && x.Quantity == 1);
+        }
+
+        [Fact]
+        public async Task AddItemAsync_PaniersSeparesPourUtilisateursDifferents()
+        {
+            using var conn = await InMemorySqliteDbHelper.CreateOpenDbFromSchemaFileAsync();
+            
+            var cartService = new CartService(new FakeSqliteConnectionFactory(conn));
+
+            await cartService.AddItemAsync(1, 1, 2, conn);
+            await cartService.AddItemAsync(2, 2, 1, conn);
+
+            var cart1 = await cartService.GetActiveCartAsync(1, conn);
+            var cart2 = await cartService.GetActiveCartAsync(2, conn);
+
+            Assert.NotNull(cart1);
+            Assert.Single(cart1.Items);
+            Assert.Equal(1, cart1.Items.First().ProductId);
+
+            Assert.NotNull(cart2);
+            Assert.Single(cart2.Items);
+            Assert.Equal(2, cart2.Items.First().ProductId);
+        }
     }
 }

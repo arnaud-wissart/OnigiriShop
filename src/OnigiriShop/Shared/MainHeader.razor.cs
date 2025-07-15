@@ -6,20 +6,20 @@ namespace OnigiriShop.Shared
 {
     public partial class MainHeaderBase: ComponentBase
     {
+        [Inject] public NavigationManager Nav { get; set; }
         [Inject] public IJSRuntime JS { get; set; }
         [Inject] public AuthService AuthService { get; set; }
-        [Inject] public NavigationManager Nav { get; set; }
         [Parameter] public bool IsAdminContext { get; set; }
 
         protected bool IsAuthenticated { get; set; }
         protected bool IsAdmin { get; set; }
-        protected string UserEmail { get; set; }
+        protected string UserNameOrEmail { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
             IsAuthenticated = await AuthService.IsAuthenticatedAsync();
             IsAdmin = IsAuthenticated && await AuthService.IsAdminAsync();
-            UserEmail = IsAuthenticated ? await AuthService.GetCurrentUserEmailAsync() : null;
+            UserNameOrEmail = IsAuthenticated ? await AuthService.GetCurrentUserNameOrEmailAsync() : null;
             StateHasChanged();
         }
         protected async Task ConfirmLogout()
@@ -31,5 +31,10 @@ namespace OnigiriShop.Shared
             await JS.InvokeVoidAsync("bootstrapInterop.hideModal", "#logoutConfirmModal");
             await JS.InvokeVoidAsync("onigiriAuth.logout", "/");
         }
+        protected void GotoAdmin() => Nav.NavigateTo("/admin");
+        protected void GotoUsers() => Nav.NavigateTo("/admin/users");
+        protected void GotoCatalog() => Nav.NavigateTo("/admin/products");
+        protected void GotoDeliveries() => Nav.NavigateTo("/admin/deliveries");
+        protected void GotoShop() => Nav.NavigateTo("/");
     }
 }

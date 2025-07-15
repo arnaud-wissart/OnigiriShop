@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using Mailjet.Client.Resources;
 using OnigiriShop.Data.Interfaces;
 using OnigiriShop.Data.Models;
 
@@ -58,9 +59,7 @@ namespace OnigiriShop.Services
             var order = await conn.QueryFirstOrDefaultAsync<Order>(sql, new { orderId, userId });
 
             if (order != null)
-            {
                 order.Items = await GetOrderItemsAsync(order.Id);
-            }
 
             return order;
         }
@@ -104,6 +103,26 @@ namespace OnigiriShop.Services
             return orderId;
         }
 
-        // Ajoute ici soft delete, update, etc. selon besoins...
+        public async Task<List<AdminOrderSummary>> GetAllAdminOrdersAsync()
+        {
+            using var conn = _connectionFactory.CreateConnection();
+            var sql = @"
+                SELECT
+                    o.Id,
+                    u.Name AS UserDisplayName,
+                    u.Email AS UserEmail,
+                    o.TotalAmount,
+                    o.Status,
+                    o.OrderedAt,
+                    d.Place AS DeliveryPlace,
+                    d.DeliveryAt
+                FROM [Order] o
+                INNER JOIN [User] u ON o.UserId = u.Id
+                INNER JOIN [Delivery] d ON o.DeliveryId = d.Id
+                ORDER BY d.DeliveryAt ASC, o.OrderedAt DESC
+            ";
+            var result = await conn.QueryAsync<AdminOrderSummary>(sql);
+            return result.ToList();
+        }
     }
 }

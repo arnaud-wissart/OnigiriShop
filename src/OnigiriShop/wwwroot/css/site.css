@@ -335,30 +335,7 @@
     box-shadow: 0 1px 4px 0 rgba(200,180,160,0.08);
 }
 
-.btn-admin {
-    background: #425caa;
-    color: #fff;
-    border: none;
-    border-radius: 14px;
-    padding: 0.35rem 1rem 0.35rem 0.9rem;
-    font-weight: 500;
-    font-size: 1rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    transition: background .15s;
-    box-shadow: 0 1px 5px 0 rgba(66,92,170,0.09);
-}
-
-    .btn-admin:hover, .btn-admin:focus {
-        background: #32436e;
-        color: #fff;
-    }
-
-.btn-logout {
-    background: #fff;
-    color: #dc3545;
-    border: 1px solid #eceae6;
+.header-btn {
     border-radius: 50%;
     padding: 0.38rem 0.5rem;
     font-size: 1.25rem;
@@ -366,17 +343,46 @@
     align-items: center;
     justify-content: center;
     transition: background .18s, color .14s;
-    box-shadow: 0 1px 5px 0 rgba(220,53,69,0.08);
+    box-shadow: 0 1px 5px 0 rgba(0,0,0,0.08);
     width: 38px;
     height: 38px;
+    border: 1px solid #eceae6;
+    background: transparent; 
+    color: inherit; 
 }
 
-    .btn-logout:hover, .btn-logout:focus {
-        background: #dc3545;
+.header-btn-success {
+    background: #fff;
+    color: #198754;
+}
+
+    .header-btn-success:hover,
+    .header-btn-success:focus {
+        background: #198754;
         color: #fff;
-        outline: none;
     }
 
+.header-btn-danger {
+    background: #fff;
+    color: #dc3545;
+}
+
+    .header-btn-danger:hover,
+    .header-btn-danger:focus {
+        background: #dc3545;
+        color: #fff;
+    }
+
+.header-btn-primary {
+    background: #fff;
+    color: #0d6efd;
+}
+
+    .header-btn-primary:hover,
+    .header-btn-primary:focus {
+        background: #0d6efd;
+        color: #fff;
+    }
 /* ---- FULLCALENDAR : Correction des soulignements et du padding ---- */
 
 /* Enlève les soulignements sur les noms de colonnes */
@@ -726,4 +732,14 @@
     border-radius: .2rem;
     height: 22px;
     min-width: 22px;
+}
+
+.header-separator-dots {
+    display: inline-block;
+    width: 18px;
+    height: 4px;
+    background: repeating-linear-gradient(to right, #ccc, #ccc 2px, transparent 2px, transparent 4px);
+    margin: 0 0.6rem;
+    vertical-align: middle;
+    border-radius: 2px;
 }

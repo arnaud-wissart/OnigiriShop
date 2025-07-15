@@ -22,18 +22,18 @@ namespace OnigiriShop.Data
                 connection.Open();
                 Console.WriteLine("Utilisation de la base SQLite à : " + _dbPath);
                 // Lecture du script SQL
-                string script = File.ReadAllText(_sqlScriptPath);
+                var script = File.ReadAllText(_sqlScriptPath);
 
-                // Exécution du script, découpage basique sur les ';'
-                foreach (var commandText in script.Split(';'))
+                // Exécution du script, découpage sur les ';'
+                var commands = script.Split(';')
+                                     .Select(cmd => cmd.Trim())
+                                     .Where(cmd => !string.IsNullOrWhiteSpace(cmd));
+                
+                foreach (var cmd in commands)
                 {
-                    var cmd = commandText.Trim();
-                    if (!string.IsNullOrWhiteSpace(cmd))
-                    {
-                        using var command = connection.CreateCommand();
-                        command.CommandText = cmd;
-                        command.ExecuteNonQuery();
-                    }
+                    using var command = connection.CreateCommand();
+                    command.CommandText = cmd;
+                    command.ExecuteNonQuery();
                 }
             }
         }
