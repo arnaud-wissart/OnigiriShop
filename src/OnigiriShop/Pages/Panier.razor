@@ -17,9 +17,6 @@
                     @if (_orderSent)
                     {
                         <div class="alert alert-success p-3 m-3 rounded"> @_resultMessage </div>
-                        <button class="btn btn-primary ms-3 mb-3" @onclick="GoToHome">
-                            <i class="bi bi-arrow-left"></i> Retour à l'accueil
-                        </button>
                     }
                     else if (!_canAccess)
                     {

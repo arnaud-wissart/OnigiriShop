@@ -40,7 +40,7 @@ namespace OnigiriShop.Pages
                 var userIdStr = await AuthService.GetCurrentUserIdAsync();
                 if (!int.TryParse(userIdStr, out var userId))
                 {
-                    Nav.NavigateTo("/login", true);
+                    Nav.NavigateTo("/", true);
                     return;
                 }
                 var user = await UserService.GetByIdAsync(userId);
