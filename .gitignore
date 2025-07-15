@@ -418,12 +418,13 @@ FodyWeavers.xsd
 *.msp
 
 # Secrets locaux
-appsettings.Local.json
-appsettings.Development.json
+src/OnigiriShop/appsettings.Local.json
+src/OnigiriShop/appsettings.Development.json
 
 # Fichiers de config sensibles
-App_Data/admins.json
-App_Data/allowed_users.json
+src/OnigiriShop/App_Data/admins.json
+src/OnigiriShop/App_Data/allowed_users.json
 
-wwwroot/bootstrap/
-wwwroot/lib/
+src/OnigiriShop/wwwroot/bootstrap/
+src/OnigiriShop/wwwroot/lib/
+src/OnigiriShop/wwwroot/fullcalendar/
