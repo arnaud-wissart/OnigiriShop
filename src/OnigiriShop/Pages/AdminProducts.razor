@@ -40,10 +40,7 @@
                                 }
                             </td>
                             <td>
-                                @if (!string.IsNullOrWhiteSpace(product.ImagePath))
-                                {
-                                    <img src="@product.ImagePath" style="width:48px;height:48px;border-radius:10px;object-fit:cover;border:1px solid #eceae6;" alt="@product.Name" />
-                                }
+                                <img src="@GetProductImage(product)" style="width:48px;height:48px;border-radius:10px;object-fit:cover;border:1px solid #eceae6;" alt="@product.Name" />
                             </td>
                             <td class="text-end">
                                 <button class="btn btn-sm btn-outline-secondary me-2"
@@ -112,8 +109,16 @@
                             <label class="form-check-label">Afficher sur le menu</label>
                         </div>
                         <div class="mb-3">
-                            <label>Image (url ou chemin)</label>
-                            <InputText class="form-control" @bind-Value="ModalModel.ImagePath" />
+                            <label>Image produit</label>
+                            <InputFile OnChange="OnImageSelected" accept="image/*" class="form-control" />
+                            @if (!string.IsNullOrWhiteSpace(ModalModel.ImagePath))
+                            {
+                                <img src="@ModalModel.ImagePath" style="width:64px;height:64px;border-radius:10px;object-fit:cover;border:1px solid #eceae6; margin-top:0.5rem;" alt="Image du produit" />
+                            }
+                            else if (UploadedImage != null)
+                            {
+                                <img src="@GetProductImage(ModalModel)" style="width:64px;height:64px;border-radius:10px;object-fit:cover;border:1px solid #eceae6; margin-top:0.5rem;" alt="Aucune image" />
+                            }
                         </div>
                         @if (IsEdit)
                         {

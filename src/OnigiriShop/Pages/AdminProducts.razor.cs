@@ -1,15 +1,19 @@
 ﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 using OnigiriShop.Data.Models;
 using OnigiriShop.Infrastructure;
 using OnigiriShop.Services;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Jpeg;
+using SixLabors.ImageSharp.Processing;
 
 namespace OnigiriShop.Pages
 {
     public class AdminProductsBase : CustomComponent
     {
         [Inject] IJSRuntime JS { get; set; }
-
+        [Inject] public IWebHostEnvironment WebHostEnv { get; set; }
         [Inject] public ProductService ProductService { get; set; }
         protected List<Product> Products { get; set; } = new();
         protected List<Product> FilteredProducts => Products;
@@ -115,5 +119,58 @@ namespace OnigiriShop.Pages
                 await LoadProducts();
             }
         }
+
+        protected IBrowserFile UploadedImage { get; set; }
+        protected string GetProductImage(Product p)
+        {
+            if (!string.IsNullOrWhiteSpace(p.ImagePath))
+                return p.ImagePath;
+            // SVG simple, 48x48 gris avec texte
+            return "data:image/svg+xml;utf8," + Uri.EscapeDataString(
+                @"<svg width='48' height='48' xmlns='http://www.w3.org/2000/svg'>
+            <rect width='100%' height='100%' fill='#e5e5e5'/>
+            <text x='50%' y='50%' text-anchor='middle' dy='.3em' font-size='10' fill='#888'>Aucune image</text>
+        </svg>");
+        }
+
+        protected async Task OnImageSelected(InputFileChangeEventArgs e)
+        {
+            if (e.FileCount == 0)
+                return;
+
+            UploadedImage = e.File;
+            var ext = Path.GetExtension(UploadedImage.Name).ToLowerInvariant();
+            if (ext != ".jpg" && ext != ".jpeg" && ext != ".png" && ext != ".webp")
+            {
+                // Affiche une erreur : format non supporté
+                ModalError = "Format d’image non supporté.";
+                StateHasChanged();
+                return;
+            }
+
+            // Nom unique :
+            var fileName = $"product_{Guid.NewGuid()}.jpg";
+            var relPath = $"images/products/{fileName}";
+            var absPath = Path.Combine(WebHostEnv.WebRootPath, "images", "products", fileName);
+
+            Directory.CreateDirectory(Path.GetDirectoryName(absPath)); // Au cas où
+
+            // Lecture et resize avec ImageSharp
+            using (var image = await Image.LoadAsync(UploadedImage.OpenReadStream(5_000_000))) // 5 Mo max
+            {
+                image.Mutate(x => x.Resize(new ResizeOptions
+                {
+                    Size = new Size(400, 400), // max width/height
+                    Mode = ResizeMode.Max
+                }));
+                await image.SaveAsJpegAsync(absPath, new JpegEncoder { Quality = 70 });
+            }
+
+            // Mise à jour du modèle courant
+            ModalModel.ImagePath = "/" + relPath.Replace("\\", "/");
+            StateHasChanged();
+        }
+
+
     }
 }
