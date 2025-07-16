@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS User (
     IsActive INTEGER NOT NULL DEFAULT 1,
     PasswordHash TEXT,
     PasswordSalt TEXT,
+    Preferences TEXT,
     Role TEXT NOT NULL DEFAULT 'User'
 );
 
@@ -140,3 +141,11 @@ CREATE INDEX IF NOT EXISTS idx_cartitem_cartid ON CartItem(CartId);
 
 -- (optionnel) Ajout d'une contrainte d'unicité sur le combo (CartId, ProductId)
 CREATE UNIQUE INDEX IF NOT EXISTS idx_cartitem_unique_product ON CartItem(CartId, ProductId);
+
+CREATE TABLE IF NOT EXISTS EmailVariation (
+    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+    Type TEXT NOT NULL,      -- Ex : 'Expeditor', 'InvitationSubject', etc.
+    Name TEXT,               -- Pour Expeditor: "Yuki", pour sujet: NULL
+    Value TEXT NOT NULL,     -- Email, sujet, signature, intro...
+    Extra TEXT               -- Pour des infos annexes (pour Expeditor: Name, ou JSON, ou null)
+);

@@ -1,10 +1,11 @@
 ﻿using Microsoft.AspNetCore.Components;
 using OnigiriShop.Data.Models;
+using OnigiriShop.Infrastructure;
 using OnigiriShop.Services;
 
 namespace OnigiriShop.Pages
 {
-    public class IndexBase : ComponentBase, IDisposable
+    public class IndexBase : CustomComponent, IDisposable
     {
         [Inject] public CartState CartState { get; set; }
         [Inject] public CartService CartService { get; set; }

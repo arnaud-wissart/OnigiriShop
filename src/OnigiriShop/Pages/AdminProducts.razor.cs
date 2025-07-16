@@ -1,14 +1,18 @@
 ﻿using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using OnigiriShop.Data.Models;
+using OnigiriShop.Infrastructure;
 using OnigiriShop.Services;
 
 namespace OnigiriShop.Pages
 {
-    public class AdminProductsBase : ComponentBase
+    public class AdminProductsBase : CustomComponent
     {
+        [Inject] IJSRuntime JS { get; set; }
+
         [Inject] public ProductService ProductService { get; set; }
         protected List<Product> Products { get; set; } = new();
-        protected List<Product> FilteredProducts => Products; // Ajoute plus tard la recherche
+        protected List<Product> FilteredProducts => Products;
         protected Product ModalModel { get; set; } = new();
         protected Product DeleteModel { get; set; }
         protected bool ShowModal { get; set; }
@@ -38,7 +42,7 @@ namespace OnigiriShop.Pages
             ShowModal = true;
         }
 
-        protected void EditProduct(Product p)
+        protected async Task EditProduct(Product p)
         {
             IsEdit = true;
             ModalTitle = "Modifier le produit";
@@ -53,6 +57,7 @@ namespace OnigiriShop.Pages
                 IsDeleted = p.IsDeleted
             };
             ModalError = null;
+            await JS.InvokeVoidAsync("closeAllTooltips");
             ShowModal = true;
         }
 
@@ -88,9 +93,10 @@ namespace OnigiriShop.Pages
             }
         }
 
-        protected void ConfirmDeleteProduct(Product p)
+        protected async Task ConfirmDeleteProduct(Product p)
         {
             DeleteModel = p;
+            await JS.InvokeVoidAsync("closeAllTooltips");
             ShowDeleteConfirm = true;
         }
 

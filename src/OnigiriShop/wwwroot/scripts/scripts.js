@@ -52,6 +52,7 @@ window.bootstrapInterop = {
      * @param {string} selector 
      */
     showModal: function (selector) {
+        if (window.closeAllTooltips) window.closeAllTooltips();
         var modalEl = document.querySelector(selector);
         if (modalEl) {
             var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
@@ -86,6 +87,12 @@ window.activateTooltips = function () {
     // Re-init
     document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) {
         bootstrap.Tooltip.getOrCreateInstance(el);
+    });
+};
+window.closeAllTooltips = function () {
+    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) {
+        var tooltip = bootstrap.Tooltip.getInstance(el);
+        if (tooltip) tooltip.hide();
     });
 };
 
@@ -314,4 +321,23 @@ function setFullCalendarTooltips() {
 window.focusElementByName = function (name) {
     var el = document.querySelector('[name="' + name + '"]');
     if (el) { el.focus(); if (el.select) el.select(); }
+};
+
+window.adjustCartContentHeight = function () {
+    const content = document.querySelector('.cart-box');
+    if (!content) return;
+    let max = window.innerHeight - 160;
+    if (max < 120) max = 120;
+    content.style.maxHeight = max + "px";
+};
+
+window.addEventListener('resize', () => window.adjustCartContentHeight());
+
+window.downloadFileFromText = (filename, text) => {
+    const element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+    element.setAttribute('download', filename);
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
 };

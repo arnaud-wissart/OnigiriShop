@@ -11,4 +11,23 @@
         public string DeliveryPlace { get; set; }
         public DateTime DeliveryAt { get; set; }
     }
+    public class AdminOrderDetail : AdminOrderSummary
+    {
+        public List<OrderItem> Items { get; set; }
+        public static AdminOrderDetail FromSummary(AdminOrderSummary summary, List<OrderItem> items)
+        {
+            return new AdminOrderDetail
+            {
+                Id = summary.Id,
+                UserDisplayName = summary.UserDisplayName,
+                UserEmail = summary.UserEmail,
+                TotalAmount = summary.TotalAmount,
+                Status = summary.Status,
+                OrderedAt = summary.OrderedAt,
+                DeliveryPlace = summary.DeliveryPlace,
+                DeliveryAt = summary.DeliveryAt,
+                Items = items
+            };
+        }
+    }
 }

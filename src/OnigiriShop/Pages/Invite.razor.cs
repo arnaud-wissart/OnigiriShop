@@ -1,11 +1,12 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
+using OnigiriShop.Infrastructure;
 using OnigiriShop.Services;
 using System.ComponentModel.DataAnnotations;
 
 namespace OnigiriShop.Pages
 {
-    public class InviteBase : ComponentBase
+    public class InviteBase : CustomComponent
     {
         [Inject] public UserService UserService { get; set; }
         [Inject] public NavigationManager Nav { get; set; }

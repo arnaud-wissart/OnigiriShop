@@ -122,9 +122,10 @@
                         <div class="d-flex justify-content-end p-3">
                             <button class="btn btn-success fw-semibold px-4 py-2 mt-3"
                                     @onclick="ShowConfirmation"
-                                    disabled="@(!_canAccess || _items == null || !_items.Any())">
+                                    disabled="@(!_canAccess || _items == null || !_items.Any() || SelectedDeliveryId == null)">
                                 Valider la commande
                             </button>
+
                         </div>
                     }
                 </div>
@@ -180,7 +181,7 @@
                         <span>@($"{_totalPrice:C2}")</span>
                     </div>
                     <div class="mb-1">
-                        Livraison prévue&nbsp;: <span class="fw-semibold">@SelectedPlace</span>
+                        Livraison prévue&nbsp;: <span class="fw-semibold">@SelectedDelivery?.Place - @SelectedDelivery?.DeliveryAt.ToString("dddd dd/MM/yyyy HH:mm")</span>
                     </div>
                 </div>
                 <div class="modal-footer border-0 pt-0">

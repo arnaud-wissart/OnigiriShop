@@ -6,6 +6,7 @@ using OnigiriShop.Infrastructure;
 using Serilog;
 using System.Data;
 using System.Security.Cryptography;
+using System.Text.Json;
 
 namespace OnigiriShop.Services
 {
@@ -382,6 +383,33 @@ namespace OnigiriShop.Services
             txn.Commit();
             await Task.CompletedTask;
         }
+        public async Task<UserPreferences> GetUserPreferencesAsync(int userId)
+        {
+            using var conn = _connectionFactory.CreateConnection();
+            var prefsJson = await conn.QuerySingleOrDefaultAsync<string>(
+                "SELECT Preferences FROM User WHERE Id = @userId", new { userId });
+            if (string.IsNullOrWhiteSpace(prefsJson))
+                return new UserPreferences();
+            try
+            {
+                return JsonSerializer.Deserialize<UserPreferences>(prefsJson)
+                       ?? new UserPreferences();
+            }
+            catch
+            {
+                // Cas d'un JSON cassé, on évite un crash
+                return new UserPreferences();
+            }
+        }
 
+        public async Task SaveUserPreferencesAsync(int userId, UserPreferences prefs)
+        {
+            var prefsJson = JsonSerializer.Serialize(prefs);
+            using var conn = _connectionFactory.CreateConnection();
+            await conn.ExecuteAsync(
+                "UPDATE User SET Preferences = @prefsJson WHERE Id = @userId",
+                new { prefsJson, userId }
+            );
+        }
     }
 }

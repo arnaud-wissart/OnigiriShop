@@ -1,0 +1,38 @@
+﻿@typeparam TItem
+@inherits PaginationBase
+
+<div class="d-flex justify-content-end mt-3 mb-2 me-4">
+    <nav aria-label="Pagination">
+        <ul class="pagination fs-5 mb-0">
+            <li class="page-item @(CurrentPage == 1 ? "disabled" : "")">
+                <a class="page-link" @onclick="() => SetPage(1)" aria-label="Première">
+                    <span aria-hidden="true">&laquo;&laquo;</span>
+                </a>
+            </li>
+            <li class="page-item @(CurrentPage == 1 ? "disabled" : "")">
+                <a class="page-link" @onclick="() => SetPage(CurrentPage - 1)" aria-label="Précédente">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            @for (int i = Math.Max(1, CurrentPage - 2); i <= Math.Min(TotalPages, CurrentPage + 2); i++)
+            {
+                <li class="page-item @(i == CurrentPage ? "active" : "")">
+                    <a class="page-link" @onclick="() => SetPage(i)">@i</a>
+                </li>
+            }
+            <li class="page-item @(CurrentPage == TotalPages ? "disabled" : "")">
+                <a class="page-link" @onclick="() => SetPage(CurrentPage + 1)" aria-label="Suivante">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+            <li class="page-item @(CurrentPage == TotalPages ? "disabled" : "")">
+                <a class="page-link" @onclick="() => SetPage(TotalPages)" aria-label="Dernière">
+                    <span aria-hidden="true">&raquo;&raquo;</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</div>
+<div class="d-flex justify-content-end mb-3 me-4">
+    <small class="text-muted">Page @CurrentPage sur @TotalPages (@TotalItems éléments)</small>
+</div>

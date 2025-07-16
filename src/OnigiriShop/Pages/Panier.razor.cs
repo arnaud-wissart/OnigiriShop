@@ -1,24 +1,24 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.JSInterop;
 using OnigiriShop.Data.Models;
+using OnigiriShop.Infrastructure;
 using OnigiriShop.Services;
 using System.Security.Claims;
 
 namespace OnigiriShop.Pages
 {
     [Authorize]
-    public class PanierBase : ComponentBase, IDisposable
+    public class PanierBase : CustomComponent
     {
-        [CascadingParameter] public Action<bool> SetCartStickyVisible { get; set; }
+        [Inject] public AuthService AuthService { get; set; }
+        [Inject] public EmailService EmailService { get; set; }
         [Inject] public CartService CartService { get; set; }
         [Inject] public OrderService OrderService { get; set; }
         [Inject] public DeliveryService DeliveryService { get; set; }
         [Inject] public ProductService ProductService { get; set; }
         [Inject] public AuthenticationStateProvider AuthProvider { get; set; }
         [Inject] public NavigationManager Nav { get; set; }
-        [Inject] IJSRuntime JS { get; set; }
 
         protected ClaimsPrincipal _user;
         protected bool _canAccess;
@@ -29,7 +29,8 @@ namespace OnigiriShop.Pages
         protected List<Delivery> FilteredDeliveries = [];
         protected List<string> DistinctPlaces = [];
 
-        protected int? SelectedDeliveryId;
+        protected int? SelectedDeliveryId = null;
+        protected Delivery SelectedDelivery = null;
         protected CartItemWithProduct ItemToRemove { get; set; }
         protected bool ShowRemoveModal { get; set; }
         protected bool ShowConfirmationModal { get; set; }
@@ -50,14 +51,16 @@ namespace OnigiriShop.Pages
                 {
                     _selectedPlace = value;
                     FilterDeliveries();
-                    SelectedDeliveryId = FilteredDeliveries.Count > 0
-                        ? FilteredDeliveries.First().Id
-                        : null;
+                    SelectedDeliveryId = null;
                     StateHasChanged();
                 }
             }
         }
-        public void ShowConfirmation() => ShowConfirmationModal = true;
+        public void ShowConfirmation()
+        {
+            SelectedDelivery = Deliveries.FirstOrDefault(d => d.Id == SelectedDeliveryId);
+            ShowConfirmationModal = true;
+        }
 
         public void CloseConfirmation() => ShowConfirmationModal = false;
 
@@ -83,11 +86,6 @@ namespace OnigiriShop.Pages
 
             SelectedPlace = "";
             FilterDeliveries();
-
-            if (FilteredDeliveries.Count > 0)
-                SelectedDeliveryId = FilteredDeliveries.First().Id;
-
-            SetCartStickyVisible?.Invoke(false);
         }
         private async void OnCartChanged()
         {
@@ -145,18 +143,10 @@ namespace OnigiriShop.Pages
         {
             if (_userId.HasValue && ItemToRemove != null)
                 await CartService.RemoveItemAsync(_userId.Value, ItemToRemove.ProductId, ItemToRemove.Quantity);
-                
+
             ShowRemoveModal = false;
             ItemToRemove = null;
             await RefreshCartAsync();
-        }
-
-        protected void OnDeliveryChanged(ChangeEventArgs e)
-        {
-            if (int.TryParse(e.Value?.ToString(), out var val))
-                SelectedDeliveryId = val;
-            else
-                SelectedDeliveryId = null;
         }
 
         private void FilterDeliveries()
@@ -214,13 +204,16 @@ namespace OnigiriShop.Pages
 
             await OrderService.CreateOrderAsync(order, order.Items);
             _orderSent = true;
+            await EmailService.SendOrderConfirmationAsync(
+                await AuthService.GetCurrentUserEmailAsync(),
+                await AuthService.GetCurrentUserNameOrEmailAsync(),
+                order,
+                SelectedDelivery);
             await CartService.ClearCartAsync(_userId.Value);
             _resultMessage = "Commande validée ! Merci pour votre achat.";
             StateHasChanged();
         }
 
         protected void GoToHome() => Nav.NavigateTo("/");
-
-        public void Dispose() => SetCartStickyVisible?.Invoke(true);
     }
 }

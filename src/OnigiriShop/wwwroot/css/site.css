@@ -129,18 +129,38 @@
     min-width: 280px;
     z-index: 2000;
     pointer-events: none;
+    /* PAS de max-height ici ! */
+    display: flex;
+    flex-direction: column;
 }
 
-    .cart-sticky .cart-box {
-        pointer-events: auto;
-        background: #fff;
-        border-radius: 18px;
-        box-shadow: 0 2px 18px 0 rgba(100,90,80,0.12);
-        border: 1px solid #eceae6;
-        padding: 2rem 1.3rem;
-        min-height: 220px;
-        flex: 1 1 0;
-    }
+.cart-box {
+    pointer-events: auto;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 2px 18px 0 rgba(100,90,80,0.12);
+    border: 1px solid #eceae6;
+    padding: 2rem 1.3rem;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    /* PAS de height:100%, PAS de max-height ici non plus ! */
+    box-sizing: border-box;
+}
+
+.cart-box-content {
+    overflow-y: auto;
+    overflow-x: hidden;
+    /* C’EST ICI qu’il faut le max-height dynamique, pas sur le parent ! */
+    
+    max-height: calc(100vh - 200px);
+    transition: max-height 0.2s;
+}
+
+
+
+
+
 
 @media (max-width: 1200px) {
     .cart-sticky {
@@ -742,4 +762,10 @@
     margin: 0 0.6rem;
     vertical-align: middle;
     border-radius: 2px;
+}
+.page-link {
+    cursor: pointer;
+}
+.page-item.disabled .page-link {
+    cursor: not-allowed;
 }

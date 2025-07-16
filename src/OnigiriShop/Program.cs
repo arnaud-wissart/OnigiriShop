@@ -1,5 +1,7 @@
+using Mailjet.Client;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.Extensions.Options;
 using OnigiriShop.Data;
 using OnigiriShop.Infrastructure;
 using OnigiriShop.Services;
@@ -35,11 +37,18 @@ builder.Services.Configure<CalendarSettings>(builder.Configuration.GetSection("C
 builder.Services.AddOnigiriDatabase(dbPath);
 builder.Services.AddOnigiriAuthentication();
 builder.Services.AddSingleton<ToastService>();
+builder.Services.AddSingleton<ErrorModalService>();
 builder.Services.AddScoped<SessionAuthenticationStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider, SessionAuthenticationStateProvider>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<OrderService>();
+builder.Services.AddScoped<IMailjetClient>(sp =>
+{
+    var config = sp.GetRequiredService<IOptions<MailjetConfig>>().Value;
+    return new MailjetClient(config.ApiKey, config.ApiSecret);
+});
+builder.Services.AddScoped<EmailVariationService>();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddSession();

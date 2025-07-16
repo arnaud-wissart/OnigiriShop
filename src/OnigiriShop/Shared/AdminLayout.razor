@@ -7,6 +7,10 @@
 
 <main class="container-fluid pt-4">
     <LoginModal Visible="@ShowLoginModal" OnHide="HideLoginModal" />
+    <ErrorModal Show="@ErrorModalService.Show"
+                ShowChanged="ErrorModalService.Hide"
+                Message="@ErrorModalService.Message"
+                Title="@ErrorModalService.Title" />
     @if (IsAuthenticated && IsAdmin)
     {
         @Body

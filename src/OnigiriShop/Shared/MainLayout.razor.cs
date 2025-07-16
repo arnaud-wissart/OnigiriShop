@@ -12,6 +12,7 @@ namespace OnigiriShop.Shared
     {
         [Inject] public AuthenticationStateProvider AuthProvider { get; set; }
         [Inject] public CartService CartService { get; set; }
+        [Inject] public ErrorModalService ErrorModalService { get; set; }
         [Inject] public ProductService ProductService { get; set; }
         [Inject] public NavigationManager Nav { get; set; }
         [Inject] public IJSRuntime JS { get; set; }
@@ -22,8 +23,7 @@ namespace OnigiriShop.Shared
         protected bool IsAuthenticated { get; set; }
         protected bool ShowCartSticky { get; set; } = true;
 
-        // Si tu veux avoir une copie du panier global ici (pour menu ou résumé par ex)
-        protected List<CartItemWithProduct> CartItems { get; set; } = new();
+        protected List<CartItemWithProduct> CartItems { get; set; } = [];
 
         protected override async Task OnInitializedAsync()
         {
@@ -41,12 +41,13 @@ namespace OnigiriShop.Shared
             }
 
             Nav.LocationChanged += OnLocationChanged;
-            ShowCartSticky = !Nav.Uri.Contains("/panier");
+            ShowCartSticky = !Nav.Uri.Contains("/panier") && !Nav.Uri.Contains("/profile");
+            ErrorModalService.OnShowChanged += StateHasChanged;
         }
 
         private void OnLocationChanged(object sender, LocationChangedEventArgs e)
         {
-            ShowCartSticky = !e.Location.Contains("/panier");
+            ShowCartSticky = !e.Location.Contains("/panier") && !e.Location.Contains("/profile");
             StateHasChanged();
         }
 
@@ -63,6 +64,7 @@ namespace OnigiriShop.Shared
         public void Dispose()
         {
             Nav.LocationChanged -= OnLocationChanged;
+            ErrorModalService.OnShowChanged -= StateHasChanged;
         }
     }
 }

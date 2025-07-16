@@ -9,8 +9,10 @@
 <BootstrapToasts />
 
 <main class="container-fluid pt-4">
-    <CascadingValue Value="ShowCartSticky">
         <CartSticky ShowCart="@ShowCartSticky" />
+        <ErrorModal Show="@ErrorModalService.Show"
+                    ShowChanged="ErrorModalService.Hide"
+                    Message="@ErrorModalService.Message"
+                    Title="@ErrorModalService.Title" />
         @Body
-    </CascadingValue>
 </main>

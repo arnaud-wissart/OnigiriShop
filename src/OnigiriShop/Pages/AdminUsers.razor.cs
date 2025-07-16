@@ -8,7 +8,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace OnigiriShop.Pages
 {
-    public class AdminUsersBase : ComponentBase, IDisposable
+    public class AdminUsersBase : CustomComponent, IDisposable
     {
         [Inject] public UserService UserService { get; set; }
         [Inject] public NavigationManager NavigationManager { get; set; }

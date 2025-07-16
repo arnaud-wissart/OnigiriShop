@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using OnigiriShop.Data.Models;
 using OnigiriShop.Services;
 
@@ -6,6 +7,8 @@ namespace OnigiriShop.Shared
 {
     public partial class CartSticky : ComponentBase, IDisposable
     {
+        [Inject] public IJSRuntime JS { get; set; }
+
         [Inject] public CartService CartService { get; set; }
         [Inject] public AuthService AuthService { get; set; }
         [Inject] public NavigationManager Nav { get; set; }
@@ -29,6 +32,26 @@ namespace OnigiriShop.Shared
             // S'abonner aux notifs
             CartState.OnChanged += OnCartChanged;
         }
+        protected override async Task OnAfterRenderAsync(bool firstRender)
+        {
+            if (ShowCart)
+                await JS.InvokeVoidAsync("adjustCartContentHeight");
+
+
+        }
+        public async Task RefreshCartAsync()
+        {
+            if (_userId != 0)
+            {
+                _items = await CartService.GetCartItemsWithProductsAsync(_userId);
+                _hasItems = _items.Count != 0;
+                _totalPrice = _items.Sum(x => x.Quantity * x.Product.Price);
+                StateHasChanged();
+
+                await JS.InvokeVoidAsync("adjustCartContentHeight");
+            }
+        }
+
 
         private async void OnCartChanged() => await RefreshCartAsync();
 
@@ -49,18 +72,6 @@ namespace OnigiriShop.Shared
                 CartState.NotifyChanged();
             }
         }
-
-        public async Task RefreshCartAsync()
-        {
-            if (_userId != 0)
-            {
-                _items = await CartService.GetCartItemsWithProductsAsync(_userId);
-                _hasItems = _items.Count != 0;
-                _totalPrice = _items.Sum(x => x.Quantity * x.Product.Price);
-                StateHasChanged();
-            }
-        }
-
         protected void GoToHome() => Nav.NavigateTo("/");
 
         public void Dispose() => CartState.OnChanged -= OnCartChanged;

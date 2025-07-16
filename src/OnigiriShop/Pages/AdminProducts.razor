@@ -50,14 +50,14 @@
                                         data-bs-toggle="tooltip"
                                         data-bs-placement="bottom"
                                         title="Éditer le produit"
-                                        @onclick="() => EditProduct(product)">
+                                        @onclick="async () => await EditProduct(product)">
                                     <i class="bi bi-pencil"></i>
                                 </button>
                                 <button class="btn btn-sm btn-outline-danger"
                                         data-bs-toggle="tooltip"
                                         data-bs-placement="bottom"
                                         title="Supprimer le produit"
-                                        @onclick="() => ConfirmDeleteProduct(product)">
+                                        @onclick="async () => await ConfirmDeleteProduct(product)">
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </td>

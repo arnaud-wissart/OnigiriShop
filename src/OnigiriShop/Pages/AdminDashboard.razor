@@ -2,6 +2,7 @@
 @layout AdminLayout
 @inherits AdminDashboardBase
 @attribute [Authorize]
+@using Data.Models;
 
 <div class="card shadow rounded-3 overflow-hidden border mb-4" style="background:#fff;">
     <div class="card-body p-0">
@@ -10,37 +11,55 @@
             Commandes
         </h4>
 
-        <!-- Filtres en ligne, démarqués -->
-        <div class="p-3 pb-2" style="background:#f9fafc; border-bottom:1.5px solid #f3f3f7; border-radius:0 0 10px 10px; box-shadow:0 2px 8px rgba(68,88,110,0.06); margin-bottom: -1px;">
-            <div class="row align-items-end gy-2 gx-3">
-
-                <div class="d-flex align-items-center gap-3 mb-3">
-                    <label class="fw-semibold" style="min-width:80px;">Statut :</label>
-                    <select class="form-select form-select-sm d-inline-block w-auto"
-                            @bind="FilterStatus">
-                        <option value="">Tous</option>
-                        @foreach (var status in StatusList)
-                        {
-                            <option value="@status">@status</option>
-                        }
-                    </select>
+        <div class="container-fluid p-3">
+            <form class="row g-2 align-items-end mb-0">
+                <div class="d-flex align-items-end flex-wrap mb-2 px-1">
+                    <div class="me-2 mb-2">
+                        <label for="statusFilter" class="form-label mb-1">Statut</label>
+                        <select id="statusFilter"
+                                class="form-select form-select-sm"
+                                style="min-width: 140px; max-width: 180px;"
+                                @onchange="OnStatusChanged"
+                                value="@FilterStatus">
+                            <option value="">Tous</option>
+                            @foreach (var status in StatusList)
+                            {
+                                <option value="@status">@status</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="me-2 mb-2">
+                        <label for="dateFilter" class="form-label mb-1">Date de livraison minimale</label>
+                        <input id="dateFilter"
+                               type="date"
+                               class="form-control form-control-sm"
+                               style="min-width: 160px; max-width: 180px;"
+                               value="@BindDate(FilterDeliveryDate)"
+                               @onchange="OnDeliveryDateChanged" />
+                    </div>
+                    <div class="me-2 mb-2">
+                        <label class="form-label mb-1 invisible">.</label>
+                        <button type="button"
+                                class="btn btn-outline-secondary btn-sm"
+                                style="min-width: 110px;"
+                                @onclick="ResetFilters">
+                            <i class="bi bi-arrow-counterclockwise me-1"></i>
+                            Réinitialiser
+                        </button>
+                    </div>
+                    <div class="ms-auto mb-2">
+                        <label class="form-label mb-1 invisible">.</label>
+                        <button class="btn btn-outline-primary btn-sm"
+                                @onclick="ExportOrdersAsync"
+                                data-bs-toggle="tooltip"
+                                title="Exporter les commandes affichées">
+                            <i class="bi bi-download me-1"></i>
+                            Exporter les commandes
+                        </button>
+                    </div>
                 </div>
 
-                <div class="col-auto">
-                    <label class="fw-semibold mb-1" for="dateFilter">Date livraison</label>
-                    <input class="form-control"
-                           type="date"
-                           style="min-width:160px;"
-                           @bind="FilterDeliveryDate"
-                           @bind:format="yyyy-MM-dd" />
-                </div>
-                <div class="col-auto">
-                    <button class="btn btn-link btn-sm px-2 mt-3" @onclick="ResetFilters" title="Réinitialiser les filtres">
-                        <i class="bi bi-x-circle"></i>
-                        <span class="d-none d-md-inline">Réinitialiser</span>
-                    </button>
-                </div>
-            </div>
+            </form>
         </div>
 
         <div class="table-responsive">
@@ -69,7 +88,7 @@
                     }
                     else
                     {
-                        @foreach (var order in FilteredOrders)
+                        @foreach (var order in PagedOrders)
                         {
                             <tr>
                                 <td>@order.DeliveryAt.ToString("dd/MM/yyyy HH:mm")</td>
@@ -85,7 +104,7 @@
                                     <button class="btn btn-sm btn-outline-primary"
                                             data-bs-toggle="tooltip"
                                             title="Voir le détail"
-                                            @onclick="() => ShowOrderDetails(order.Id)">
+                                            @onclick="async () => await ShowOrderDetails(order.Id)">
                                         <i class="bi bi-search"></i>
                                     </button>
                                 </td>
@@ -94,6 +113,54 @@
                     }
                 </tbody>
             </table>
+            <Pagination TItem="AdminOrderSummary"
+            TotalItems="@TotalItems"
+            PageSize="@PageSize"
+            CurrentPage="@CurrentPage"
+            OnPageChanged="OnPageChanged" />
         </div>
     </div>
 </div>
+@if (ShowOrderModal && SelectedOrderDetail != null)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background:rgba(33,33,33,0.18); z-index:1080;">
+        <div class="modal-dialog modal-lg modal-dialog-centered" @onclick:stopPropagation>
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title fw-bold">
+                        Détail de la commande n°@SelectedOrder.Id
+                    </h5>
+                    <button type="button" class="btn-close" aria-label="Fermer" @onclick="CloseOrderModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-2"><span class="fw-semibold">Client :</span> @SelectedOrder.UserDisplayName</div>
+                    <div class="mb-2">
+                        <span class="fw-semibold">Statut :</span>
+                        <span class="badge @GetStatusBadge(SelectedOrder.Status)">@SelectedOrder.Status</span>
+                    </div>
+                    <div class="mb-2"><span class="fw-semibold">Livraison prévue :</span> @SelectedOrder.DeliveryAt.ToString("dddd dd/MM/yyyy HH:mm")</div>
+                    <div class="mb-2"><span class="fw-semibold">Lieu de livraison :</span> @SelectedOrder.DeliveryPlace</div>
+                    <div class="mb-2"><span class="fw-semibold">Total :</span> @SelectedOrder.TotalAmount.ToString("0.00") €</div>
+                    @if (SelectedOrderDetail.Items != null && SelectedOrderDetail.Items.Any())
+                    {
+                        <hr />
+                        <h6 class="fw-bold mt-3 mb-2">Détails des produits</h6>
+                        <ul class="list-group">
+                            @foreach (var item in SelectedOrderDetail.Items)
+                            {
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>@item.Quantity x @item.ProductName</span>
+                                    <span>@($"{item.UnitPrice:0.00} €")</span>
+                                </li>
+                            }
+                        </ul>
+                    }
+                </div>
+                <div class="modal-footer border-0">
+                    <button class="btn btn-secondary" @onclick="CloseOrderModal">Fermer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
+}

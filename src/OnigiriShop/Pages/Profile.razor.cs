@@ -4,11 +4,15 @@ using OnigiriShop.Services;
 using OnigiriShop.Data.Models;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.JSInterop;
+using OnigiriShop.Infrastructure;
 
 namespace OnigiriShop.Pages
 {
-    public class ProfileBase : ComponentBase
+    public class ProfileBase : CustomComponent
     {
+        [Inject] public IJSRuntime JS { get; set; }
+
         [Inject] public UserService UserService { get; set; }
         [Inject] public OrderService OrderService { get; set; }
         [Inject] public AuthService AuthService { get; set; }
@@ -144,8 +148,9 @@ namespace OnigiriShop.Pages
             StateHasChanged();
         }
 
-        protected void ShowOrderDetail(Order order)
+        protected async Task ShowOrderDetailAsync(Order order)
         {
+            await JS.InvokeVoidAsync("closeAllTooltips");
             OrderDetail = order;
         }
 

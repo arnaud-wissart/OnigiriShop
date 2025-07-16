@@ -5,8 +5,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace OnigiriShop.Pages
 {
-    public partial class AdminInviteUserBase : AdminPageBase
+    public partial class AdminInviteUserBase : CustomComponent
     {
+        [Inject] public NavigationManager Nav { get; set; }
+
         [Inject] public UserService UserService { get; set; }
         protected string Name { get; set; }
         protected string Email { get; set; }

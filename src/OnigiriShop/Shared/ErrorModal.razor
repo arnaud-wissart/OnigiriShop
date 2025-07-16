@@ -1,0 +1,24 @@
+﻿@inherits ErrorModalBase
+
+@if (Show)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background:rgba(33,33,33,0.20);">
+        <div class="modal-dialog modal-dialog-centered" @onclick:stopPropagation>
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header">
+                    <h5 class="modal-title text-danger">
+                        <i class="bi bi-exclamation-triangle me-2"></i>@(Title ?? "Erreur")
+                    </h5>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger mb-0">
+                        @Message
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="Close">Fermer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}

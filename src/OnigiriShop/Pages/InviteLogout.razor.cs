@@ -1,8 +1,9 @@
 ﻿using Microsoft.AspNetCore.Components;
+using OnigiriShop.Infrastructure;
 
 namespace OnigiriShop.Pages
 {
-    public class InviteLogoutBase : ComponentBase
+    public class InviteLogoutBase : CustomComponent
     {
         [Inject] public NavigationManager Nav { get; set; }
 

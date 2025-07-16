@@ -3,11 +3,14 @@ using Microsoft.AspNetCore.Components.Authorization;
 using OnigiriShop.Infrastructure;
 using System.Security.Claims;
 using Microsoft.JSInterop;
+using OnigiriShop.Services;
 
 namespace OnigiriShop.Shared
 {
     public class AdminLayoutBase : LayoutComponentBase, IDisposable
     {
+        [Inject] public ErrorModalService ErrorModalService { get; set; }
+
         [Inject] public AuthenticationStateProvider AuthProvider { get; set; }
         [Inject] public IJSRuntime JS { get; set; }
 
@@ -19,6 +22,7 @@ namespace OnigiriShop.Shared
         protected override Task OnInitializedAsync()
         {
             AuthProvider.AuthenticationStateChanged += AuthStateChanged;
+            ErrorModalService.OnShowChanged += StateHasChanged;
             return Task.CompletedTask;
         }
 
@@ -46,7 +50,11 @@ namespace OnigiriShop.Shared
             ShowLoginModal = !IsAuthenticated || !IsAdmin;
         }
 
-        public void Dispose() => AuthProvider.AuthenticationStateChanged -= AuthStateChanged;
+        public void Dispose()
+        {
+            AuthProvider.AuthenticationStateChanged -= AuthStateChanged;
+            ErrorModalService.OnShowChanged -= StateHasChanged;
+        }
 
         protected void HideLoginModal()
         {

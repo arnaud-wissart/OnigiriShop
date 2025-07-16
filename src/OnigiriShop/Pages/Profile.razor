@@ -15,16 +15,7 @@
             {
                 <div class="card shadow rounded-3 overflow-hidden border mb-4 me-3" style="background:#fff;">
                     <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <span class="fw-bold fs-4">Mon compte</span>
-                            <a href="/"
-                               class="btn btn-outline-secondary"
-                               data-bs-toggle="tooltip"
-                               data-bs-placement="left"
-                               title="Retour à la boutique">
-                                <i class="bi bi-arrow-left"></i>
-                            </a>
-                        </div>
+                        <span class="fw-bold fs-4">Mon compte</span>
                         @if (EditSuccess)
                         {
                             <div class="alert alert-success">Modifications enregistrées !</div>
@@ -116,7 +107,7 @@
                                                 </td>
                                                 <td>
                                                     <button class="btn btn-link p-0"
-                                                            @onclick="@(() => ShowOrderDetail(order))"
+                                                            @onclick="@(() => ShowOrderDetailAsync(order))"
                                                             data-bs-toggle="tooltip"
                                                             data-bs-placement="left"
                                                             title="Voir le détail">
