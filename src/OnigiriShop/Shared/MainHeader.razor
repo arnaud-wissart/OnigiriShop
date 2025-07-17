@@ -1,4 +1,5 @@
-﻿@inherits MainHeaderBase
+﻿@using OnigiriShop.Pages
+@inherits MainHeaderBase
 
 <header class="main-title main-title-flex">
     <div class="main-title-left"></div>
@@ -11,7 +12,7 @@
         }
         Onigiris et Sponge Cakes
     </div>
-    <div class="main-title-right d-flex align-items-center">
+    <div class="main-title-right d-flex align-items-end justify-content-end me-3">
         @if (IsAuthenticated)
         {
             @if (IsAdmin && !IsAdminContext)
@@ -23,7 +24,7 @@
                         @onclick="GotoAdmin">
                     <i class="bi bi-shield-lock-fill"></i>
                 </button>
-                <span class="header-separator-dots"></span>
+                <span class="header-separator-bar"></span>
             }
             @if (IsAdmin && IsAdminContext)
             {
@@ -34,7 +35,7 @@
                         @onclick="GotoShop">
                     <i class="bi bi-shop"></i>
                 </button>
-                <span class="header-separator-dots"></span>
+                <span class="header-separator-bar"></span>
             }
             @if (IsAdminContext)
             {
@@ -68,26 +69,37 @@
                         <i class="bi bi-truck"></i>
                     </button>
                 </div>
-                <span class="header-separator-dots"></span>
+                <span class="header-separator-bar"></span>
             }
-            <button class="header-btn header-btn-danger ms-2"
-                    data-bs-toggle="tooltip"
-                    data-bs-placement="bottom" 
-                    title="Se déconnecter"
-                    @onclick="ConfirmLogout">
-                <i class="bi bi-box-arrow-right"></i>
-            </button>
+
             <a class="user-info ms-2 me-2 text-decoration-none"
                href="/profile"
                data-bs-toggle="tooltip" title="Voir mon profil">
                 <i class="bi bi-person-circle"></i>
                 <span class="text-nowrap">@UserNameOrEmail</span>
             </a>
+            <button class="header-btn header-btn-danger ms-2"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="bottom"
+                    title="Se déconnecter"
+                    @onclick="ConfirmLogout">
+                <i class="bi bi-box-arrow-right"></i>
+            </button>
+
+        }
+        else
+        {
+            <button class="header-btn header-btn-success ms-2"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="bottom"
+                    title="Se connecter"
+                    @onclick="ShowLoginModal">
+                <i class="bi bi-box-arrow-in-right"></i>
+            </button>
         }
     </div>
 </header>
 
-<!-- Modale de confirmation Déconnexion -->
 <div class="modal fade" id="logoutConfirmModal" tabindex="-1" aria-labelledby="logoutConfirmModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -107,3 +119,5 @@
         </div>
     </div>
 </div>
+
+<LoginModal Visible="_showLoginModal" OnHide="HideLoginModal" />

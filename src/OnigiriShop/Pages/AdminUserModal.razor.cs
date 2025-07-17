@@ -5,7 +5,7 @@ using OnigiriShop.Services;
 
 namespace OnigiriShop.Pages
 {
-    public partial class AdminUserModal : ComponentBase
+    public partial class AdminUserModalBase : CustomComponentBase
     {
         [Parameter] public bool Visible { get; set; }
         [Parameter] public EventCallback<bool> VisibleChanged { get; set; }

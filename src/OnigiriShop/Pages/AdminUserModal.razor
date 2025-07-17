@@ -1,4 +1,6 @@
-﻿@if (Visible)
+﻿@inherits AdminUserModalBase
+
+@if (Visible)
 {
     <div class="modal fade show d-block" tabindex="-1" style="background:rgba(33,33,33,0.18);" @onclick="Hide">
         <div class="modal-dialog" @onclick:stopPropagation>

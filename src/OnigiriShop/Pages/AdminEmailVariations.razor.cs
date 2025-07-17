@@ -6,7 +6,7 @@ using OnigiriShop.Services;
 
 namespace OnigiriShop.Pages
 {
-    public class AdminEmailVariationsBase : CustomComponent
+    public class AdminEmailVariationsBase : CustomComponentBase
     {
         [Inject] public EmailVariationService EmailVariationService { get; set; }
 
@@ -38,6 +38,8 @@ namespace OnigiriShop.Pages
 
         protected override async Task OnInitializedAsync()
         {
+            await base.OnInitializedAsync();
+
             await ReloadAsync();
         }
 

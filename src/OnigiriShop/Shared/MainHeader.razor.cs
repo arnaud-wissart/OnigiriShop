@@ -10,7 +10,10 @@ namespace OnigiriShop.Shared
         [Inject] public IJSRuntime JS { get; set; }
         [Inject] public AuthService AuthService { get; set; }
         [Parameter] public bool IsAdminContext { get; set; }
+        protected bool _showLoginModal;
+        protected void HideLoginModal() => _showLoginModal = false;
 
+        protected void ShowLoginModal() => _showLoginModal = true;
         protected bool IsAuthenticated { get; set; }
         protected bool IsAdmin { get; set; }
         protected string UserNameOrEmail { get; set; }

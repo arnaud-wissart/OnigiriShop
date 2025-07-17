@@ -1,7 +1,6 @@
 ﻿@page "/"
 @inherits IndexBase
 
-<LoginModal Visible="_showLoginModal" OnHide="HideLoginModal" />
 <div class="container-fluid">
     <div class="row">
         <div class="col-1 d-none d-lg-block"></div>
@@ -25,20 +24,36 @@
                                     <div class="onigiri-desc">@product.Description</div>
                                     <div class="d-flex align-items-center justify-content-between mt-2">
                                         <div class="onigiri-price fw-bold fs-5">@($"{product.Price:C2}")</div>
-                                        <button class="btn btn-outline-success rounded-circle shadow-sm ms-2 position-relative @( _addedProductIds.Contains(product.Id) ? "cart-anim" : "" )"
-                                                style="width:42px;height:42px;display:flex;align-items:center;justify-content:center;"
-                                                title="Ajouter au panier"
-                                                @onclick="@(async () => await TryAddToCart(product))">
-                                            <i class="@GetCartIconClass(qty) fs-4"></i>
-                                            @if (qty > 0)
-                                            {
-                                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                                                    @qty
-                                                    <span class="visually-hidden">produits dans le panier</span>
-                                                </span>
-                                            }
-                                        </button>
+                                        <div style="position:relative;display:inline-block;width:42px;">
+                                            <button class="btn btn-outline-success rounded-circle shadow-sm position-relative @( _addedProductIds.Contains(product.Id) ? "cart-anim" : "" )"
+                                                    style="width:42px;height:42px;display:flex;align-items:center;justify-content:center;"
+                                                    @onclick="@(async () => await OnAddToCartClicked(product))">
+                                                <i class="@GetCartIconClass(qty) fs-4"></i>
+                                                @if (qty > 0)
+                                                {
+                                                    <!-- Badge à droite : quantité -->
+                                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                                                          style="cursor:pointer;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:default;">
+                                                        @qty
+                                                        <span class="visually-hidden">produits dans le panier</span>
+                                                    </span>
+                                                    <!-- Badge à gauche : bouton “–”, identique visuellement, mais cliquable -->
+                                                    <span class="position-absolute top-0 start-0 translate-middle badge rounded-pill bg-white border border-danger text-danger"
+                                                          style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none;"
+                                                          title="Retirer un produit"
+                                                          @onclick="@(async (e) => await OnRemoveFromCartClicked(product))"
+                                                    @onclick:stopPropagation>
+                                                        <i class="bi bi-dash" style="font-size:1.08em;font-weight:bold;pointer-events:none;"></i>
+                                                    </span>
+
+                                                }
+                                            </button>
+                                        </div>
                                     </div>
+
+
+
+
                                 </div>
                             </div>
                         </div>

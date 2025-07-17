@@ -4,7 +4,7 @@ using System.Security.Claims;
 
 namespace OnigiriShop.Services
 {
-    public class AuthService(SessionAuthenticationStateProvider sessionAuthProvider)
+    public class AuthService(SessionAuthenticationStateProvider sessionAuthProvider, CartProvider cartProvider)
     {
         private readonly SessionAuthenticationStateProvider _sessionAuthProvider = sessionAuthProvider
                 ?? throw new InvalidOperationException("SessionAuthenticationStateProvider requis");
@@ -63,6 +63,7 @@ namespace OnigiriShop.Services
         public async Task LogoutAsync()
         {
             await _sessionAuthProvider.SignOutAsync();
+            cartProvider.ResetMigrationFlag();
         }
     }
 }

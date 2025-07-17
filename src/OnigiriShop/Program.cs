@@ -52,7 +52,9 @@ builder.Services.AddScoped<EmailVariationService>();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddSession();
+builder.Services.AddScoped<CartProvider>();
 builder.Services.AddSingleton<CartState>();
+builder.Services.AddScoped<AnonymousCartService>();
 builder.Services.AddScoped<CartService>();
 builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<DeliveryService>();
@@ -67,9 +69,6 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 
 var app = builder.Build();
-
-if (!app.Environment.IsDevelopment())
-    app.UseExceptionHandler("/Error");
 
 app.UseStaticFiles();
 app.UseRouting();

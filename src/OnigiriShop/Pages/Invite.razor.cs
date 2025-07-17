@@ -6,21 +6,17 @@ using System.ComponentModel.DataAnnotations;
 
 namespace OnigiriShop.Pages
 {
-    public class InviteBase : CustomComponent
+    public class InviteBase : CustomComponentBase
     {
         [Inject] public UserService UserService { get; set; }
         [Inject] public NavigationManager Nav { get; set; }
-        [Inject] public IJSRuntime JS { get; set; }
-        [Inject] public AuthService AuthService { get; set; }
         [Parameter] public string Token { get; set; }
-
         protected InviteModel Model { get; set; } = new();
         protected bool Loaded { get; set; }
         protected bool TokenInvalid { get; set; }
         protected bool Success { get; set; }
         protected string Error { get; set; }
         protected bool IsBusy { get; set; }
-        protected int UserId { get; set; }
         protected bool AlreadyActivated { get; set; }
         protected bool CanRequestNewInvite { get; set; }
         protected string UserEmailForRequest { get; set; }
@@ -28,6 +24,8 @@ namespace OnigiriShop.Pages
         protected void GoHome() => Nav.NavigateTo("/");
         protected override async Task OnInitializedAsync()
         {
+            await base.OnInitializedAsync();
+
             var uri = Nav.ToAbsoluteUri(Nav.Uri);
             var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
             var token = query["token"];

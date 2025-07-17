@@ -6,20 +6,25 @@ using OnigiriShop.Services;
 
 namespace OnigiriShop.Pages
 {
-    public class AdminDashboardBase : CustomComponent
+    public class AdminDashboardBase : CustomComponentBase
     {
         [Inject] public NavigationManager Nav { get; set; }
 
         [Inject] public OrderService OrderService { get; set; }
         [Inject] public DeliveryService DeliveryService { get; set; }
-        [Inject] public IJSRuntime JS { get; set; }
 
         protected List<AdminOrderSummary> Orders = [];
         protected AdminOrderSummary SelectedOrder { get; set; }
         protected bool ShowOrderModal { get; set; }
         protected string FilterStatus { get; set; } = "";
         protected DateTime? FilterDeliveryDate { get; set; } = DateTime.Today;
-        protected override async Task OnInitializedAsync() => Orders = await OrderService.GetAllAdminOrdersAsync();
+        protected override async Task OnInitializedAsync()
+        {
+            await base.OnInitializedAsync();
+
+            Orders = await OrderService.GetAllAdminOrdersAsync();
+        }
+
         protected override async Task OnAfterRenderAsync(bool firstRender) => await JS.InvokeVoidAsync("activateTooltips");
         protected AdminOrderDetail SelectedOrderDetail { get; set; }
         protected int TotalItems => FilteredOrders.Count;

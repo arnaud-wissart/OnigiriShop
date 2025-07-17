@@ -10,9 +10,8 @@ using SixLabors.ImageSharp.Processing;
 
 namespace OnigiriShop.Pages
 {
-    public class AdminProductsBase : CustomComponent
+    public class AdminProductsBase : CustomComponentBase
     {
-        [Inject] IJSRuntime JS { get; set; }
         [Inject] public IWebHostEnvironment WebHostEnv { get; set; }
         [Inject] public ProductService ProductService { get; set; }
         protected List<Product> Products { get; set; } = new();
@@ -28,6 +27,8 @@ namespace OnigiriShop.Pages
 
         protected override async Task OnInitializedAsync()
         {
+            await base.OnInitializedAsync();
+
             await LoadProducts();
         }
 

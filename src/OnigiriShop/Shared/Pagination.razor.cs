@@ -3,7 +3,7 @@ using OnigiriShop.Infrastructure;
 
 namespace OnigiriShop.Shared
 {
-    public partial class PaginationBase : CustomComponent
+    public partial class PaginationBase : CustomComponentBase
     {
         [Parameter] public int TotalItems { get; set; }
         [Parameter] public int PageSize { get; set; } = 10;

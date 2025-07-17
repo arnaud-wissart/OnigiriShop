@@ -205,21 +205,24 @@
     flex-direction: row;
     align-items: center;
     min-height: 170px;
-    cursor: pointer;
     transition: box-shadow .15s;
     padding: 1.2rem 2rem;
     width: 100%;
     min-width: 0;
 }
 
+    .onigiri-card .btn {
+        cursor: pointer;
+    }
+
     .onigiri-card:hover {
         box-shadow: 0 8px 28px 0 rgba(100,90,80,0.14);
     }
 
 .onigiri-img {
-    max-width: 120px;
-    width: 120px;
-    height: 120px;
+    max-width: 140px;
+    width: 140px;
+    height: 140px;
     object-fit: cover;
     border-radius: 15px;
     margin-right: 2rem;
@@ -234,9 +237,9 @@
 }
 
 .onigiri-title {
-    font-size: 2rem;
-    font-weight: 700;
-    margin-bottom: 0.4rem;
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 0.3rem;
     word-break: break-word;
 }
 
@@ -754,14 +757,14 @@
     min-width: 22px;
 }
 
-.header-separator-dots {
+.header-separator-bar {
     display: inline-block;
-    width: 18px;
-    height: 4px;
-    background: repeating-linear-gradient(to right, #ccc, #ccc 2px, transparent 2px, transparent 4px);
-    margin: 0 0.6rem;
+    width: 2px;
+    height: 36px;
+    background: #e4e7ed;
+    margin: 0 0.9rem;
+    border-radius: 1.5px;
     vertical-align: middle;
-    border-radius: 2px;
 }
 .page-link {
     cursor: pointer;

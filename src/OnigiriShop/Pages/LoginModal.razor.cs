@@ -1,14 +1,14 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
+using OnigiriShop.Infrastructure;
 using System.ComponentModel.DataAnnotations;
 
 namespace OnigiriShop.Pages
 {
-    public class LoginModalBase : ComponentBase
+    public class LoginModalBase : FrontCustomComponentBase
     {
         [Parameter] public bool Visible { get; set; }
         [Parameter] public EventCallback OnHide { get; set; }
-        [Inject] public IJSRuntime JS { get; set; }
 
         protected LoginModel LoginModel { get; set; } = new();
         protected string ErrorMessage { get; set; }

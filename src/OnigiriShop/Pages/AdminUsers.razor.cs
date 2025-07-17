@@ -8,11 +8,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace OnigiriShop.Pages
 {
-    public class AdminUsersBase : CustomComponent, IDisposable
+    public class AdminUsersBase : CustomComponentBase, IDisposable
     {
         [Inject] public UserService UserService { get; set; }
         [Inject] public NavigationManager NavigationManager { get; set; }
-        [Inject] public IJSRuntime JS { get; set; }
         [Inject] public ToastService ToastService { get; set; }
         public List<User> Users { get; set; } = new();
         public bool ShowModal { get; set; }
@@ -34,13 +33,14 @@ namespace OnigiriShop.Pages
         protected User UserToDelete { get; set; }
         protected EditContext _editContext;
         private ValidationMessageStore _messageStore;
-        protected override Task OnInitializedAsync()
+        protected override async Task OnInitializedAsync()
         {
+            await base.OnInitializedAsync();
+
             _editContext = new EditContext(ModalModel);
             _messageStore = new ValidationMessageStore(_editContext);
             _editContext.OnFieldChanged += EditContext_OnFieldChanged;
             ReloadUsers();
-            return Task.CompletedTask;
         }
         private void EditContext_OnFieldChanged(object sender, FieldChangedEventArgs e)
         {

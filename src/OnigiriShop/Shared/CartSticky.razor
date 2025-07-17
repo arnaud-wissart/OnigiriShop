@@ -1,8 +1,10 @@
-﻿<div class="cart-sticky d-none d-lg-block">
+﻿@inherits CartStickyBase
+
+<div class="cart-sticky d-none d-lg-block">
     <div class="cart-box">
         @if (ShowCart)
         {
-            <h4 class="mb-3 card-title">Mon panier</h4>
+            <h4 class="mb-3 card-title text-center">Mon panier</h4>
             <div class="cart-box-content">
                 @if (_items == null || _items.Count == 0)
                 {
@@ -27,16 +29,16 @@
                                     <td style="text-align:center; vertical-align:middle; min-width:78px; padding:0;">
                                         <div class="d-flex align-items-center justify-content-center" style="gap:0;">
                                             <button type="button"
-                                                    class="btn btn-xs btn-outline-secondary p-0"
-                                                    style="font-size:0.92em; width:22px; height:22px; min-width:22px;"
-                                                    @onclick="@(() => DecrementItem(item))">
+                                            class="btn btn-xs btn-outline-secondary p-0"
+                                            style="font-size:0.92em; width:22px; height:22px; min-width:22px;"
+                                            @onclick="@(() => DecrementItem(item))">
                                                 <i class="bi bi-dash"></i>
                                             </button>
                                             <span class="fw-semibold" style="margin:0 2px; min-width:1.2em;">@item.Quantity</span>
                                             <button type="button"
-                                                    class="btn btn-xs btn-outline-secondary p-0"
-                                                    style="font-size:0.92em; width:22px; height:22px; min-width:22px;"
-                                                    @onclick="@(() => IncrementItem(item))">
+                                            class="btn btn-xs btn-outline-secondary p-0"
+                                            style="font-size:0.92em; width:22px; height:22px; min-width:22px;"
+                                            @onclick="@(() => IncrementItem(item))">
                                                 <i class="bi bi-plus"></i>
                                             </button>
                                         </div>
@@ -50,10 +52,13 @@
                     </table>
                 }
             </div>
-            <div class="d-flex justify-content-between pt-2 px-1 mb-2" style="font-size:1.1em;">
-                <span class="fw-bold">Total</span>
-                <span class="fw-bold">@($"{_totalPrice:C2}")</span>
-            </div>
+            @if (_hasItems)
+            {
+                <div class="d-flex justify-content-between pt-2 px-1 mb-2" style="font-size:1.1em;">
+                    <span class="fw-bold">Total</span>
+                    <span class="fw-bold">@($"{_totalPrice:C2}")</span>
+                </div>
+            }
             <a class="btn btn-success w-100 mt-1" href="/panier">Commander</a>
         }
         else
@@ -76,3 +81,35 @@
         }
     </div>
 </div>
+@if (_showCartMergeModal)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background:rgba(33,33,33,0.30); z-index:20000;">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header">
+                    <h5 class="modal-title text-primary">
+                        <i class="bi bi-exclamation-triangle me-2"></i> Panier détecté
+                    </h5>
+                </div>
+                <div class="modal-body">
+                    <p>
+                        Vous avez déjà un panier sauvegardé sur ce compte.<br />
+                        Voulez-vous <b>fusionner</b> vos articles ajoutés hors connexion avec votre panier actuel, ou <b>remplacer</b> le panier sauvegardé ?
+                    </p>
+                </div>
+                <div class="modal-footer d-flex justify-content-between gap-2">
+                    <button class="btn btn-outline-success flex-fill"
+                            style="min-width: 0;"
+                            @onclick="ReplaceSqlWithAnon">
+                        Remplacer par le panier hors connexion
+                    </button>
+                    <button class="btn btn-success flex-fill"
+                            style="min-width: 0;"
+                            @onclick="MergeCarts">
+                        Fusionner les deux paniers
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}

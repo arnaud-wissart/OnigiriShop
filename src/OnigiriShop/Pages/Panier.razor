@@ -1,5 +1,4 @@
 ﻿@page "/panier"
-@attribute [Authorize]
 @using OnigiriShop.Data.Models
 @inherits PanierBase
 
@@ -10,7 +9,7 @@
             <div class="card shadow rounded-3 overflow-hidden border mb-4 me-3" style="background:#fff;">
 
                 <h4 class="card-title px-4 pt-4 pb-3 mb-0 border-bottom bg-light fw-bold" style="color:#212529; letter-spacing:0.01em;">
-                    Votre panier
+                    Mon panier
                 </h4>
 
                 <div class="card-body px-3">
@@ -18,16 +17,77 @@
                     {
                         <div class="alert alert-success p-3 m-3 rounded"> @_resultMessage </div>
                     }
-                    else if (!_canAccess)
-                    {
-                        <div class="alert alert-warning p-3 m-3 rounded">
-                            Veuillez vous connecter pour accéder à votre panier.
-                        </div>
-                    }
                     else if (_items == null || !_items.Any())
                     {
                         <div class="alert alert-info p-3 m-3 rounded">
                             Votre panier est vide.
+                        </div>
+                    }
+                    else if (!UserIsConnected)
+                    {
+                        <div class="alert alert-warning p-3 m-3 rounded">
+                            <div class="mb-2">
+                                <i class="bi bi-person-circle me-2"></i>
+                                <b>Vous n'êtes pas connecté(e)</b>
+                            </div>
+                            <div>
+                                Pour finaliser votre commande, veuillez vous connecter.<span class="ms-2 text-muted">Votre panier restera disponible après connexion&nbsp;😋</span>                      
+                            </div>
+                        </div>
+
+                        <div class="table-responsive mt-4">
+                            <table class="table table-hover align-middle table-striped mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Produit</th>
+                                        <th class="text-center">Quantité</th>
+                                        <th class="text-end">Prix unitaire</th>
+                                        <th class="text-end">Total</th>
+                                        <th class="text-end"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in _items)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <div class="fw-bold">@item.Product?.Name</div>
+                                                <div class="small text-muted">@item.Product?.Description</div>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="btn-group" role="group">
+                                                    <button class="btn btn-outline-secondary btn-sm"
+                                                            @onclick="() => DecrementQuantity(item)">
+                                                        <i class="bi bi-dash"></i>
+                                                    </button>
+                                                    <span class="px-2">@item.Quantity</span>
+                                                    <button class="btn btn-outline-secondary btn-sm"
+                                                            @onclick="() => IncrementQuantity(item)">
+                                                        <i class="bi bi-plus"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                            <td class="text-end">@item.Product?.Price.ToString("0.00") €</td>
+                                            <td class="text-end">@((item.Quantity * (item.Product?.Price ?? 0)).ToString("0.00")) €</td>
+                                            <td class="text-end">
+                                                <button class="btn btn-sm btn-outline-danger"
+                                                        @onclick="() => PromptRemoveItem(item)">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="rounded-3 p-3 my-3 shadow-sm border border-success bg-light text-success-emphasis d-flex align-items-center justify-content-between" style="font-size:1.08rem;">
+                            <div class="d-flex align-items-center" style="gap:0.5em;">
+                                <i class="bi bi-cash-stack fs-5" style="color:#34a853;"></i>
+                                <span class="fw-bold" style="font-size:1.05rem;">Total à payer</span>
+                            </div>
+                            <span class="fw-bold" style="font-size:1.25rem; letter-spacing:0.01em; min-width:85px; text-align:right;">
+                                @_totalPrice.ToString("0.00") €
+                            </span>
                         </div>
                     }
                     else
@@ -122,7 +182,7 @@
                         <div class="d-flex justify-content-end p-3">
                             <button class="btn btn-success fw-semibold px-4 py-2 mt-3"
                                     @onclick="ShowConfirmation"
-                                    disabled="@(!_canAccess || _items == null || !_items.Any() || SelectedDeliveryId == null)">
+                                    disabled="@(!UserIsConnected || _items == null || !_items.Any() || SelectedDeliveryId == null)">
                                 Valider la commande
                             </button>
 

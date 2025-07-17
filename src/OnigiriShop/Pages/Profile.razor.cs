@@ -9,13 +9,10 @@ using OnigiriShop.Infrastructure;
 
 namespace OnigiriShop.Pages
 {
-    public class ProfileBase : CustomComponent
+    public class ProfileBase : FrontCustomComponentBase
     {
-        [Inject] public IJSRuntime JS { get; set; }
-
         [Inject] public UserService UserService { get; set; }
         [Inject] public OrderService OrderService { get; set; }
-        [Inject] public AuthService AuthService { get; set; }
         [Inject] public NavigationManager Nav { get; set; }
         [Inject] public ToastService ToastService { get; set; }
 
@@ -38,6 +35,8 @@ namespace OnigiriShop.Pages
 
         protected override async Task OnInitializedAsync()
         {
+            await base.OnInitializedAsync();
+
             IsLoading = true;
             try
             {
