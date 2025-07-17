@@ -23,7 +23,7 @@ namespace Tests.Unit
             if (!File.Exists(schemaPath))
                 throw new FileNotFoundException($"Fichier de schéma SQL non trouvé : {schemaPath}");
 
-            var conn = new SqliteConnection("Data Source=:memory:");
+            using var conn = new SqliteConnection("Data Source=:memory:");
             await conn.OpenAsync();
 
             var schemaSql = await File.ReadAllTextAsync(schemaPath);
