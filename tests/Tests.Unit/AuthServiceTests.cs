@@ -10,9 +10,10 @@ namespace Tests.Unit
         private static AuthService BuildService(ClaimsPrincipal user)
         {
             var mockProvider = new Mock<SessionAuthenticationStateProvider>(null);
+            var cartProvider = new Mock<CartProvider>();
             mockProvider.Setup(x => x.GetAuthenticationStateAsync())
                 .ReturnsAsync(new Microsoft.AspNetCore.Components.Authorization.AuthenticationState(user));
-            return new AuthService(mockProvider.Object);
+            return new AuthService(mockProvider.Object, cartProvider.Object);
         }
 
         [Fact]
@@ -100,8 +101,9 @@ namespace Tests.Unit
                 .ReturnsAsync(new Microsoft.AspNetCore.Components.Authorization.AuthenticationState(
                     new ClaimsPrincipal(new ClaimsIdentity())));
             mockProvider.Setup(x => x.SignOutAsync()).Returns(Task.CompletedTask).Verifiable();
+            var cartProvider = new Mock<CartProvider>();
 
-            var service = new AuthService(mockProvider.Object);
+            var service = new AuthService(mockProvider.Object, cartProvider.Object);
 
             await service.LogoutAsync();
 

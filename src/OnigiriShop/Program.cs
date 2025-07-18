@@ -6,6 +6,7 @@ using OnigiriShop.Data;
 using OnigiriShop.Infrastructure;
 using OnigiriShop.Services;
 using Serilog;
+using FluentMigrator.Runner;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,12 +27,9 @@ var dbDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "BDD");
 var dbPath = Path.Combine(dbDir, "OnigiriShop.db");
 Directory.CreateDirectory(dbDir);
 
-var initScriptPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SQL", "init_db.sql");
-var seedScriptPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SQL", "seed.sql");
-if (!File.Exists(dbPath))
-    DatabaseSchemaValidator.EnsureSchemaUpToDate(dbPath, initScriptPath, seedScriptPath);
-else
-    DatabaseSchemaValidator.EnsureSchemaUpToDate(dbPath, initScriptPath);
+var connectionString = $"Data Source={dbPath}";
+
+builder.Services.AddOnigiriMigrations(connectionString);
 
 builder.Services.Configure<CalendarSettings>(builder.Configuration.GetSection("Calendar"));
 builder.Services.AddOnigiriDatabase(dbPath);
@@ -58,7 +56,6 @@ builder.Services.AddScoped<AnonymousCartService>();
 builder.Services.AddScoped<CartService>();
 builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<DeliveryService>();
-
 builder.Services.AddScoped(sp =>
 {
     var nav = sp.GetRequiredService<NavigationManager>();
@@ -69,6 +66,12 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var runner = scope.ServiceProvider.GetRequiredService<IMigrationRunner>();
+    runner.MigrateUp();
+}
 
 app.UseStaticFiles();
 app.UseRouting();
