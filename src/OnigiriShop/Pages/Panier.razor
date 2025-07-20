@@ -152,8 +152,8 @@
                             <div class="row">
                                 <div class="col-md-4">
                                     <select class="form-select mb-2"
-                                            @bind="SelectedPlace">
-                                        <option value="">-- Tous lieux --</option>
+                                        @bind="SelectedPlace" required>
+                                        <option value="" disabled selected>-- Choisir un lieu --</option>
                                         @foreach (var place in DistinctPlaces)
                                         {
                                             <option value="@place">@place</option>
@@ -162,12 +162,13 @@
                                 </div>
                                 <div class="col-md-8">
                                     <select class="form-select"
-                                            @bind="SelectedDeliveryId">
+                                            @bind="SelectedDeliveryId"
+                                            disabled="@string.IsNullOrWhiteSpace(SelectedPlace)">
                                         <option value="">-- Choisir une date --</option>
                                         @foreach (var delivery in FilteredDeliveries)
                                         {
                                             <option value="@delivery.Id">
-                                                @delivery.Place - @delivery.DeliveryAt.ToString("dddd dd/MM/yyyy HH:mm")
+                                                @delivery.DeliveryAt.ToString("dddd dd/MM/yyyy HH:mm")
                                             </option>
                                         }
                                     </select>

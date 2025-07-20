@@ -11,6 +11,13 @@
             Commandes
         </h4>
 
+        @if (HasOverdueOrders)
+        {
+            <div class="alert alert-danger m-3" style="cursor:pointer;" @onclick="ShowOverdueOrders">
+                Vous avez des commandes en attente dont la date de livraison prévue est dépassée, cliquez ce message pour les voir
+            </div>
+        }
+
         <div class="container-fluid p-3">
             <form class="row g-2 align-items-end mb-0">
                 <div class="d-flex align-items-end flex-wrap mb-2 px-1">

@@ -1,5 +1,6 @@
 ﻿using OnigiriShop.Data;
 using OnigiriShop.Services;
+using System.Security.Claims;
 
 namespace OnigiriShop.Infrastructure
 {
@@ -23,6 +24,21 @@ namespace OnigiriShop.Infrastructure
             app.MapPost("/api/auth/logout", async (SessionAuthenticationStateProvider authProvider) =>
             {
                 await authProvider.SignOutAsync();
+                return Results.Ok();
+            });
+
+            app.MapPost("/api/auth/refresh", async (HttpContext http, UserService userService, SessionAuthenticationStateProvider authProvider) =>
+            {
+                var idStr = http.User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (!int.TryParse(idStr, out var userId))
+                    return Results.Unauthorized();
+
+                var user = await userService.GetByIdAsync(userId);
+                if (user == null)
+                    return Results.Unauthorized();
+
+                await authProvider.SignInAsync(user);
+
                 return Results.Ok();
             });
         }

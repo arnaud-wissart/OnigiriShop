@@ -63,7 +63,7 @@ namespace OnigiriShop.Pages
             _items = await CartProvider.GetCurrentCartItemsWithProductsAsync();
             _totalPrice = _items.Sum(x => x.Quantity * (x.Product?.Price ?? 0));
 
-            Deliveries = await DeliveryService.GetUpcomingAsync();
+            Deliveries = await DeliveryService.GetUpcomingAsync(DateTime.Now, DateTime.Now.AddMonths(1));
             DistinctPlaces = Deliveries
                 .Select(d => d.Place)
                 .Distinct()
@@ -141,6 +141,12 @@ namespace OnigiriShop.Pages
             if (_items.Count == 0)
             {
                 _resultMessage = "Votre panier est vide.";
+                StateHasChanged();
+                return;
+            }
+            if (string.IsNullOrWhiteSpace(SelectedPlace))
+            {
+                _resultMessage = "Veuillez sélectionner un lieu de livraison.";
                 StateHasChanged();
                 return;
             }

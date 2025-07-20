@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.JSInterop;
 using OnigiriShop.Services;
 
@@ -6,6 +7,8 @@ namespace OnigiriShop.Shared
 {
     public partial class MainHeaderBase: ComponentBase
     {
+        [Inject] public AuthenticationStateProvider AuthProvider { get; set; }
+
         [Inject] public NavigationManager Nav { get; set; }
         [Inject] public IJSRuntime JS { get; set; }
         [Inject] public AuthService AuthService { get; set; }
@@ -20,10 +23,21 @@ namespace OnigiriShop.Shared
 
         protected override async Task OnInitializedAsync()
         {
+            AuthProvider.AuthenticationStateChanged += AuthStateChanged;
+            await UpdateAuthInfoAsync();
+        }
+
+        private async void AuthStateChanged(Task<AuthenticationState> task)
+        {
+            await UpdateAuthInfoAsync();
+            StateHasChanged();
+        }
+
+        private async Task UpdateAuthInfoAsync()
+        {
             IsAuthenticated = await AuthService.IsAuthenticatedAsync();
             IsAdmin = IsAuthenticated && await AuthService.IsAdminAsync();
             UserNameOrEmail = IsAuthenticated ? await AuthService.GetCurrentUserNameOrEmailAsync() : null;
-            StateHasChanged();
         }
         protected async Task ConfirmLogout()
         {

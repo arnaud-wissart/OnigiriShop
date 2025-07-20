@@ -41,9 +41,25 @@ window.onigiriAuth = {
         } catch (err) {
             alert("Erreur lors de la déconnexion : " + err);
         }
+    },
+
+
+    /**
+     * Rafraîchit la session utilisateur côté serveur.
+     * @returns {Promise<boolean>}
+     */
+    refreshSession: async function () {
+        try {
+            const response = await fetch("/api/auth/refresh", {
+                method: "POST",
+                credentials: "same-origin"
+            });
+            return response.ok;
+        } catch (err) {
+            return false;
+        }
     }
 };
-
 // ==================== Bootstrap Interop / Tooltips ====================
 
 window.bootstrapInterop = {
@@ -342,7 +358,7 @@ window.downloadFileFromText = (filename, text) => {
     document.body.removeChild(element);
 };
 
-    // ==================== HTML Editor (Quill) ====================
+// ==================== HTML Editor (Quill) ====================
 
 window.initHtmlEditor = function (id, dotNetHelper, value) {
     if (!window.quillEditors) window.quillEditors = {};

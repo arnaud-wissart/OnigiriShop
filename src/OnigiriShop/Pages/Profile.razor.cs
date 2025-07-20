@@ -6,6 +6,7 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 using OnigiriShop.Infrastructure;
+using OnigiriShop.Data;
 
 namespace OnigiriShop.Pages
 {
@@ -17,6 +18,7 @@ namespace OnigiriShop.Pages
         [Inject] public OrderService OrderService { get; set; }
         [Inject] public NavigationManager Nav { get; set; }
         [Inject] public ToastService ToastService { get; set; }
+        [Inject] public SessionAuthenticationStateProvider SessionAuthProvider { get; set; }
 
         [CascadingParameter] public Task<AuthenticationState> AuthState { get; set; }
 
@@ -131,6 +133,8 @@ namespace OnigiriShop.Pages
 
                     _initialUserModel.Name = user.Name;
                     _initialUserModel.Phone = user.Phone;
+
+                    await JS.InvokeVoidAsync("onigiriAuth.refreshSession");
                 }
             }
             catch (Exception ex)

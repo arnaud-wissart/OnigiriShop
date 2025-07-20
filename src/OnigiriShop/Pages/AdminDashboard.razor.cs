@@ -13,6 +13,7 @@ namespace OnigiriShop.Pages
         [Inject] public DeliveryService DeliveryService { get; set; }
         [Inject] public OrderExportService OrderExportService { get; set; }
 
+        protected bool HasOverdueOrders { get; set; }
 
         protected List<AdminOrderSummary> Orders = [];
         protected AdminOrderSummary SelectedOrder { get; set; }
@@ -24,8 +25,14 @@ namespace OnigiriShop.Pages
             await base.OnInitializedAsync();
 
             Orders = await OrderService.GetAllAdminOrdersAsync();
+            HasOverdueOrders = Orders.Any(o => o.Status == "En attente" && o.DeliveryAt.Date < DateTime.Today);
         }
-
+        protected void ShowOverdueOrders()
+        {
+            FilterStatus = "En attente";
+            FilterDeliveryDate = null;
+            StateHasChanged();
+        }
         protected override async Task OnAfterRenderAsync(bool firstRender) => await JS.InvokeVoidAsync("activateTooltips");
         protected AdminOrderDetail SelectedOrderDetail { get; set; }
         protected int TotalItems => FilteredOrders.Count;
