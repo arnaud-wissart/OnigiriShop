@@ -3,8 +3,8 @@
     public class ErrorModalService
     {
         public bool Show { get; private set; }
-        public string Message { get; private set; }
-        public string Title { get; private set; }
+        public string Message { get; private set; } = string.Empty;
+        public string Title { get; private set; } = string.Empty;
 
         public event Action OnShowChanged;
 

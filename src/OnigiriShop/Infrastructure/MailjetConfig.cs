@@ -2,10 +2,10 @@
 {
     public class MailjetConfig
     {
-        public string ApiKey { get; set; }
-        public string ApiSecret { get; set; }
-        public string SenderEmail { get; set; }
-        public string SenderName { get; set; }
-        public string AdminEmail { get; set; }
+        public string ApiKey { get; set; } = string.Empty;
+        public string ApiSecret { get; set; } = string.Empty;
+        public string SenderEmail { get; set; } = string.Empty;
+        public string SenderName { get; set; } = string.Empty;
+        public string AdminEmail { get; set; } = string.Empty;
     }
 }

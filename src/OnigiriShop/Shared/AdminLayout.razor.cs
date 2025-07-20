@@ -9,10 +9,10 @@ namespace OnigiriShop.Shared
 {
     public class AdminLayoutBase : LayoutComponentBase, IDisposable
     {
-        [Inject] public ErrorModalService ErrorModalService { get; set; }
+        [Inject] public ErrorModalService ErrorModalService { get; set; } = default!;
 
-        [Inject] public AuthenticationStateProvider AuthProvider { get; set; }
-        [Inject] public IJSRuntime JS { get; set; }
+        [Inject] public AuthenticationStateProvider AuthProvider { get; set; } = default!;
+        [Inject] public IJSRuntime JS { get; set; } = default!;
 
         protected bool ShowLoginModal { get; set; }
         protected bool IsAuthenticated { get; set; }

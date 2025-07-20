@@ -5,7 +5,7 @@ namespace OnigiriShop.Pages
 {
     public class InviteLogoutBase : CustomComponentBase
     {
-        [Inject] public NavigationManager Nav { get; set; }
+        [Inject] public NavigationManager Nav { get; set; } = default!;
 
         protected override async Task OnInitializedAsync()
         {

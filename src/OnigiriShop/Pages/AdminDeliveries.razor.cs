@@ -9,13 +9,13 @@ namespace OnigiriShop.Pages
 {
     public class AdminDeliveriesBase : CustomComponentBase
     {
-        [Inject] public UserPreferenceService UserPreferenceService { get; set; }
-        [Inject] public DeliveryService DeliveryService { get; set; }
-        [Inject] public DeliveryCalendarService CalendarService { get; set; }
-        [Inject] public IOptions<CalendarSettings> CalendarConfig { get; set; }
+        [Inject] public UserPreferenceService UserPreferenceService { get; set; } = default!;
+        [Inject] public DeliveryService DeliveryService { get; set; } = default!;
+        [Inject] public DeliveryCalendarService CalendarService { get; set; } = default!;
+        [Inject] public IOptions<CalendarSettings> CalendarConfig { get; set; } = default!;
         public enum LegendType { Ponctuelle, Recurrente }
-        public string CouleurPonctuelle { get; set; }
-        public string CouleurRecurrente { get; set; }
+        public string CouleurPonctuelle { get; set; } = string.Empty;
+        public string CouleurRecurrente { get; set; } = string.Empty;
 
         protected bool ShowColorModal;
         protected string SelectedColor;
@@ -100,8 +100,8 @@ namespace OnigiriShop.Pages
         public bool IsBusy { get; set; }
         public DateTime? ModalDate { get; set; }
         public TimeOnly? ModalTime { get; set; }
-        public string ModalError { get; set; }
-        public string SearchTerm { get; set; }
+        public string ModalError { get; set; } = string.Empty;
+        public string SearchTerm { get; set; } = string.Empty;
         public int WeekStartDay => CalendarConfig?.Value?.FirstDayOfWeek ?? 1;
 
         public List<Delivery> FilteredDeliveries =>

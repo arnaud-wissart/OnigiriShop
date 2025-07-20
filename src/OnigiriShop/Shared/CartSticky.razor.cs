@@ -9,7 +9,7 @@ namespace OnigiriShop.Shared
 {
     public partial class CartStickyBase : FrontCustomComponentBase, IDisposable
     {
-        [Inject] public NavigationManager Nav { get; set; }
+        [Inject] public NavigationManager Nav { get; set; } = default!;
         [Parameter] public EventCallback OnCartUpdated { get; set; }
         [Parameter] public bool ShowCart { get; set; } = true;
 

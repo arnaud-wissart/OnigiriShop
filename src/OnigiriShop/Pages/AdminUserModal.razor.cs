@@ -13,8 +13,8 @@ namespace OnigiriShop.Pages
         [Parameter] public User UserToEdit { get; set; }
         [Parameter] public bool IsEditMode { get; set; }
 
-        [Inject] public UserAccountService UserAccountService { get; set; }
-        [Inject] public NavigationManager Nav { get; set; }
+        [Inject] public UserAccountService UserAccountService { get; set; } = default!;
+        [Inject] public NavigationManager Nav { get; set; } = default!;
 
         protected User EditModel = new();
         protected bool IsBusy = false;

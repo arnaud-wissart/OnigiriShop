@@ -12,8 +12,8 @@ namespace OnigiriShop.Pages
 {
     public class AdminProductsBase : CustomComponentBase
     {
-        [Inject] public IWebHostEnvironment WebHostEnv { get; set; }
-        [Inject] public ProductService ProductService { get; set; }
+        [Inject] public IWebHostEnvironment WebHostEnv { get; set; } = default!;
+        [Inject] public ProductService ProductService { get; set; } = default!;
         protected List<Product> Products { get; set; } = new();
         protected List<Product> FilteredProducts => Products;
         protected Product ModalModel { get; set; } = new();
@@ -21,8 +21,8 @@ namespace OnigiriShop.Pages
         protected bool ShowModal { get; set; }
         protected bool ShowDeleteConfirm { get; set; }
         protected bool IsEdit { get; set; }
-        protected string ModalTitle { get; set; }
-        protected string ModalError { get; set; }
+        protected string ModalTitle { get; set; } = string.Empty;
+        protected string ModalError { get; set; } = string.Empty;
         protected bool IsBusy { get; set; }
 
         protected override async Task OnInitializedAsync()

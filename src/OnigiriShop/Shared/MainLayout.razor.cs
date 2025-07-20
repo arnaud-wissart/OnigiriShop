@@ -10,15 +10,15 @@ namespace OnigiriShop.Shared
 {
     public class MainLayoutBase : LayoutComponentBase, IDisposable
     {
-        [Inject] public AuthenticationStateProvider AuthProvider { get; set; }
-        [Inject] public CartService CartService { get; set; }
-        [Inject] public ErrorModalService ErrorModalService { get; set; }
-        [Inject] public ProductService ProductService { get; set; }
-        [Inject] public NavigationManager Nav { get; set; }
-        [Inject] public IJSRuntime JS { get; set; }
+        [Inject] public AuthenticationStateProvider AuthProvider { get; set; } = default!;
+        [Inject] public CartService CartService { get; set; } = default!;
+        [Inject] public ErrorModalService ErrorModalService { get; set; } = default!;
+        [Inject] public ProductService ProductService { get; set; } = default!;
+        [Inject] public NavigationManager Nav { get; set; } = default!;
+        [Inject] public IJSRuntime JS { get; set; } = default!;
 
         protected ClaimsPrincipal User { get; set; }
-        protected string UserEmail { get; set; }
+        protected string UserEmail { get; set; } = string.Empty;
         protected bool IsAdmin { get; set; }
         protected bool IsAuthenticated { get; set; }
         protected bool ShowCartSticky { get; set; } = true;
