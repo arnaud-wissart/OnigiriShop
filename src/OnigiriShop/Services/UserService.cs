@@ -1,27 +1,16 @@
 ﻿using Dapper;
-using Microsoft.AspNetCore.Connections;
-using Microsoft.Extensions.Options;
 using OnigiriShop.Data.Interfaces;
 using OnigiriShop.Data.Models;
 using OnigiriShop.Infrastructure;
 using Serilog;
-using System.Data;
 using System.Data.Common;
-using System.Security.Cryptography;
-using System.Text.Json;
 
 namespace OnigiriShop.Services
 {
     public class UserService(ISqliteConnectionFactory connectionFactory)
     {
-        private static void AddParam(IDbCommand cmd, string name, object value)
-        {
-            var p = cmd.CreateParameter();
-            p.ParameterName = name;
-            p.Value = value ?? DBNull.Value;
-            cmd.Parameters.Add(p);
-        }
-
+        private const string AuditSql = @"INSERT INTO AuditLog (UserId, Action, TargetType, TargetId, Timestamp, Details)
+                                          VALUES (@UserId, @Action, 'User', @TargetId, @Timestamp, @Details);";
         public async Task<User> GetByIdAsync(int userId)
         {
             using var conn = connectionFactory.CreateConnection();
@@ -50,76 +39,47 @@ namespace OnigiriShop.Services
         public async Task SoftDeleteUserAsync(int userId)
         {
             using var conn = connectionFactory.CreateConnection();
-            await ((DbConnection)conn).OpenAsync();
+            const string sql = "UPDATE User SET IsActive = 0 WHERE Id = @userId";
+            await conn.ExecuteAsync(sql, new { userId });
 
-            var cmd = conn.CreateCommand();
-            cmd.CommandText = @"UPDATE User SET IsActive = 0 WHERE Id = @UserId";
-            AddParam(cmd, "@UserId", userId);
-            await ((DbCommand)cmd).ExecuteNonQueryAsync();
-
-            // Audit log
-            var cmdAudit = conn.CreateCommand();
-            cmdAudit.CommandText = @"
-        INSERT INTO AuditLog (UserId, Action, TargetType, TargetId, Timestamp, Details)
-        VALUES (@UserId, 'SoftDelete', 'User', @TargetId, @Timestamp, @Details);";
-            AddParam(cmdAudit, "@UserId", DBNull.Value);
-            AddParam(cmdAudit, "@TargetId", userId);
-            AddParam(cmdAudit, "@Timestamp", DateTime.UtcNow);
-            AddParam(cmdAudit, "@Details", "Suppression logique (désactivation)");
-            await ((DbCommand)cmdAudit).ExecuteNonQueryAsync();
+            await conn.ExecuteAsync(AuditSql, new
+            {
+                UserId = (int?)null,
+                Action = "SoftDelete",
+                TargetId = userId,
+                Timestamp = DateTime.UtcNow,
+                Details = "Suppression logique (désactivation)"
+            });
         }
 
         public async Task<List<User>> GetAllUsersAsync(string search = null)
         {
             using var conn = connectionFactory.CreateConnection();
-            await ((DbConnection)conn).OpenAsync();
-            using var cmd = (DbCommand)conn.CreateCommand();
-            cmd.CommandText = "SELECT Id, Email, Name, Phone, CreatedAt, IsActive, Role FROM User";
+            var sql = "SELECT Id, Email, Name, Phone, CreatedAt, IsActive, Role FROM User";
+            object? param = null;
             if (!string.IsNullOrWhiteSpace(search))
             {
-                cmd.CommandText += " WHERE Email LIKE @Search OR Name LIKE @Search";
-                AddParam(cmd, "@Search", "%" + search + "%");
+                sql += " WHERE Email LIKE @search OR Name LIKE @search";
+                param = new { search = "%" + search + "%" };
             }
-            using var reader = await cmd.ExecuteReaderAsync();
-            var users = new List<User>();
-            while (await reader.ReadAsync())
-            {
-                users.Add(new User
-                {
-                    Id = Convert.ToInt32(reader["Id"]),
-                    Email = reader["Email"].ToString(),
-                    Name = reader["Name"].ToString(),
-                    Phone = reader["Phone"]?.ToString() ?? "",
-                    CreatedAt = DateTime.Parse(reader["CreatedAt"].ToString()),
-                    IsActive = Convert.ToBoolean(reader["IsActive"]),
-                    Role = reader["Role"].ToString()
-                });
-            }
-            return users;
+            var users = await conn.QueryAsync<User>(sql, param);
+            return users.ToList();
         }
 
         public async Task SetUserActiveAsync(int userId, bool isActive)
         {
             using var conn = connectionFactory.CreateConnection();
-            await((DbConnection)conn).OpenAsync();
+            const string sql = "UPDATE User SET IsActive = @isActive WHERE Id = @userId";
+            await conn.ExecuteAsync(sql, new { isActive = isActive ? 1 : 0, userId });
 
-            // Update de l’état actif
-            var cmd = conn.CreateCommand();
-            cmd.CommandText = @"UPDATE User SET IsActive = @IsActive WHERE Id = @UserId";
-            AddParam(cmd, "@IsActive", isActive ? 1 : 0);
-            AddParam(cmd, "@UserId", userId);
-            await ((DbCommand)cmd).ExecuteNonQueryAsync();
-            // Audit log
-            var cmdAudit = (DbCommand)conn.CreateCommand();
-            cmdAudit.CommandText = @"
-        INSERT INTO AuditLog (UserId, Action, TargetType, TargetId, Timestamp, Details)
-        VALUES (@UserId, @Action, 'User', @TargetId, @Timestamp, @Details);";
-            AddParam(cmdAudit, "@UserId", DBNull.Value);
-            AddParam(cmdAudit, "@Action", isActive ? "Activate" : "Deactivate");
-            AddParam(cmdAudit, "@TargetId", userId);
-            AddParam(cmdAudit, "@Timestamp", DateTime.UtcNow);
-            AddParam(cmdAudit, "@Details", isActive ? "Compte activé" : "Compte désactivé");
-            await cmdAudit.ExecuteNonQueryAsync();
+            await conn.ExecuteAsync(AuditSql, new
+            {
+                UserId = (int?)null,
+                Action = isActive ? "Activate" : "Deactivate",
+                TargetId = userId,
+                Timestamp = DateTime.UtcNow,
+                Details = isActive ? "Compte activé" : "Compte désactivé"
+            });
 
             Log.Information("Changement état actif pour userId={UserId}: {NewState}", userId, isActive ? "Actif" : "Inactif");
         }
@@ -127,39 +87,37 @@ namespace OnigiriShop.Services
         public async Task UpdateUserAsync(User user)
         {
             using var conn = connectionFactory.CreateConnection();
-            await ((DbConnection)conn).OpenAsync();
+            conn.Open();
             using var txn = conn.BeginTransaction();
 
-            var cmd = conn.CreateCommand();
-            cmd.CommandText = @"
-        UPDATE User
+            const string sql = @"UPDATE User
         SET Email = @Email,
             Name = @Name,
             Phone = @Phone,
             IsActive = @IsActive,
             Role = @Role
         WHERE Id = @Id";
-            AddParam(cmd, "@Email", user.Email);
-            AddParam(cmd, "@Name", user.Name ?? user.Email);
-            AddParam(cmd, "@Phone", user.Phone ?? "");
-            AddParam(cmd, "@IsActive", user.IsActive ? 1 : 0);
-            AddParam(cmd, "@Role", string.IsNullOrEmpty(user.Role) ? AuthConstants.RoleUser : user.Role);
-            AddParam(cmd, "@Id", user.Id);
 
-            await ((DbCommand)cmd).ExecuteNonQueryAsync();
+            await conn.ExecuteAsync(sql, new
+            {
+                user.Email,
+                Name = user.Name ?? user.Email,
+                Phone = user.Phone ?? string.Empty,
+                IsActive = user.IsActive ? 1 : 0,
+                Role = string.IsNullOrEmpty(user.Role) ? AuthConstants.RoleUser : user.Role,
+                user.Id
+            }, txn);
 
-            // Audit log
-            var cmdAudit = (DbCommand)conn.CreateCommand();
-            cmdAudit.CommandText = @"
-        INSERT INTO AuditLog (UserId, Action, TargetType, TargetId, Timestamp, Details)
-        VALUES (@UserId, 'Update', 'User', @TargetId, @Timestamp, @Details);";
-            AddParam(cmdAudit, "@UserId", DBNull.Value); // Admin à compléter si besoin
-            AddParam(cmdAudit, "@TargetId", user.Id);
-            AddParam(cmdAudit, "@Timestamp", DateTime.UtcNow);
-            AddParam(cmdAudit, "@Details", $"Mise à jour de l'utilisateur {user.Email}");
-            await cmdAudit.ExecuteNonQueryAsync();
+            await conn.ExecuteAsync(AuditSql, new
+            {
+                UserId = (int?)null,
+                Action = "Update",
+                TargetId = user.Id,
+                Timestamp = DateTime.UtcNow,
+                Details = $"Mise à jour de l'utilisateur {user.Email}"
+            }, txn);
 
-            await ((DbTransaction)txn).CommitAsync();
+            txn.Commit();
         }
     }
 }
