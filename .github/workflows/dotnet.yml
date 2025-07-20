@@ -1,0 +1,32 @@
+name: .NET CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore OnigiriShop.sln
+
+      - name: Build
+        run: dotnet build OnigiriShop.sln --no-restore --configuration Release
+
+      - name: Install Playwright
+        run: pwsh -Command "npx playwright install"
+
+      - name: Test
+        run: dotnet test OnigiriShop.sln --no-build --configuration Release
