@@ -149,3 +149,11 @@ CREATE TABLE IF NOT EXISTS EmailVariation (
     Value TEXT NOT NULL,     -- Email, sujet, signature, intro...
     Extra TEXT               -- Pour des infos annexes (pour Expeditor: Name, ou JSON, ou null)
 );
+
+-- Table EmailTemplate
+CREATE TABLE IF NOT EXISTS EmailTemplate (
+    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+    Name TEXT NOT NULL UNIQUE,
+    HtmlContent TEXT NOT NULL,
+    TextContent TEXT
+);

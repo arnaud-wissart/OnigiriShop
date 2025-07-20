@@ -79,3 +79,12 @@ INSERT INTO EmailVariation (Type, Name, Value, Extra) VALUES ('Signature', NULL,
 INSERT INTO EmailVariation (Type, Name, Value, Extra) VALUES ('Signature', NULL, 'Votre support OnigiriShop', NULL);
 INSERT INTO EmailVariation (Type, Name, Value, Extra) VALUES ('Signature', NULL, 'À très bientôt chez OnigiriShop !', NULL);
 INSERT INTO EmailVariation (Type, Name, Value, Extra) VALUES ('Signature', NULL, 'L’équipe Sushi du jour 🥢', NULL);
+
+-- Templates d'e-mails par défaut
+INSERT INTO EmailTemplate (Name, HtmlContent, TextContent) VALUES
+('UserInvitation', '<p>{{Intro}}</p><p>Ton compte a été créé. Clique ci-dessous pour définir ton mot de passe&nbsp;:</p><p><a href="{{Link}}">{{Link}}</a></p><p><small>Ce lien expire dans 1 heure.</small></p><hr><p style="color:#888;font-size:0.9em;">{{Signature}}</p>',
+ '{{Intro}}\nTon compte a été créé.\n{{Link}}\nCe lien expire dans 1 heure.\n\n{{Signature}}'),
+('PasswordReset', '<p>{{Intro}}</p><p>Cliquez ici pour choisir un nouveau mot de passe&nbsp;:<br><a href="{{Link}}">{{Link}}</a></p><p><small>Ce lien est valable 1 heure.</small></p><hr><p style="color:#888;font-size:0.9em;">{{Signature}}</p>',
+ '{{Intro}}\n{{Link}}\nCe lien est valable 1 heure.\n\n{{Signature}}'),
+('OrderConfirmation', '<p>Bonjour {{Name}},</p><p>Nous avons bien reçu votre commande n°{{OrderId}} du {{OrderDate}}.</p><ul style="margin-bottom:1em;">{{OrderLines}}</ul><p><b>Total : {{Total}} €</b></p><p>Livraison prévue : {{DeliveryDate}} - {{DeliveryPlace}}</p><hr><p style="color:#888;font-size:0.9em;">{{Signature}}</p>',
+ 'Bonjour {{Name}},\nCommande n°{{OrderId}} du {{OrderDate}}\nTotal : {{Total}} €\nLivraison prévue : {{DeliveryDate}} - {{DeliveryPlace}}\n\n{{Signature}}');

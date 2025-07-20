@@ -23,9 +23,16 @@ builder.Services.Configure<MailjetConfig>(builder.Configuration.GetSection("Mail
 builder.Services.Configure<MagicLinkConfig>(builder.Configuration.GetSection("MagicLink"));
 
 
-var dbDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "BDD");
+var baseDir = AppDomain.CurrentDomain.BaseDirectory;
+var dbDir = Path.Combine(baseDir, "BDD");
 var dbPath = Path.Combine(dbDir, "OnigiriShop.db");
 Directory.CreateDirectory(dbDir);
+
+var schemaPath = Path.Combine(baseDir, "SQL", "init_db.sql");
+var expectedHash = DatabaseInitializer.ComputeSchemaHash(schemaPath);
+
+if (!DatabaseInitializer.IsSchemaUpToDate(dbPath, expectedHash))
+    DatabaseInitializer.DeleteDatabase(dbPath);
 
 var connectionString = $"Data Source={dbPath}";
 
@@ -47,6 +54,7 @@ builder.Services.AddScoped<IMailjetClient>(sp =>
     return new MailjetClient(config.ApiKey, config.ApiSecret);
 });
 builder.Services.AddScoped<EmailVariationService>();
+builder.Services.AddScoped<EmailTemplateService>();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddSession();
@@ -71,6 +79,7 @@ using (var scope = app.Services.CreateScope())
 {
     var runner = scope.ServiceProvider.GetRequiredService<IMigrationRunner>();
     runner.MigrateUp();
+    DatabaseInitializer.SetSchemaHash(dbPath, expectedHash);
 }
 
 app.UseStaticFiles();

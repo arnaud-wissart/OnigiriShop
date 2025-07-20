@@ -1,0 +1,115 @@
+﻿@page "/admin/email-templates"
+@layout AdminLayout
+@using OnigiriShop.Data.Models
+@attribute [Authorize]
+@inherits AdminEmailTemplatesBase
+
+<div class="card shadow rounded-3 overflow-hidden border mb-4" style="background:#fff;">
+    <div class="card-body p-0">
+        <h4 class="card-title p-3 mb-0 border-bottom bg-light fw-bold" style="color:#212529; letter-spacing:0.01em;">
+            Gestion des templates d&rsquo;emails
+        </h4>
+        <div class="p-3">
+            <table class="table table-sm align-middle">
+                <thead>
+                    <tr>
+                        <th>Nom</th>
+                        <th class="text-end" style="width:110px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var t in Templates)
+                    {
+                        <tr>
+                            <td>@t.Name</td>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-outline-secondary me-2" @onclick="() => EditTemplate(t)">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" @onclick="() => ConfirmDelete(t)">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                    <tr>
+                        <td colspan="2">
+                            <button class="btn btn-success btn-sm mt-1" @onclick="ShowAddModal">
+                                <i class="bi bi-plus-circle me-1"></i> Ajouter
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@if (ShowModal)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background:rgba(33,33,33,0.13);">
+        <div class="modal-dialog modal-lg" @onclick:stopPropagation>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@ModalTitle</h5>
+                    <button type="button" class="btn-close" @onclick="HideModal"></button>
+                </div>
+                <div class="modal-body">
+                    @if (!string.IsNullOrWhiteSpace(ModalError))
+                    {
+                        <div class="alert alert-danger">@ModalError</div>
+                    }
+                    <EditForm Model="ModalModel" OnValidSubmit="HandleModalValid">
+                        <DataAnnotationsValidator />
+                        <div class="mb-3">
+                            <label>Nom</label>
+                            <InputText class="form-control" @bind-Value="ModalModel.Name" />
+                            <ValidationMessage For="@(() => ModalModel.Name)" />
+                        </div>
+                        <div class="mb-3">
+                            <label>Contenu HTML</label>
+                            <InputTextArea class="form-control" @bind-Value="ModalModel.HtmlContent" Rows="6" />
+                        </div>
+                        <div class="mb-3">
+                            <label>Contenu texte</label>
+                            <InputTextArea class="form-control" @bind-Value="ModalModel.TextContent" Rows="4" />
+                        </div>
+                        <button class="btn btn-success w-100" type="submit" disabled="@IsBusy">
+                            @((IsEdit ? "Mettre à jour" : "Créer"))
+                            @if (IsBusy)
+                            {
+                                <span class="spinner-border spinner-border-sm ms-2"></span>
+                            }
+                        </button>
+                        @if (IsEdit)
+                        {
+                            <button class="btn btn-danger w-100 mt-2" type="button" @onclick="ConfirmDeleteModal">
+                                <i class="bi bi-trash"></i> Supprimer ce template
+                            </button>
+                        }
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (ShowDeleteConfirm)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background:rgba(33,33,33,0.13);">
+        <div class="modal-dialog modal-dialog-centered" @onclick:stopPropagation>
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmation suppression</h5>
+                </div>
+                <div class="modal-body">
+                    <p>Confirmer la suppression du template <b>@DeleteModel?.Name</b>&nbsp;?</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CancelDelete">Annuler</button>
+                    <button class="btn btn-danger" @onclick="DeleteConfirmed">Supprimer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}

@@ -11,12 +11,14 @@ namespace OnigiriShop.Services
         private readonly IMailjetClient _client;
         private readonly EmailVariationService _variationService;
         private readonly ErrorModalService _errorModalService;
+        private readonly EmailTemplateService _templateService;
 
-        public EmailService(IMailjetClient client, EmailVariationService variationService, ErrorModalService errorModalService)
+        public EmailService(IMailjetClient client, EmailVariationService variationService, ErrorModalService errorModalService, EmailTemplateService templateService)
         {
             _client = client;
             _variationService = variationService;
             _errorModalService = errorModalService;
+            _templateService = templateService;
         }
 
         public async Task SendEmailAsync(
@@ -81,14 +83,25 @@ namespace OnigiriShop.Services
             var intro = await _variationService.GetRandomValueByTypeAsync("InvitationIntro") ?? "Bienvenue !";
             var signature = await _variationService.GetRandomValueByTypeAsync("Signature") ?? "L’équipe OnigiriShop";
 
-            var html = $@"
-                <p>{intro}</p>
-                <p>Ton compte a été créé. Clique ci-dessous pour définir ton mot de passe&nbsp;:</p>
-                <p><a href=""{invitationLink}"">{invitationLink}</a></p>
-                <p><small>Ce lien expire dans 1 heure.</small></p>
-                <hr>
-                <p style=""color:#888;font-size:0.9em;"">{signature}</p>";
-            var text = $"{intro}\nTon compte a été créé.\n{invitationLink}\nCe lien expire dans 1 heure.\n\n{signature}";
+            var template = await _templateService.GetByNameAsync("UserInvitation");
+            string html;
+            string text;
+            if (template != null)
+            {
+                html = template.HtmlContent
+                    .Replace("{{Intro}}", intro)
+                    .Replace("{{Link}}", invitationLink)
+                    .Replace("{{Signature}}", signature);
+                text = template.TextContent?
+                    .Replace("{{Intro}}", intro)
+                    .Replace("{{Link}}", invitationLink)
+                    .Replace("{{Signature}}", signature);
+            }
+            else
+            {
+                html = $@"<p>{intro}</p><p>Ton compte a été créé. Clique ci-dessous pour définir ton mot de passe&nbsp;:</p><p><a href=""{invitationLink}"">{invitationLink}</a></p><p><small>Ce lien expire dans 1 heure.</small></p><hr><p style=""color:#888;font-size:0.9em;"">{signature}</p>";
+                text = $"{intro}\nTon compte a été créé.\n{invitationLink}\nCe lien expire dans 1 heure.\n\n{signature}";
+            }
 
             await SendEmailAsync(toEmail, toName, subject, html, text, expEmail, expName);
         }
@@ -100,14 +113,25 @@ namespace OnigiriShop.Services
             var intro = await _variationService.GetRandomValueByTypeAsync("PasswordResetIntro") ?? "Vous avez demandé à réinitialiser votre mot de passe.";
             var signature = await _variationService.GetRandomValueByTypeAsync("Signature") ?? "L’équipe OnigiriShop";
 
-            var html = $@"
-                <p>{intro}</p>
-                <p>Cliquez ici pour choisir un nouveau mot de passe&nbsp;:<br>
-                <a href=""{resetLink}"">{resetLink}</a></p>
-                <p><small>Ce lien est valable 1 heure.</small></p>
-                <hr>
-                <p style=""color:#888;font-size:0.9em;"">{signature}</p>";
-            var text = $"{intro}\n{resetLink}\nCe lien est valable 1 heure.\n\n{signature}";
+            var template = await _templateService.GetByNameAsync("PasswordReset");
+            string html;
+            string text;
+            if (template != null)
+            {
+                html = template.HtmlContent
+                    .Replace("{{Intro}}", intro)
+                    .Replace("{{Link}}", resetLink)
+                    .Replace("{{Signature}}", signature);
+                text = template.TextContent?
+                    .Replace("{{Intro}}", intro)
+                    .Replace("{{Link}}", resetLink)
+                    .Replace("{{Signature}}", signature);
+            }
+            else
+            {
+                html = $@"<p>{intro}</p><p>Cliquez ici pour choisir un nouveau mot de passe&nbsp;:<br><a href=""{resetLink}"">{resetLink}</a></p><p><small>Ce lien est valable 1 heure.</small></p><hr><p style=""color:#888;font-size:0.9em;"">{signature}</p>";
+                text = $"{intro}\n{resetLink}\nCe lien est valable 1 heure.\n\n{signature}";
+            }
 
             await SendEmailAsync(toEmail, toName, subject, html, text, expEmail, expName);
         }
@@ -123,15 +147,34 @@ namespace OnigiriShop.Services
                     $"<li>{i.Quantity} x {i.ProductName} - {(i.UnitPrice * i.Quantity):0.00} €</li>"))
                 : "<li>Pas de détail trouvé.</li>";
 
-            var html = $@"
-                <p>Bonjour {(string.IsNullOrEmpty(toName) ? toEmail : toName)},</p>
-                <p>Nous avons bien reçu votre commande n°{order.Id} du {order.OrderedAt:dd/MM/yyyy à HH:mm}.</p>
-                <ul style=""margin-bottom:1em;"">{orderLines}</ul>
-                <p><b>Total : {order.TotalAmount:0.00} €</b></p>
-                <p>Livraison prévue : {delivery.DeliveryAt:dddd dd/MM/yyyy HH:mm} - {delivery.Place}</p>
-                <hr>
-                <p style=""color:#888;font-size:0.9em;"">{signature}</p>";
-            var text = $"Bonjour {(string.IsNullOrEmpty(toName) ? toEmail : toName)},\n" +
+            var template = await _templateService.GetByNameAsync("OrderConfirmation");
+            string html;
+            string text;
+            if (template != null)
+            {
+                html = template.HtmlContent
+                    .Replace("{{Name}}", string.IsNullOrEmpty(toName) ? toEmail : toName)
+                    .Replace("{{OrderId}}", order.Id.ToString())
+                    .Replace("{{OrderDate}}", order.OrderedAt.ToString("dd/MM/yyyy à HH:mm"))
+                    .Replace("{{OrderLines}}", orderLines)
+                    .Replace("{{Total}}", order.TotalAmount.ToString("0.00"))
+                    .Replace("{{DeliveryDate}}", delivery.DeliveryAt.ToString("dddd dd/MM/yyyy HH:mm"))
+                    .Replace("{{DeliveryPlace}}", delivery.Place)
+                    .Replace("{{Signature}}", signature);
+                text = template.TextContent?
+                    .Replace("{{Name}}", string.IsNullOrEmpty(toName) ? toEmail : toName)
+                    .Replace("{{OrderId}}", order.Id.ToString())
+                    .Replace("{{OrderDate}}", order.OrderedAt.ToString("dd/MM/yyyy à HH:mm"))
+                    .Replace("{{Total}}", order.TotalAmount.ToString("0.00"))
+                    .Replace("{{DeliveryDate}}", delivery.DeliveryAt.ToString("dddd dd/MM/yyyy HH:mm"))
+                    .Replace("{{DeliveryPlace}}", delivery.Place)
+                    .Replace("{{Signature}}", signature)
+                    .Replace("{{OrderLines}}", string.Join("\n", order.Items?.Select(i => $"{i.Quantity} x {i.ProductName} - {(i.UnitPrice * i.Quantity):0.00} €") ?? Enumerable.Empty<string>()));
+            }
+            else
+            {
+                html = $@"<p>Bonjour {(string.IsNullOrEmpty(toName) ? toEmail : toName)},</p><p>Nous avons bien reçu votre commande n°{order.Id} du {order.OrderedAt:dd/MM/yyyy à HH:mm}.</p><ul style=""margin-bottom:1em;"">{orderLines}</ul><p><b>Total : {order.TotalAmount:0.00} €</b></p><p>Livraison prévue : {delivery.DeliveryAt:dddd dd/MM/yyyy HH:mm} - {delivery.Place}</p><hr><p style=""color:#888;font-size:0.9em;"">{signature}</p>";
+                text = $"Bonjour {(string.IsNullOrEmpty(toName) ? toEmail : toName)},\n" +
                        $"Commande n°{order.Id} du {order.OrderedAt:dd/MM/yyyy à HH:mm}\n" +
                        $"Total : {order.TotalAmount:0.00} €\n" +
                        $"Livraison prévue : {delivery.DeliveryAt:dddd dd/MM/yyyy HH:mm} - {delivery.Place}\n" +
@@ -141,7 +184,8 @@ namespace OnigiriShop.Services
                            : "Pas de détail trouvé.") +
                        $"\n\n{signature}";
 
-            await SendEmailAsync(toEmail, toName, subject, html, text, expEmail, expName);
+                await SendEmailAsync(toEmail, toName, subject, html, text, expEmail, expName);
+            }
         }
 
         public async Task SendAdminNotificationAsync(string subject, string htmlContent, string textContent = null)
