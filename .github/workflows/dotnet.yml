@@ -28,5 +28,12 @@ jobs:
       - name: Install Playwright browsers
         run: pwsh tests/Tests.Playwright/bin/Release/net8.0/playwright.ps1 install
 
-      - name: Test
-        run: dotnet test OnigiriShop.sln --no-build --configuration Release
+      - name: Run tests
+        run: |
+         dotnet run --no-build --configuration Release \
+           --project src/OnigiriShop/OnigiriShop.csproj \
+           --urls http://localhost:5148 &
+         server_pid=$!
+         sleep 10
+         dotnet test OnigiriShop.sln --no-build --configuration Release
+         kill $server_pid
