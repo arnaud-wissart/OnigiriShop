@@ -25,7 +25,7 @@ namespace Tests
         [Fact]
         public async Task HomePageLoads()
         {
-            await _page.GotoAsync("https://localhost:7076/");
+            await _page.GotoAsync("http://localhost:5148/");
             var title = await _page.TitleAsync();
             Assert.Contains("Onigiri", title);
         }
