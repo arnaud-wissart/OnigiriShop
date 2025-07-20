@@ -5,7 +5,7 @@ namespace OnigiriShop.Shared
 {
     public class BootstrapToastsBase : ComponentBase, IDisposable
     {
-        [Inject] public ToastService ToastService { get; set; }
+        [Inject] public ToastService ToastService { get; set; } = default!;
 
         public List<ToastMessage> Toasts { get; set; } = new();
         private const int ToastDuration = 4000;
@@ -52,8 +52,8 @@ namespace OnigiriShop.Shared
 
     public class ToastMessage
     {
-        public string Message { get; set; }
-        public string Title { get; set; }
+        public string Message { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
         public ToastLevel Level { get; set; }
     }
 }

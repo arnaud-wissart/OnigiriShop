@@ -11,7 +11,7 @@ namespace OnigiriShop.Pages
         [Parameter] public EventCallback OnHide { get; set; }
 
         protected LoginModel LoginModel { get; set; } = new();
-        protected string ErrorMessage { get; set; }
+        protected string ErrorMessage { get; set; } = string.Empty;
         protected bool IsBusy { get; set; }
 
         protected void Hide()
@@ -47,14 +47,14 @@ namespace OnigiriShop.Pages
     {
         [Required(ErrorMessage = "Email requis")]
         [EmailAddress(ErrorMessage = "Email invalide")]
-        public string Email { get; set; }
+        public string Email { get; set; } = string.Empty;
         [Required(ErrorMessage = "Mot de passe requis")]
-        public string Password { get; set; }
+        public string Password { get; set; } = string.Empty;
     }
 
     public class LoginResult
     {
         public bool success { get; set; }
-        public string error { get; set; }
+        public string error { get; set; } = string.Empty;
     }
 }

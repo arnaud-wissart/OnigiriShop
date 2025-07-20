@@ -8,8 +8,8 @@ namespace OnigiriShop.Pages
 {
     public class IndexBase : FrontCustomComponentBase, IDisposable
     {
-        [Inject] public ProductService ProductService { get; set; }
-        [Inject] public NavigationManager Nav { get; set; }
+        [Inject] public ProductService ProductService { get; set; } = default!;
+        [Inject] public NavigationManager Nav { get; set; } = default!;
 
         protected List<Product> _products;
         protected HashSet<int> _addedProductIds = [];

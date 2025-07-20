@@ -8,7 +8,7 @@
         public DateTime OrderedAt { get; set; }
         public string Status { get; set; } = string.Empty;
         public decimal TotalAmount { get; set; }
-        public string Comment { get; set; }
+        public string Comment { get; set; } = string.Empty;
         public string UserDisplayName { get; set; } = string.Empty;
         public string UserEmail { get; set; } = string.Empty;
         public List<OrderItem> Items { get; set; } = [];

@@ -60,13 +60,13 @@ namespace OnigiriShop.Services
 
     public class CalendarEvent
     {
-        public string Id { get; set; }
-        public string Title { get; set; }
-        public string Start { get; set; }
-        public string End { get; set; }
+        public string Id { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
+        public string Start { get; set; } = string.Empty;
+        public string End { get; set; } = string.Empty;
         public int DeliveryId { get; set; }
         public bool IsRecurring { get; set; }
-        public string Color { get; set; }
-        public string TextColor { get; set; }
+        public string Color { get; set; } = string.Empty;
+        public string TextColor { get; set; } = string.Empty;
     }
 }

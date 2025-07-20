@@ -9,7 +9,7 @@ namespace OnigiriShop.Shared
 
         private DotNetObjectReference<HtmlEditorBase> objRef;
 
-        [Parameter] public string Value { get; set; }
+        [Parameter] public string Value { get; set; } = string.Empty;
         [Parameter] public EventCallback<string> ValueChanged { get; set; }
 
         protected string EditorId { get; } = "quill-" + Guid.NewGuid().ToString("N");

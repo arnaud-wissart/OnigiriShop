@@ -6,7 +6,7 @@ namespace OnigiriShop.Shared
     {
         [Parameter] public bool Show { get; set; }
         [Parameter] public EventCallback<bool> ShowChanged { get; set; }
-        [Parameter] public string Message { get; set; }
+        [Parameter] public string Message { get; set; } = string.Empty;
         [Parameter] public string Title { get; set; } = "Erreur";
 
         protected async Task Close()

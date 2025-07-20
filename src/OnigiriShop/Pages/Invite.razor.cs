@@ -8,19 +8,19 @@ namespace OnigiriShop.Pages
 {
     public class InviteBase : CustomComponentBase
     {
-        [Inject] public UserService UserService { get; set; }
-        [Inject] public UserAccountService UserAccountService { get; set; }
-        [Inject] public NavigationManager Nav { get; set; }
-        [Parameter] public string Token { get; set; }
+        [Inject] public UserService UserService { get; set; } = default!;
+        [Inject] public UserAccountService UserAccountService { get; set; } = default!;
+        [Inject] public NavigationManager Nav { get; set; } = default!;
+        [Parameter] public string Token { get; set; } = string.Empty;
         protected InviteModel Model { get; set; } = new();
         protected bool Loaded { get; set; }
         protected bool TokenInvalid { get; set; }
         protected bool Success { get; set; }
-        protected string Error { get; set; }
+        protected string Error { get; set; } = string.Empty;
         protected bool IsBusy { get; set; }
         protected bool AlreadyActivated { get; set; }
         protected bool CanRequestNewInvite { get; set; }
-        protected string UserEmailForRequest { get; set; }
+        protected string UserEmailForRequest { get; set; } = string.Empty;
 
         protected void GoHome() => Nav.NavigateTo("/");
         protected override async Task OnInitializedAsync()
@@ -133,12 +133,12 @@ namespace OnigiriShop.Pages
 
         public class InviteModel
         {
-            public string Token { get; set; }
+            public string Token { get; set; } = string.Empty;
             [Required]
-            public string Password { get; set; }
+            public string Password { get; set; } = string.Empty;
             [Required]
             [Compare(nameof(Password), ErrorMessage = "Les mots de passe ne correspondent pas.")]
-            public string ConfirmPassword { get; set; }
+            public string ConfirmPassword { get; set; } = string.Empty;
         }
     }
 }

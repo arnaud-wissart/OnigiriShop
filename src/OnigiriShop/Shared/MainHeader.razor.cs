@@ -7,11 +7,11 @@ namespace OnigiriShop.Shared
 {
     public partial class MainHeaderBase: ComponentBase
     {
-        [Inject] public AuthenticationStateProvider AuthProvider { get; set; }
+        [Inject] public AuthenticationStateProvider AuthProvider { get; set; } = default!;
 
-        [Inject] public NavigationManager Nav { get; set; }
-        [Inject] public IJSRuntime JS { get; set; }
-        [Inject] public AuthService AuthService { get; set; }
+        [Inject] public NavigationManager Nav { get; set; } = default!;
+        [Inject] public IJSRuntime JS { get; set; } = default!;
+        [Inject] public AuthService AuthService { get; set; } = default!;
         [Parameter] public bool IsAdminContext { get; set; }
         protected bool _showLoginModal;
         protected void HideLoginModal() => _showLoginModal = false;
@@ -19,7 +19,7 @@ namespace OnigiriShop.Shared
         protected void ShowLoginModal() => _showLoginModal = true;
         protected bool IsAuthenticated { get; set; }
         protected bool IsAdmin { get; set; }
-        protected string UserNameOrEmail { get; set; }
+        protected string UserNameOrEmail { get; set; } = string.Empty;
 
         protected override async Task OnInitializedAsync()
         {

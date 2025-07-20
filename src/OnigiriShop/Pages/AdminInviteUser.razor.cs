@@ -7,11 +7,11 @@ namespace OnigiriShop.Pages
 {
     public partial class AdminInviteUserBase : CustomComponentBase
     {
-        [Inject] public NavigationManager Nav { get; set; }
-        [Inject] public UserAccountService UserAccountService { get; set; }
-        protected string Name { get; set; }
-        protected string Email { get; set; }
-        protected string Message { get; set; }
+        [Inject] public NavigationManager Nav { get; set; } = default!;
+        [Inject] public UserAccountService UserAccountService { get; set; } = default!;
+        protected string Name { get; set; } = string.Empty;
+        protected string Email { get; set; } = string.Empty;
+        protected string Message { get; set; } = string.Empty;
         protected bool IsBusy { get; set; }
         protected InviteUserModel Model { get; set; } = new();
         protected async Task InviteAsync()
@@ -40,8 +40,8 @@ namespace OnigiriShop.Pages
     {
         [Required(ErrorMessage = "L'email est obligatoire.")]
         [EmailAddress(ErrorMessage = "Format d'email invalide.")]
-        public string Email { get; set; }
+        public string Email { get; set; } = string.Empty;
 
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
     }
 }

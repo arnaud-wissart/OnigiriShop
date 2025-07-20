@@ -8,10 +8,10 @@ namespace OnigiriShop.Pages
 {
     public class AdminDashboardBase : CustomComponentBase
     {
-        [Inject] public NavigationManager Nav { get; set; }
-        [Inject] public OrderService OrderService { get; set; }
-        [Inject] public DeliveryService DeliveryService { get; set; }
-        [Inject] public OrderExportService OrderExportService { get; set; }
+        [Inject] public NavigationManager Nav { get; set; } = default!;
+        [Inject] public OrderService OrderService { get; set; } = default!;
+        [Inject] public DeliveryService DeliveryService { get; set; } = default!;
+        [Inject] public OrderExportService OrderExportService { get; set; } = default!;
 
         protected bool HasOverdueOrders { get; set; }
 

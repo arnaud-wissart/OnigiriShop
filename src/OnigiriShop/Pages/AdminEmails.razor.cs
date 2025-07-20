@@ -8,8 +8,8 @@ namespace OnigiriShop.Pages
 {
     public class AdminEmailsBase : CustomComponentBase
     {
-        [Inject] public EmailTemplateService EmailTemplateService { get; set; }
-        [Inject] public EmailVariationService EmailVariationService { get; set; }
+        [Inject] public EmailTemplateService EmailTemplateService { get; set; } = default!;
+        [Inject] public EmailVariationService EmailVariationService { get; set; } = default!;
 
         // Template properties
         protected List<EmailTemplate> TemplateTemplates { get; set; } = new();
@@ -19,7 +19,7 @@ namespace OnigiriShop.Pages
         protected bool TemplateIsEdit { get; set; }
         protected bool TemplateShowDeleteConfirm { get; set; }
         protected bool TemplateIsBusy { get; set; }
-        protected string TemplateModalError { get; set; }
+        protected string TemplateModalError { get; set; } = string.Empty;
         protected string TemplateModalTitle => TemplateIsEdit ? "Modifier un template" : "Ajouter un template";
 
         // Variation properties
@@ -42,7 +42,7 @@ namespace OnigiriShop.Pages
         protected EmailVariation VariationModalModel { get; set; } = new();
         protected EmailVariation VariationDeleteModel { get; set; }
         protected string VariationModalTitle => VariationIsEdit ? "Modifier une variation" : "Ajouter une variation";
-        protected string VariationModalError { get; set; }
+        protected string VariationModalError { get; set; } = string.Empty;
         protected bool VariationShowModal { get; set; }
         protected bool VariationIsEdit { get; set; }
         protected bool VariationShowDeleteConfirm { get; set; }

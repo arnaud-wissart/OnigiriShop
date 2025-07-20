@@ -10,11 +10,11 @@ namespace OnigiriShop.Pages
 {
     public class AdminUsersBase : CustomComponentBase, IDisposable
     {
-        [Inject] public UserService UserService { get; set; }
-        [Inject] public UserAccountService UserAccountService { get; set; }
+        [Inject] public UserService UserService { get; set; } = default!;
+        [Inject] public UserAccountService UserAccountService { get; set; } = default!;
 
-        [Inject] public NavigationManager NavigationManager { get; set; }
-        [Inject] public ToastService ToastService { get; set; }
+        [Inject] public NavigationManager NavigationManager { get; set; } = default!;
+        [Inject] public ToastService ToastService { get; set; } = default!;
         public List<User> Users { get; set; } = new();
         public bool ShowModal { get; set; }
         public bool ShowInviteModal { get; set; }
@@ -127,8 +127,8 @@ namespace OnigiriShop.Pages
             _editContext.NotifyValidationStateChanged();
         }
 
-        public string AlertMessage { get; set; }
-        public string AlertCss { get; set; }
+        public string AlertMessage { get; set; } = string.Empty;
+        public string AlertCss { get; set; } = string.Empty;
         public bool ShowAlert { get; set; }
         private async Task FocusFieldAsync(string fieldName)
         {
@@ -249,12 +249,12 @@ namespace OnigiriShop.Pages
     {
         [Required(ErrorMessage = "L'email est requis")]
         [EmailAddress(ErrorMessage = "Format d'email invalide")]
-        public string Email { get; set; }
+        public string Email { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Le nom est requis")]
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
-        public string Phone { get; set; }
+        public string Phone { get; set; } = string.Empty;
         public bool IsActive { get; set; }
         public string Role { get; set; } = AuthConstants.RoleUser;
     }

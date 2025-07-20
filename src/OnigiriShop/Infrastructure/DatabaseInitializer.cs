@@ -36,7 +36,8 @@ namespace OnigiriShop.Infrastructure
                 conn.Open();
                 using var cmd = conn.CreateCommand();
                 cmd.CommandText = "PRAGMA user_version;";
-                var result = (long)cmd.ExecuteScalar();
+                var resultObj = cmd.ExecuteScalar();
+                var result = resultObj is long value ? value : 0L;
                 return (uint)result == expectedHash;
             }
             catch

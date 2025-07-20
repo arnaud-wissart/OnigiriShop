@@ -12,13 +12,13 @@ namespace OnigiriShop.Pages
 {
     public class ProfileBase : FrontCustomComponentBase
     {
-        [Inject] public UserService UserService { get; set; }
-        [Inject] public UserAccountService UserAccountService { get; set; }
+        [Inject] public UserService UserService { get; set; } = default!;
+        [Inject] public UserAccountService UserAccountService { get; set; } = default!;
 
-        [Inject] public OrderService OrderService { get; set; }
-        [Inject] public NavigationManager Nav { get; set; }
-        [Inject] public ToastService ToastService { get; set; }
-        [Inject] public SessionAuthenticationStateProvider SessionAuthProvider { get; set; }
+        [Inject] public OrderService OrderService { get; set; } = default!;
+        [Inject] public NavigationManager Nav { get; set; } = default!;
+        [Inject] public ToastService ToastService { get; set; } = default!;
+        [Inject] public SessionAuthenticationStateProvider SessionAuthProvider { get; set; } = default!;
 
         [CascadingParameter] public Task<AuthenticationState> AuthState { get; set; }
 
@@ -26,11 +26,11 @@ namespace OnigiriShop.Pages
         protected List<Order> Orders { get; set; }
         protected Order OrderDetail { get; set; }
         protected bool EditSuccess { get; set; }
-        protected string EditError { get; set; }
+        protected string EditError { get; set; } = string.Empty;
         protected bool IsBusy { get; set; }
         protected bool IsLoading { get; set; }
         protected bool IsSendingReset { get; set; }
-        protected string ResetResult { get; set; }
+        protected string ResetResult { get; set; } = string.Empty;
         protected bool IsModified { get; set; }
         protected bool ShowResetModal { get; set; } = false;
         protected EditContext EditContext;
@@ -208,12 +208,12 @@ namespace OnigiriShop.Pages
     {
         public int Id { get; set; }
         [Required]
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
         [Required]
         [EmailAddress]
-        public string Email { get; set; }
+        public string Email { get; set; } = string.Empty;
         [Required(ErrorMessage = "Le numéro de téléphone est requis")]
         [RegularExpression(@"^(0|\+33)[1-9](\d{2}){4}$", ErrorMessage = "Numéro de téléphone invalide (format FR)")]
-        public string Phone { get; set; }
+        public string Phone { get; set; } = string.Empty;
     }
 }

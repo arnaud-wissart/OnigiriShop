@@ -8,12 +8,12 @@ namespace OnigiriShop.Pages
 {
     public class PanierBase : FrontCustomComponentBase, IDisposable
     {
-        [Inject] public EmailService EmailService { get; set; }
-        [Inject] public OrderService OrderService { get; set; }
-        [Inject] public DeliveryService DeliveryService { get; set; }
-        [Inject] public ProductService ProductService { get; set; }
-        [Inject] public AuthenticationStateProvider AuthProvider { get; set; }
-        [Inject] public NavigationManager Nav { get; set; }
+        [Inject] public EmailService EmailService { get; set; } = default!;
+        [Inject] public OrderService OrderService { get; set; } = default!;
+        [Inject] public DeliveryService DeliveryService { get; set; } = default!;
+        [Inject] public ProductService ProductService { get; set; } = default!;
+        [Inject] public AuthenticationStateProvider AuthProvider { get; set; } = default!;
+        [Inject] public NavigationManager Nav { get; set; } = default!;
 
         protected bool _orderSent;
         protected string _resultMessage;
