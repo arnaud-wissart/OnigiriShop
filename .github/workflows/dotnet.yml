@@ -1,0 +1,39 @@
+name: .NET CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore OnigiriShop.sln
+
+      - name: Build
+        run: dotnet build OnigiriShop.sln --no-restore --configuration Release
+
+      - name: Install Playwright browsers
+        run: pwsh tests/Tests.Playwright/bin/Release/net8.0/playwright.ps1 install
+
+      - name: Run tests
+        run: |
+         dotnet run --no-build --configuration Release \
+           --project src/OnigiriShop/OnigiriShop.csproj \
+           --urls http://localhost:5148 &
+         server_pid=$!
+         sleep 10
+         dotnet test OnigiriShop.sln --no-build --configuration Release
+         kill $server_pid
