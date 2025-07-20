@@ -42,7 +42,7 @@ namespace OnigiriShop.Pages
             _editContext = new EditContext(ModalModel);
             _messageStore = new ValidationMessageStore(_editContext);
             _editContext.OnFieldChanged += EditContext_OnFieldChanged;
-            ReloadUsers();
+            await ReloadUsersAsync();
         }
         private void EditContext_OnFieldChanged(object sender, FieldChangedEventArgs e)
         {
@@ -64,9 +64,9 @@ namespace OnigiriShop.Pages
             if (_editContext != null)
                 _editContext.OnFieldChanged -= EditContext_OnFieldChanged;
         }
-        public void ReloadUsers()
+        public async Task ReloadUsersAsync()
         {
-            Users = UserService.GetAllUsers();
+            Users = await UserService.GetAllUsersAsync();
             StateHasChanged();
         }
         public void ConfirmDeleteUser(User user)
@@ -81,12 +81,12 @@ namespace OnigiriShop.Pages
             ShowDeleteConfirm = false;
         }
 
-        public void DeleteUserConfirmed()
+        public async Task DeleteUserConfirmed()
         {
             if (UserToDelete != null)
             {
-                UserService.SoftDeleteUser(UserToDelete.Id);
-                ReloadUsers();
+                await UserService.SoftDeleteUserAsync(UserToDelete.Id);
+                await ReloadUsersAsync();
             }
             CancelDelete();
         }
@@ -202,7 +202,7 @@ namespace OnigiriShop.Pages
                     ToastService.ShowToast("Invitation envoyée avec succès !", string.Empty, ToastLevel.Success);
                 }
                 HideModal();
-                ReloadUsers();
+                await ReloadUsersAsync();
                 await RefreshTooltipsAsync();
             }
             catch (Exception ex)

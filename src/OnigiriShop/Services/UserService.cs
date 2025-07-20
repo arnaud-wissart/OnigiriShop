@@ -1,10 +1,12 @@
 ﻿using Dapper;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Options;
 using OnigiriShop.Data.Interfaces;
 using OnigiriShop.Data.Models;
 using OnigiriShop.Infrastructure;
 using Serilog;
 using System.Data;
+using System.Data.Common;
 using System.Security.Cryptography;
 using System.Text.Json;
 
@@ -42,15 +44,15 @@ namespace OnigiriShop.Services
             return await conn.ExecuteAsync(sql, new { name, phone, userId }) > 0;
         }
 
-        public void SoftDeleteUser(int userId)
+        public async Task SoftDeleteUserAsync(int userId)
         {
             using var conn = connectionFactory.CreateConnection();
-            conn.Open();
+            await ((DbTransaction)conn).CommitAsync();
 
             var cmd = conn.CreateCommand();
             cmd.CommandText = @"UPDATE User SET IsActive = 0 WHERE Id = @UserId";
             AddParam(cmd, "@UserId", userId);
-            cmd.ExecuteNonQuery();
+            await ((DbCommand)cmd).ExecuteNonQueryAsync();
 
             // Audit log
             var cmdAudit = conn.CreateCommand();
@@ -61,23 +63,23 @@ namespace OnigiriShop.Services
             AddParam(cmdAudit, "@TargetId", userId);
             AddParam(cmdAudit, "@Timestamp", DateTime.UtcNow);
             AddParam(cmdAudit, "@Details", "Suppression logique (désactivation)");
-            cmdAudit.ExecuteNonQuery();
+            await ((DbCommand)cmdAudit).ExecuteNonQueryAsync();
         }
 
-        public List<User> GetAllUsers(string search = null)
+        public async Task<List<User>> GetAllUsersAsync(string search = null)
         {
             using var conn = connectionFactory.CreateConnection();
-            conn.Open();
-            var cmd = conn.CreateCommand();
+            await ((DbConnection)conn).OpenAsync();
+            using var cmd = (DbCommand)conn.CreateCommand();
             cmd.CommandText = "SELECT Id, Email, Name, Phone, CreatedAt, IsActive, Role FROM User";
             if (!string.IsNullOrWhiteSpace(search))
             {
                 cmd.CommandText += " WHERE Email LIKE @Search OR Name LIKE @Search";
                 AddParam(cmd, "@Search", "%" + search + "%");
             }
-            using var reader = cmd.ExecuteReader();
+            using var reader = await cmd.ExecuteReaderAsync();
             var users = new List<User>();
-            while (reader.Read())
+            while (await reader.ReadAsync())
             {
                 users.Add(new User
                 {
@@ -93,10 +95,36 @@ namespace OnigiriShop.Services
             return users;
         }
 
+        public async Task SetUserActiveAsync(int userId, bool isActive)
+        {
+            using var conn = connectionFactory.CreateConnection();
+            await((DbConnection)conn).OpenAsync();
+
+            // Update de l’état actif
+            var cmd = conn.CreateCommand();
+            cmd.CommandText = @"UPDATE User SET IsActive = @IsActive WHERE Id = @UserId";
+            AddParam(cmd, "@IsActive", isActive ? 1 : 0);
+            AddParam(cmd, "@UserId", userId);
+            await ((DbCommand)cmd).ExecuteNonQueryAsync();
+            // Audit log
+            var cmdAudit = (DbCommand)conn.CreateCommand();
+            cmdAudit.CommandText = @"
+        INSERT INTO AuditLog (UserId, Action, TargetType, TargetId, Timestamp, Details)
+        VALUES (@UserId, @Action, 'User', @TargetId, @Timestamp, @Details);";
+            AddParam(cmdAudit, "@UserId", DBNull.Value);
+            AddParam(cmdAudit, "@Action", isActive ? "Activate" : "Deactivate");
+            AddParam(cmdAudit, "@TargetId", userId);
+            AddParam(cmdAudit, "@Timestamp", DateTime.UtcNow);
+            AddParam(cmdAudit, "@Details", isActive ? "Compte activé" : "Compte désactivé");
+            await cmdAudit.ExecuteNonQueryAsync();
+
+            Log.Information("Changement état actif pour userId={UserId}: {NewState}", userId, isActive ? "Actif" : "Inactif");
+        }
+
         public async Task UpdateUserAsync(User user)
         {
             using var conn = connectionFactory.CreateConnection();
-            conn.Open();
+            await ((DbConnection)conn).OpenAsync();
             using var txn = conn.BeginTransaction();
 
             var cmd = conn.CreateCommand();
@@ -115,10 +143,10 @@ namespace OnigiriShop.Services
             AddParam(cmd, "@Role", string.IsNullOrEmpty(user.Role) ? AuthConstants.RoleUser : user.Role);
             AddParam(cmd, "@Id", user.Id);
 
-            cmd.ExecuteNonQuery();
+            await ((DbCommand)cmd).ExecuteNonQueryAsync();
 
             // Audit log
-            var cmdAudit = conn.CreateCommand();
+            var cmdAudit = (DbCommand)conn.CreateCommand();
             cmdAudit.CommandText = @"
         INSERT INTO AuditLog (UserId, Action, TargetType, TargetId, Timestamp, Details)
         VALUES (@UserId, 'Update', 'User', @TargetId, @Timestamp, @Details);";
@@ -126,10 +154,9 @@ namespace OnigiriShop.Services
             AddParam(cmdAudit, "@TargetId", user.Id);
             AddParam(cmdAudit, "@Timestamp", DateTime.UtcNow);
             AddParam(cmdAudit, "@Details", $"Mise à jour de l'utilisateur {user.Email}");
-            cmdAudit.ExecuteNonQuery();
+            await cmdAudit.ExecuteNonQueryAsync();
 
-            txn.Commit();
-            await Task.CompletedTask;
+            await ((DbTransaction)txn).CommitAsync();
         }
     }
 }

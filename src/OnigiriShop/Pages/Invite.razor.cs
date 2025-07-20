@@ -50,16 +50,15 @@ namespace OnigiriShop.Pages
 
             // Vérifie le token
             var userId = await UserAccountService.ValidateInviteTokenAsync(token);
-            var user = userId > 0 ? UserService.GetAllUsers().FirstOrDefault(u => u.Id == userId) : null;
-
+            var user = userId > 0 ? (await UserService.GetAllUsersAsync()).FirstOrDefault(u => u.Id == userId) : null;
             if (userId == 0)
             {
                 // On regarde si ce token est connu mais expiré pour afficher le bouton “demander un nouveau lien”
-                var expiredUserId = await UserAccountService.FindUserIdByToken(token);
+                var expiredUserId = await UserAccountService.FindUserIdByTokenAsync(token);
                 if (expiredUserId > 0)
                 {
                     CanRequestNewInvite = true;
-                    var expiredUser = UserService.GetAllUsers().FirstOrDefault(u => u.Id == expiredUserId);
+                    var expiredUser = (await UserService.GetAllUsersAsync()).FirstOrDefault(u => u.Id == expiredUserId);
                     UserEmailForRequest = expiredUser?.Email;
                 }
                 TokenInvalid = true;

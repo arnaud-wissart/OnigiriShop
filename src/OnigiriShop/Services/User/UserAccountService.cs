@@ -4,6 +4,7 @@ using OnigiriShop.Data.Models;
 using OnigiriShop.Infrastructure;
 using Serilog;
 using System.Data;
+using System.Data.Common;
 using System.Security.Cryptography;
 
 namespace OnigiriShop.Services;
@@ -23,12 +24,12 @@ public class UserAccountService(ISqliteConnectionFactory connectionFactory, Emai
     public async Task InviteUserAsync(string email, string name, string siteBaseUrl)
     {
         using var conn = connectionFactory.CreateConnection();
-        conn.Open();
+        await ((DbConnection)conn).OpenAsync();
 
         var cmdCheck = conn.CreateCommand();
         cmdCheck.CommandText = "SELECT COUNT(*) FROM User WHERE Email = @Email";
         AddParam(cmdCheck, "@Email", email.Trim().ToLower());
-        var exists = Convert.ToInt32(cmdCheck.ExecuteScalar()) > 0;
+        var exists = Convert.ToInt32(await ((DbCommand)cmdCheck).ExecuteScalarAsync()) > 0;
         if (exists)
             throw new InvalidOperationException("Un utilisateur avec cet email existe déjà.");
 
@@ -40,7 +41,7 @@ SELECT last_insert_rowid();";
         AddParam(cmdUser, "@Name", string.IsNullOrWhiteSpace(name) ? email : name);
         AddParam(cmdUser, "@CreatedAt", DateTime.UtcNow);
 
-        var userId = Convert.ToInt32(cmdUser.ExecuteScalar());
+        var userId = Convert.ToInt32(await ((DbCommand)cmdUser).ExecuteScalarAsync());
 
         var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(48));
         var expiry = DateTime.UtcNow.AddMinutes(_expiryMinutes);
@@ -52,7 +53,7 @@ VALUES (@UserId, @Token, @Expiry, @CreatedAt);";
         AddParam(cmdToken, "@Token", token);
         AddParam(cmdToken, "@Expiry", expiry);
         AddParam(cmdToken, "@CreatedAt", DateTime.UtcNow);
-        cmdToken.ExecuteNonQuery();
+        await ((DbCommand)cmdToken).ExecuteNonQueryAsync();
 
         var cmdAudit = conn.CreateCommand();
         cmdAudit.CommandText = @"INSERT INTO AuditLog (UserId, Action, TargetType, TargetId, Timestamp, Details)
@@ -61,7 +62,7 @@ VALUES (@UserId, 'Invite', 'User', @TargetId, @Timestamp, @Details);";
         AddParam(cmdAudit, "@TargetId", userId);
         AddParam(cmdAudit, "@Timestamp", DateTime.UtcNow);
         AddParam(cmdAudit, "@Details", $"Invitation envoyée à {email}");
-        cmdAudit.ExecuteNonQuery();
+        await ((DbCommand)cmdAudit).ExecuteNonQueryAsync();
 
         var inviteUrl = $"{siteBaseUrl.TrimEnd('/')}/invite?token={Uri.EscapeDataString(token)}";
 
@@ -70,18 +71,18 @@ VALUES (@UserId, 'Invite', 'User', @TargetId, @Timestamp, @Details);";
         Log.Information("Invitation envoyée à {Email}, userId={UserId}, token={Token}", email, userId, token);
     }
 
-    public Task<int> FindUserIdByToken(string token)
+    public async Task<int> FindUserIdByTokenAsync(string token)
     {
         using var conn = connectionFactory.CreateConnection();
-        conn.Open();
-        var cmd = conn.CreateCommand();
+        await ((DbConnection)conn).OpenAsync();
+        using var cmd = (DbCommand)conn.CreateCommand();
         cmd.CommandText = "SELECT UserId FROM MagicLinkToken WHERE Token = @Token";
         AddParam(cmd, "@Token", token);
-        var userId = cmd.ExecuteScalar();
-        return userId != null ? Task.FromResult(Convert.ToInt32(userId)) : Task.FromResult(0);
+        var userId = await cmd.ExecuteScalarAsync();
+        return userId != null ? Convert.ToInt32(userId) : 0;
     }
 
-    public Task SetUserPasswordAsync(int userId, string password, string token)
+    public async Task SetUserPasswordAsync(int userId, string password, string token)
     {
         byte[] salt = RandomNumberGenerator.GetBytes(32);
         using var derive = new Rfc2898DeriveBytes(password, salt, 100_000, HashAlgorithmName.SHA256);
@@ -89,7 +90,7 @@ VALUES (@UserId, 'Invite', 'User', @TargetId, @Timestamp, @Details);";
         var saltBase64 = Convert.ToBase64String(salt);
 
         using var conn = connectionFactory.CreateConnection();
-        conn.Open();
+        await ((DbConnection)conn).OpenAsync();
         using var txn = conn.BeginTransaction();
 
         var cmdUser = conn.CreateCommand();
@@ -97,64 +98,64 @@ VALUES (@UserId, 'Invite', 'User', @TargetId, @Timestamp, @Details);";
         AddParam(cmdUser, "@Hash", hash);
         AddParam(cmdUser, "@Salt", saltBase64);
         AddParam(cmdUser, "@UserId", userId);
-        cmdUser.ExecuteNonQuery();
+        await ((DbCommand)cmdUser).ExecuteNonQueryAsync();
 
         var cmdToken = conn.CreateCommand();
         cmdToken.CommandText = @"UPDATE MagicLinkToken SET UsedAt = @Now WHERE Token = @Token";
         AddParam(cmdToken, "@Token", token);
         AddParam(cmdToken, "@Now", DateTime.UtcNow);
-        cmdToken.ExecuteNonQuery();
+        await ((DbCommand)cmdToken).ExecuteNonQueryAsync();
 
-        txn.Commit();
-        return Task.CompletedTask;
+        await ((DbTransaction)txn).CommitAsync();
+        return;
     }
 
-    public Task<int> ValidateInviteTokenAsync(string token)
+    public async Task<int> ValidateInviteTokenAsync(string token)
     {
         using var conn = connectionFactory.CreateConnection();
-        conn.Open();
-        var cmd = conn.CreateCommand();
+        await ((DbConnection)conn).OpenAsync();
+        using var cmd = (DbCommand)conn.CreateCommand();
         cmd.CommandText = @"SELECT UserId FROM MagicLinkToken
 WHERE Token = @Token AND UsedAt IS NULL AND Expiry >= @Now";
         AddParam(cmd, "@Token", token);
         AddParam(cmd, "@Now", DateTime.UtcNow);
-        var userId = cmd.ExecuteScalar();
-        return Task.FromResult(userId != null ? Convert.ToInt32(userId) : 0);
+        var userId = await cmd.ExecuteScalarAsync();
+        return userId != null ? Convert.ToInt32(userId) : 0;
     }
 
-    public Task<User> AuthenticateAsync(string email, string password)
+    public async Task<User> AuthenticateAsync(string email, string password)
     {
         using var conn = connectionFactory.CreateConnection();
-        conn.Open();
-        var cmd = conn.CreateCommand();
+        await ((DbConnection)conn).OpenAsync();
+        using var cmd = (DbCommand)conn.CreateCommand();
         cmd.CommandText = "SELECT Id, Email, Name, PasswordHash, PasswordSalt, IsActive, Role FROM User WHERE Email = @Email AND IsActive = 1";
         AddParam(cmd, "@Email", email);
-        using var reader = cmd.ExecuteReader();
+        using var reader = await cmd.ExecuteReaderAsync();
 
-        if (!reader.Read())
-            return Task.FromResult<User>(null);
+        if (!await reader.ReadAsync())
+            return null;
 
         var hashDb = reader["PasswordHash"] as string;
         var saltDb = reader["PasswordSalt"] as string;
 
         if (string.IsNullOrEmpty(hashDb) || string.IsNullOrEmpty(saltDb))
-            return Task.FromResult<User>(null);
+            return null;
 
         var salt = Convert.FromBase64String(saltDb);
         using var derive = new Rfc2898DeriveBytes(password, salt, 100_000, HashAlgorithmName.SHA256);
         var hashInput = Convert.ToBase64String(derive.GetBytes(64));
 
         if (!SlowEquals(hashDb, hashInput))
-            return Task.FromResult<User>(null);
+            return null;
 
-        return Task.FromResult(new User
+        return new User
         {
             Id = Convert.ToInt32(reader["Id"]),
             Email = reader["Email"].ToString(),
             Name = reader["Name"].ToString(),
             Role = reader["Role"].ToString(),
             IsActive = true
-        });
+        };
     }
 
     private static bool SlowEquals(string a, string b)
@@ -168,12 +169,12 @@ WHERE Token = @Token AND UsedAt IS NULL AND Expiry >= @Now";
     public async Task GenerateAndSendResetLinkAsync(string email, string name, string siteBaseUrl, int expiryMinutes = 60)
     {
         using var conn = connectionFactory.CreateConnection();
-        conn.Open();
+        await ((DbConnection)conn).OpenAsync();
 
-        var cmdFind = conn.CreateCommand();
+        var cmdFind = (DbCommand)conn.CreateCommand();
         cmdFind.CommandText = "SELECT Id FROM User WHERE Email = @Email";
         AddParam(cmdFind, "@Email", email);
-        var userIdObj = cmdFind.ExecuteScalar();
+        var userIdObj = await cmdFind.ExecuteScalarAsync();
         if (userIdObj == null)
             throw new Exception("Utilisateur non trouvé");
 
@@ -182,23 +183,23 @@ WHERE Token = @Token AND UsedAt IS NULL AND Expiry >= @Now";
         var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(48));
         var expiry = DateTime.UtcNow.AddMinutes(expiryMinutes);
 
-        var cmdToken = conn.CreateCommand();
+        var cmdToken = (DbCommand)conn.CreateCommand();
         cmdToken.CommandText = @"INSERT INTO MagicLinkToken (UserId, Token, Expiry, CreatedAt)
 VALUES (@UserId, @Token, @Expiry, @CreatedAt);";
         AddParam(cmdToken, "@UserId", userId);
         AddParam(cmdToken, "@Token", token);
         AddParam(cmdToken, "@Expiry", expiry);
         AddParam(cmdToken, "@CreatedAt", DateTime.UtcNow);
-        cmdToken.ExecuteNonQuery();
+        await cmdToken.ExecuteNonQueryAsync();
 
-        var cmdAudit = conn.CreateCommand();
+        var cmdAudit = (DbCommand)conn.CreateCommand();
         cmdAudit.CommandText = @"INSERT INTO AuditLog (UserId, Action, TargetType, TargetId, Timestamp, Details)
 VALUES (@UserId, 'ResetPassword', 'User', @TargetId, @Timestamp, @Details);";
         AddParam(cmdAudit, "@UserId", DBNull.Value);
         AddParam(cmdAudit, "@TargetId", userId);
         AddParam(cmdAudit, "@Timestamp", DateTime.UtcNow);
         AddParam(cmdAudit, "@Details", $"Lien de réinitialisation envoyé à {email}");
-        cmdAudit.ExecuteNonQuery();
+        await cmdAudit.ExecuteNonQueryAsync();
 
         var resetUrl = $"{siteBaseUrl.TrimEnd('/')}/invite?token={Uri.EscapeDataString(token)}";
 
