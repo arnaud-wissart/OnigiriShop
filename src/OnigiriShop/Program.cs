@@ -65,6 +65,8 @@ builder.Services.AddSingleton<CartState>();
 builder.Services.AddScoped<AnonymousCartService>();
 builder.Services.AddScoped<CartService>();
 builder.Services.AddScoped<ProductService>();
+builder.Services.AddScoped<DeliveryCalendarService>();
+builder.Services.AddScoped<OrderExportService>();
 builder.Services.AddScoped<DeliveryService>();
 builder.Services.AddScoped(sp =>
 {

@@ -9,9 +9,10 @@ namespace OnigiriShop.Pages
     public class AdminDashboardBase : CustomComponentBase
     {
         [Inject] public NavigationManager Nav { get; set; }
-
         [Inject] public OrderService OrderService { get; set; }
         [Inject] public DeliveryService DeliveryService { get; set; }
+        [Inject] public OrderExportService OrderExportService { get; set; }
+
 
         protected List<AdminOrderSummary> Orders = [];
         protected AdminOrderSummary SelectedOrder { get; set; }
@@ -89,6 +90,7 @@ namespace OnigiriShop.Pages
             else
                 FilterDeliveryDate = null;
         }
+
         protected async Task ExportOrdersAsync()
         {
             if (FilteredOrders.Count == 0)
@@ -98,34 +100,12 @@ namespace OnigiriShop.Pages
                 return;
             }
 
-            var sb = new System.Text.StringBuilder();
-
-            foreach (var order in FilteredOrders.OrderBy(o => o.DeliveryAt))
-            {
-                // On récupère le détail
-                var items = await OrderService.GetOrderItemsAsync(order.Id);
-
-                sb.AppendLine($"Livraison le {order.DeliveryAt:dddd dd/MM/yyyy HH:mm} à {order.DeliveryPlace}");
-                sb.AppendLine($"{order.UserDisplayName}");
-                sb.AppendLine();
-
-                foreach (var item in items)
-                    sb.AppendLine($"  {item.Quantity} x {item.ProductName}");
-
-                sb.AppendLine();
-                sb.AppendLine($"Total : {order.TotalAmount:0.00} €");
-                sb.AppendLine(new string('-', 32));
-            }
-
-            var exportText = sb.ToString();
-
+            var exportText = await OrderExportService.BuildExportTextAsync(FilteredOrders);
             var fileName = $"Commandes_{DateTime.Now:yyyyMMdd_HHmm}.txt";
 
-            // Téléchargement côté client via JSInterop
             await JS.InvokeVoidAsync("downloadFileFromText", fileName, exportText);
         }
 
         protected string BindDate(DateTime? date) => date.HasValue ? date.Value.ToString("yyyy-MM-dd") : "";
-        protected string GetFilterDate() => FilterDeliveryDate.HasValue ? FilterDeliveryDate.Value.ToString("yyyy-MM-dd") : "";
     }
 }
