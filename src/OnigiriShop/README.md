@@ -52,6 +52,13 @@ L’objectif : offrir une expérience utilisateur fluide, mobile-friendly, et 
 - **Extensible & maintenable** : facilement adaptable à d’autres activités/artisans
 - **Documentation onboarding** claire (README, templates de config, exemples)
 
+## Utilitaires
+
+Le fichier `DatabasePaths.cs` fournit la méthode statique `DatabasePaths.GetPath()`
+qui renvoie le chemin absolu vers la base SQLite de l'application. Elle crée
+également le dossier `BDD` s'il n'existe pas. Utilisez toujours cette méthode
+pour obtenir `dbPath` dans le code ou les tests.
+
 ## Démarrage rapide
 
 ```bash

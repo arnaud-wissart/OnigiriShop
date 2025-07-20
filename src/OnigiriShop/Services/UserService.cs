@@ -25,6 +25,8 @@ namespace OnigiriShop.Services
         public async Task<User> GetByIdAsync(int userId)
         {
             using var conn = connectionFactory.CreateConnection();
+            await ((DbConnection)conn).OpenAsync();
+
             var sql = "SELECT Id, Email, Name, Phone, CreatedAt, IsActive, Role FROM User WHERE Id = @userId";
             var user = await conn.QueryFirstOrDefaultAsync<User>(sql, new { userId });
             return user;
@@ -33,6 +35,7 @@ namespace OnigiriShop.Services
         public async Task<bool> UpdateUserProfileAsync(int userId, string name, string phone)
         {
             using var conn = connectionFactory.CreateConnection();
+            await ((DbConnection)conn).OpenAsync();
 
             // Vérifier si un autre utilisateur possède déjà ce nom
             var sqlCheck = "SELECT COUNT(*) FROM User WHERE Name = @name AND Id <> @userId";
@@ -47,7 +50,7 @@ namespace OnigiriShop.Services
         public async Task SoftDeleteUserAsync(int userId)
         {
             using var conn = connectionFactory.CreateConnection();
-            await ((DbTransaction)conn).CommitAsync();
+            await ((DbConnection)conn).OpenAsync();
 
             var cmd = conn.CreateCommand();
             cmd.CommandText = @"UPDATE User SET IsActive = 0 WHERE Id = @UserId";

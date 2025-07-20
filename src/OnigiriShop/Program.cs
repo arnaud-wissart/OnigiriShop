@@ -23,12 +23,8 @@ builder.Services.Configure<MailjetConfig>(builder.Configuration.GetSection("Mail
 builder.Services.Configure<MagicLinkConfig>(builder.Configuration.GetSection("MagicLink"));
 
 
-var baseDir = AppDomain.CurrentDomain.BaseDirectory;
-var dbDir = Path.Combine(baseDir, "BDD");
-var dbPath = Path.Combine(dbDir, "OnigiriShop.db");
-Directory.CreateDirectory(dbDir);
-
-var schemaPath = Path.Combine(baseDir, "SQL", "init_db.sql");
+var dbPath = DatabasePaths.GetPath();
+var schemaPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SQL", "init_db.sql");
 var expectedHash = DatabaseInitializer.ComputeSchemaHash(schemaPath);
 
 if (!DatabaseInitializer.IsSchemaUpToDate(dbPath, expectedHash))
@@ -60,6 +56,7 @@ builder.Services.AddScoped<UserAccountService>();
 builder.Services.AddScoped<UserPreferenceService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddSession();
+builder.Services.AddScoped<CartMergeService>();
 builder.Services.AddScoped<CartProvider>();
 builder.Services.AddSingleton<CartState>();
 builder.Services.AddScoped<AnonymousCartService>();

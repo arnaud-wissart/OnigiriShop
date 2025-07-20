@@ -7,24 +7,20 @@ namespace OnigiriShop.Services
         CartService cartService,
         AnonymousCartService anonymousCartService,
         ProductService productService,
-        AuthenticationStateProvider authProvider)
+        AuthenticationStateProvider authProvider,
+        CartMergeService cartMergeService)
     {
-        private int? _lastMigratedUserId = null;
-
         public async Task<List<CartItemWithProduct>> GetCurrentCartItemsWithProductsAsync()
         {
             var (isAuthenticated, userId) = await GetCurrentUserIdAsync();
 
             // Migration automatique uniquement si pas déjà migré, et pas de conflit (voir DetectCartConflictAsync pour modale)
-            if (isAuthenticated && userId.HasValue && _lastMigratedUserId != userId)
+            if (isAuthenticated && userId.HasValue && cartMergeService.LastMigratedUserId != userId)
             {
                 // On ne migre QUE si pas de conflit
-                var conflict = await DetectCartConflictAsync();
+                var conflict = await cartMergeService.DetectCartConflictAsync();
                 if (conflict == CartMergeStatus.AnonymousOnly)
-                {
-                    await MergeCartsAsync(force: true); // Fusion simple
-                    _lastMigratedUserId = userId;
-                }
+                    await cartMergeService.MergeCartsAsync(force: true); // Fusion simple
                 // Si BothNonEmpty, on attend la décision de l’utilisateur (modale)
             }
 
@@ -48,51 +44,6 @@ namespace OnigiriShop.Services
                     .ToList();
             }
         }
-
-        /// <summary>
-        /// Fusionne les deux paniers (anonyme et SQL), utilisé si l'utilisateur choisit "Fusionner"
-        /// </summary>
-        public async Task MergeCartsAsync(bool force = false)
-        {
-            var (isAuthenticated, userId) = await GetCurrentUserIdAsync();
-            if (!isAuthenticated || !userId.HasValue) return;
-
-            await anonymousCartService.LoadFromLocalStorageAsync();
-            var anonItems = anonymousCartService.Items.ToList();
-
-            if (anonItems.Count == 0) return;
-
-            // Si pas de force, vérifie qu'il n'y a pas déjà un panier SQL avec des articles
-            var sqlItems = await cartService.GetCartItemsWithProductsAsync(userId.Value) ?? [];
-            if (!force && sqlItems.Count > 0)
-                return; // Ne fusionne pas si les deux sont non vides, il faut un choix utilisateur
-
-            foreach (var item in anonItems)
-                await cartService.AddItemAsync(userId.Value, item.ProductId, item.Quantity);
-
-            await anonymousCartService.ClearAsync();
-            _lastMigratedUserId = userId;
-        }
-
-        /// <summary>
-        /// Remplace le panier SQL par l’anonyme (utilisé si l'utilisateur choisit "Remplacer")
-        /// </summary>
-        public async Task ReplaceSqlWithAnonymousAsync()
-        {
-            var (isAuthenticated, userId) = await GetCurrentUserIdAsync();
-            if (!isAuthenticated || !userId.HasValue) return;
-
-            await cartService.ClearCartAsync(userId.Value);
-
-            await anonymousCartService.LoadFromLocalStorageAsync();
-            var anonItems = anonymousCartService.Items.ToList();
-            foreach (var item in anonItems)
-                await cartService.AddItemAsync(userId.Value, item.ProductId, item.Quantity);
-
-            await anonymousCartService.ClearAsync();
-            _lastMigratedUserId = userId;
-        }
-
         public async Task AddItemAsync(int productId, int quantity)
         {
             var (isAuthenticated, userId) = await GetCurrentUserIdAsync();
@@ -120,7 +71,7 @@ namespace OnigiriShop.Services
                 await anonymousCartService.ClearAsync();
         }
 
-        public void ResetMigrationFlag() => _lastMigratedUserId = null;
+        public void ResetMigrationFlag() => cartMergeService.ResetMigrationFlag();
 
         private async Task<(bool isAuthenticated, int? userId)> GetCurrentUserIdAsync()
         {
@@ -136,75 +87,16 @@ namespace OnigiriShop.Services
             }
             return (isAuthenticated, userId);
         }
-        public async Task MigrateAnonymousCartToUserAsync(bool forceMerge = false)
-        {
-            var (isAuthenticated, userId) = await GetCurrentUserIdAsync();
-            if (!isAuthenticated || !userId.HasValue) return;
-
-            await anonymousCartService.LoadFromLocalStorageAsync();
-            var anonItems = anonymousCartService.Items.ToList();
-
-            if (anonItems.Count == 0) return;
-
-            var sqlItems = await cartService.GetCartItemsWithProductsAsync(userId.Value) ?? [];
-            if (!forceMerge && sqlItems.Count > 0)
-                return; // Si on ne force pas et qu'il y a déjà un panier SQL, ne rien faire
-
-            if (forceMerge)
-            {
-                // FUSION : ajoute les articles anonymes sans supprimer ceux du SQL (ajoute quantité à quantité si doublons)
-                foreach (var anonItem in anonItems)
-                {
-                    // Recherche si le produit existe déjà dans le panier SQL
-                    var existingSqlItem = sqlItems.FirstOrDefault(x => x.ProductId == anonItem.ProductId);
-                    if (existingSqlItem != null)
-                    {
-                        // Ajoute la quantité au SQL
-                        await cartService.AddItemAsync(userId.Value, anonItem.ProductId, anonItem.Quantity);
-                    }
-                    else
-                    {
-                        await cartService.AddItemAsync(userId.Value, anonItem.ProductId, anonItem.Quantity);
-                    }
-                }
-            }
-            else
-            {
-                // MIGRATION SIMPLE : panier SQL doit être vide
-                foreach (var anonItem in anonItems)
-                {
-                    await cartService.AddItemAsync(userId.Value, anonItem.ProductId, anonItem.Quantity);
-                }
-            }
-
-            await anonymousCartService.ClearAsync();
-            _lastMigratedUserId = userId;
-        }
-
-        public async Task<CartMergeStatus> DetectCartConflictAsync()
-        {
-            var (isAuthenticated, userId) = await GetCurrentUserIdAsync();
-            if (!isAuthenticated || !userId.HasValue) return CartMergeStatus.None;
-
-            await anonymousCartService.LoadFromLocalStorageAsync();
-            var anonItems = anonymousCartService.Items.ToList();
-            var sqlItems = await cartService.GetCartItemsWithProductsAsync(userId.Value) ?? [];
-
-            if (anonItems.Count > 0 && sqlItems.Count > 0)
-                return CartMergeStatus.BothNonEmpty;
-            if (anonItems.Count > 0)
-                return CartMergeStatus.AnonymousOnly;
-            if (sqlItems.Count > 0)
-                return CartMergeStatus.SqlOnly;
-            return CartMergeStatus.None;
-        }
 
         public async Task RefreshCartStateAsync(CartState cartState)
         {
             var items = await GetCurrentCartItemsWithProductsAsync();
             cartState.SetItems(items);
         }
+        public async Task ReplaceSqlWithAnonymousAsync() => await cartMergeService.ReplaceSqlWithAnonymousAsync();
+        public async Task MigrateAnonymousCartToUserAsync(bool forceMerge) => await cartMergeService.MigrateAnonymousCartToUserAsync(forceMerge);
 
+        public async Task<CartMergeStatus> DetectCartConflictAsync() => await cartMergeService.DetectCartConflictAsync();
 
         public enum CartMergeStatus
         {
@@ -213,6 +105,5 @@ namespace OnigiriShop.Services
             SqlOnly,        // Panier SQL uniquement
             BothNonEmpty    // Conflit à gérer, les deux paniers sont non vides
         }
-
     }
 }
