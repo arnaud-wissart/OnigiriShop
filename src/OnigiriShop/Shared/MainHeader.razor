@@ -54,13 +54,18 @@
                             @onclick="GotoCatalog">
                         <i class="bi bi-basket"></i>
                     </button>
-                    <button class="header-btn header-btn-success"
-                            data-bs-toggle="tooltip"
-                            data-bs-placement="bottom"
-                            title="Gérer les emails & notifications"
-                            @onclick="GotoEmailVariations">
-                        <i class="bi bi-envelope-paper"></i>
-                    </button>
+                    <div class="btn-group">
+                        <button class="header-btn header-btn-success dropdown-toggle"
+                                data-bs-toggle="dropdown"
+                                data-bs-placement="bottom"
+                                title="Gérer les emails">
+                            <i class="bi bi-envelope-paper"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" @onclick="GotoEmailTemplates">Templates</a></li>
+                            <li><a class="dropdown-item" @onclick="GotoEmailVariations">Variables</a></li>
+                        </ul>
+                    </div>
                     <button class="header-btn header-btn-success"
                             data-bs-toggle="tooltip"
                             data-bs-placement="bottom"
