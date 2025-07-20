@@ -14,15 +14,64 @@ namespace OnigiriShop.Services
             return result.AsList();
         }
 
-        public async Task<List<Delivery>> GetUpcomingAsync(DateTime? from = null)
+        public async Task<List<Delivery>> GetUpcomingAsync(DateTime? from = null, DateTime? to = null)
         {
+            from ??= DateTime.Now;
+            to ??= from.Value.AddMonths(6);
+
             using var conn = connectionFactory.CreateConnection();
-            var sql = @"SELECT * FROM Delivery
-                        WHERE IsDeleted = 0
-                          AND DeliveryAt >= @from
-                        ORDER BY DeliveryAt ASC";
-            var result = await conn.QueryAsync<Delivery>(sql, new { from = from ?? DateTime.Now });
-            return result.AsList();
+            var sql = "SELECT * FROM Delivery WHERE IsDeleted = 0";
+            var deliveries = (await conn.QueryAsync<Delivery>(sql)).AsList();
+
+            var upcoming = new List<Delivery>();
+            foreach (var d in deliveries)
+            {
+                foreach (var occ in GetOccurrences(d, from.Value, to.Value))
+                {
+                    upcoming.Add(new Delivery
+                    {
+                        Id = d.Id,
+                        Place = d.Place,
+                        DeliveryAt = occ,
+                        IsRecurring = d.IsRecurring,
+                        RecurrenceFrequency = d.RecurrenceFrequency,
+                        RecurrenceInterval = d.RecurrenceInterval,
+                        Comment = d.Comment,
+                        IsDeleted = d.IsDeleted,
+                        CreatedAt = d.CreatedAt,
+                        RecurrenceEndDate = d.RecurrenceEndDate
+                    });
+                }
+            }
+
+            return [.. upcoming.OrderBy(x => x.DeliveryAt)];
+        }
+
+        private static IEnumerable<DateTime> GetOccurrences(Delivery delivery, DateTime from, DateTime to)
+        {
+            if (!delivery.IsRecurring || !delivery.RecurrenceFrequency.HasValue || !delivery.RecurrenceInterval.HasValue)
+            {
+                if (delivery.DeliveryAt >= from && delivery.DeliveryAt <= to)
+                    yield return delivery.DeliveryAt;
+                yield break;
+            }
+
+            var current = delivery.DeliveryAt;
+            var interval = delivery.RecurrenceInterval.Value;
+            int maxCount = 1000, count = 0;
+            while (current <= to && count++ < maxCount)
+            {
+                if (current >= from && (!delivery.RecurrenceEndDate.HasValue || current <= delivery.RecurrenceEndDate))
+                    yield return current;
+
+                current = delivery.RecurrenceFrequency switch
+                {
+                    RecurrenceFrequency.Day => current.AddDays(interval),
+                    RecurrenceFrequency.Week => current.AddDays(7 * interval),
+                    RecurrenceFrequency.Month => current.AddMonths(interval),
+                    _ => current
+                };
+            }
         }
 
         public async Task<Delivery> GetByIdAsync(int id)
