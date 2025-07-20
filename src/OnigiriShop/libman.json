@@ -9,12 +9,14 @@
     {
       "library": "bootstrap-icons@1.13.1",
       "destination": "wwwroot/lib/bootstrap-icons/"
+    },
+    {
+      "library": "fullcalendar@6.1.18",
+      "destination": "wwwroot/fullcalendar/"
+    },
+    {
+      "library": "quill@2.0.2",
+      "destination": "wwwroot/quill/"
     }
-  ,
-{
-  "provider": "cdnjs",
-  "library": "fullcalendar@6.1.18",
-  "destination": "wwwroot/fullcalendar/"
-}
-]
+  ]
 }

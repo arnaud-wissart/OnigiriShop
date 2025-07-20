@@ -56,6 +56,8 @@ namespace OnigiriShop.Infrastructure
 
         public static void DeleteDatabase(string dbPath)
         {
+            SqliteConnection.ClearAllPools();
+
             if (File.Exists(dbPath))
                 File.Delete(dbPath);
         }

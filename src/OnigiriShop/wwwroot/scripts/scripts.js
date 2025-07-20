@@ -341,3 +341,25 @@ window.downloadFileFromText = (filename, text) => {
     element.click();
     document.body.removeChild(element);
 };
+
+    // ==================== HTML Editor (Quill) ====================
+
+window.initHtmlEditor = function (id, dotNetHelper, value) {
+    if (!window.quillEditors) window.quillEditors = {};
+    const container = document.getElementById(id);
+    if (!container || !window.Quill) return;
+    const editor = new Quill(container, { theme: 'snow' });
+    editor.root.innerHTML = value || '';
+    editor.on('text-change', function () {
+        dotNetHelper.invokeMethodAsync('OnHtmlChanged', editor.root.innerHTML);
+    });
+    window.quillEditors[id] = editor;
+};
+
+window.disposeHtmlEditor = function (id) {
+    const editor = window.quillEditors ? window.quillEditors[id] : null;
+    if (editor) {
+        editor.off('text-change');
+        delete window.quillEditors[id];
+    }
+};

@@ -13,13 +13,13 @@ namespace OnigiriShop.Services
             return result.AsList();
         }
 
-        public async Task<EmailTemplate?> GetByIdAsync(int id)
+        public async Task<EmailTemplate> GetByIdAsync(int id)
         {
             using var conn = connectionFactory.CreateConnection();
             return await conn.QueryFirstOrDefaultAsync<EmailTemplate>("SELECT * FROM EmailTemplate WHERE Id=@id", new { id });
         }
 
-        public async Task<EmailTemplate?> GetByNameAsync(string name)
+        public async Task<EmailTemplate> GetByNameAsync(string name)
         {
             using var conn = connectionFactory.CreateConnection();
             return await conn.QueryFirstOrDefaultAsync<EmailTemplate>("SELECT * FROM EmailTemplate WHERE Name=@name", new { name });
