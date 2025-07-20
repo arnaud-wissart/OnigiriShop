@@ -7,10 +7,9 @@ namespace OnigiriShop.Infrastructure
     {
         public static void MapAuthEndpoints(this WebApplication app)
         {
-            app.MapPost("/api/auth/login", async (HttpContext http, UserService userService, SessionAuthenticationStateProvider authProvider, LoginRequest req) =>
+            app.MapPost("/api/auth/login", async (HttpContext http, UserAccountService accountService, SessionAuthenticationStateProvider authProvider, LoginRequest req) =>
             {
-                var user = await userService.AuthenticateAsync(req.Email, req.Password);
-                if (user == null)
+                var user = await accountService.AuthenticateAsync(req.Email, req.Password); if (user == null)
                     return Results.Unauthorized();
 
                 await authProvider.SignInAsync(user);

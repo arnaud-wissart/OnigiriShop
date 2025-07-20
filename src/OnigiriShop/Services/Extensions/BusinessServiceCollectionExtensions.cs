@@ -9,6 +9,8 @@ public static class BusinessServiceCollectionExtensions
         services.AddScoped<AuthService>();
         services.AddScoped<OrderService>();
         services.AddScoped<EmailService>();
+        services.AddScoped<UserAccountService>();
+        services.AddScoped<UserPreferenceService>();
         services.AddScoped<UserService>();
         services.AddScoped<CartService>();
         services.AddScoped<ProductService>();

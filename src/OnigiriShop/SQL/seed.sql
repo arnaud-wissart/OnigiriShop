@@ -43,11 +43,8 @@ VALUES
  'User');
 
  INSERT INTO 'Order' (UserId, DeliveryId, OrderedAt, Status, TotalAmount, Comment) VALUES
- (1, 1, '2025-07-12 12:34:56', 'En attente', 15.80, ''),
- (1, 2, '2025-07-13 10:01:24', 'Livrée', 8.70, ''),
- (2, 1, '2025-07-05 15:00:00', 'Livrée', 11.20, ''),
- (2, 4, '2025-07-14 10:00:00', 'En attente', 9.60, ''),
- (1, 5, '2025-07-10 08:30:00', 'Livrée', 14.10, '');
+(1, 1, '2025-07-12 12:34:56', 'En attente', 15.80, ''),
+(1, 2, '2025-07-13 10:01:24', 'Livrée', 8.70, '');
 
 -- Expéditeurs
 INSERT INTO EmailVariation (Type, Name, Value, Extra) VALUES ('Expeditor', 'Yuki', 'yuki@onigirishop.com', 'Yuki de OnigiriShop');

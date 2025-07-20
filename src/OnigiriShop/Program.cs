@@ -56,6 +56,8 @@ builder.Services.AddScoped<IMailjetClient>(sp =>
 builder.Services.AddScoped<EmailVariationService>();
 builder.Services.AddScoped<EmailTemplateService>();
 builder.Services.AddScoped<EmailService>();
+builder.Services.AddScoped<UserAccountService>();
+builder.Services.AddScoped<UserPreferenceService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddSession();
 builder.Services.AddScoped<CartProvider>();

@@ -11,6 +11,8 @@ namespace OnigiriShop.Pages
     public class AdminUsersBase : CustomComponentBase, IDisposable
     {
         [Inject] public UserService UserService { get; set; }
+        [Inject] public UserAccountService UserAccountService { get; set; }
+
         [Inject] public NavigationManager NavigationManager { get; set; }
         [Inject] public ToastService ToastService { get; set; }
         public List<User> Users { get; set; } = new();
@@ -196,7 +198,7 @@ namespace OnigiriShop.Pages
                 }
                 else
                 {
-                    await UserService.InviteUserAsync(ModalModel.Email, ModalModel.Name, NavigationManager.BaseUri);
+                    await UserAccountService.InviteUserAsync(ModalModel.Email, ModalModel.Name, NavigationManager.BaseUri);
                     ToastService.ShowToast("Invitation envoyée avec succès !", string.Empty, ToastLevel.Success);
                 }
                 HideModal();
@@ -237,7 +239,7 @@ namespace OnigiriShop.Pages
         public async Task SendInviteAsync()
         {
             IsBusy = true;
-            await UserService.InviteUserAsync(InviteUser.Email, InviteUser.Name, NavigationManager.BaseUri);
+            await UserAccountService.InviteUserAsync(InviteUser.Email, InviteUser.Name, NavigationManager.BaseUri);
             IsBusy = false;
             HideInviteModal();
         }

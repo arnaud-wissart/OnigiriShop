@@ -9,7 +9,7 @@ namespace OnigiriShop.Pages
 {
     public class AdminDeliveriesBase : CustomComponentBase
     {
-        [Inject] public UserService UserService { get; set; }
+        [Inject] public UserPreferenceService UserPreferenceService { get; set; }
         [Inject] public DeliveryService DeliveryService { get; set; }        
         [Inject] public IOptions<CalendarSettings> CalendarConfig { get; set; }
         public enum LegendType { Ponctuelle, Recurrente }
@@ -30,7 +30,7 @@ namespace OnigiriShop.Pages
             objRef = DotNetObjectReference.Create(this);
             await ReloadDeliveriesAsync();
 
-            UserPreferences = await UserService.GetUserPreferencesAsync(UserId);
+            UserPreferences = await UserPreferenceService.GetUserPreferencesAsync(UserId);
 
             CouleurPonctuelle = UserPreferences.CouleurPonctuelle ??= "#198754";
             CouleurRecurrente = UserPreferences.CouleurRecurrente ??= "#0dcaf0";
@@ -77,7 +77,7 @@ namespace OnigiriShop.Pages
                 UserPreferences.CouleurRecurrente = CouleurRecurrente;
             }
 
-            await UserService.SaveUserPreferencesAsync(UserId, UserPreferences);
+            await UserPreferenceService.SaveUserPreferencesAsync(UserId, UserPreferences);
 
             await JS.InvokeVoidAsync("onigiriCalendar.setLegendColors", CouleurPonctuelle, CouleurRecurrente);
 

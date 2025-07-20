@@ -13,7 +13,7 @@ namespace OnigiriShop.Pages
         [Parameter] public User UserToEdit { get; set; }
         [Parameter] public bool IsEditMode { get; set; }
 
-        [Inject] public UserService UserService { get; set; }
+        [Inject] public UserAccountService UserAccountService { get; set; }
         [Inject] public NavigationManager Nav { get; set; }
 
         protected User EditModel = new();
@@ -64,7 +64,7 @@ namespace OnigiriShop.Pages
                 else
                 {
                     // Ajout = invitation
-                    await UserService.InviteUserAsync(EditModel.Email, EditModel.Name, Nav.BaseUri);
+                    await UserAccountService.InviteUserAsync(EditModel.Email, EditModel.Name, Nav.BaseUri);
                 }
 
                 await OnUserChanged.InvokeAsync();

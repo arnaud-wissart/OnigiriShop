@@ -12,6 +12,8 @@ namespace OnigiriShop.Pages
     public class ProfileBase : FrontCustomComponentBase
     {
         [Inject] public UserService UserService { get; set; }
+        [Inject] public UserAccountService UserAccountService { get; set; }
+
         [Inject] public OrderService OrderService { get; set; }
         [Inject] public NavigationManager Nav { get; set; }
         [Inject] public ToastService ToastService { get; set; }
@@ -89,7 +91,7 @@ namespace OnigiriShop.Pages
             ShowResetModal = false;
             try
             {
-                await UserService.GenerateAndSendResetLinkAsync(
+                await UserAccountService.GenerateAndSendResetLinkAsync(
                     UserModel.Email,
                     UserModel.Name,
                     Nav.BaseUri
@@ -184,7 +186,7 @@ namespace OnigiriShop.Pages
             try
             {
                 var baseUrl = Nav.BaseUri;
-                await UserService.GenerateAndSendResetLinkAsync(UserModel.Email, UserModel.Name, baseUrl);
+                await UserAccountService.GenerateAndSendResetLinkAsync(UserModel.Email, UserModel.Name, baseUrl);
                 ResetResult = "Un email de réinitialisation vient d’être envoyé.";
             }
             catch (Exception ex)

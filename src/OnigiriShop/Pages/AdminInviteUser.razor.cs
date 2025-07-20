@@ -8,8 +8,7 @@ namespace OnigiriShop.Pages
     public partial class AdminInviteUserBase : CustomComponentBase
     {
         [Inject] public NavigationManager Nav { get; set; }
-
-        [Inject] public UserService UserService { get; set; }
+        [Inject] public UserAccountService UserAccountService { get; set; }
         protected string Name { get; set; }
         protected string Email { get; set; }
         protected string Message { get; set; }
@@ -22,7 +21,7 @@ namespace OnigiriShop.Pages
             try
             {
                 var baseUrl = Nav.BaseUri;
-                await UserService.InviteUserAsync(Model.Email.Trim(), Model.Name?.Trim(), baseUrl);
+                await UserAccountService.InviteUserAsync(Model.Email.Trim(), Model.Name?.Trim(), baseUrl);
                 Message = "Invitation envoyée !";
                 Model = new InviteUserModel();
             }

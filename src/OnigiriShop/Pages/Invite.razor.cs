@@ -9,6 +9,7 @@ namespace OnigiriShop.Pages
     public class InviteBase : CustomComponentBase
     {
         [Inject] public UserService UserService { get; set; }
+        [Inject] public UserAccountService UserAccountService { get; set; }
         [Inject] public NavigationManager Nav { get; set; }
         [Parameter] public string Token { get; set; }
         protected InviteModel Model { get; set; } = new();
@@ -48,13 +49,13 @@ namespace OnigiriShop.Pages
             }
 
             // Vérifie le token
-            var userId = await UserService.ValidateInviteTokenAsync(token);
+            var userId = await UserAccountService.ValidateInviteTokenAsync(token);
             var user = userId > 0 ? UserService.GetAllUsers().FirstOrDefault(u => u.Id == userId) : null;
 
             if (userId == 0)
             {
                 // On regarde si ce token est connu mais expiré pour afficher le bouton “demander un nouveau lien”
-                var expiredUserId = await UserService.FindUserIdByToken(token);
+                var expiredUserId = await UserAccountService.FindUserIdByToken(token);
                 if (expiredUserId > 0)
                 {
                     CanRequestNewInvite = true;
@@ -96,7 +97,7 @@ namespace OnigiriShop.Pages
             // Envoie un mail à l’admin, ou relance un magiclink
             if (!string.IsNullOrEmpty(UserEmailForRequest))
             {
-                await UserService.InviteUserAsync(UserEmailForRequest, null, Nav.BaseUri);
+                await UserAccountService.InviteUserAsync(UserEmailForRequest, null, Nav.BaseUri);
                 // Optionnel : toast ou message pour confirmation
                 await JS.InvokeVoidAsync("alert", "Un nouveau lien d'activation a été envoyé à votre adresse email.");
             }
@@ -118,7 +119,7 @@ namespace OnigiriShop.Pages
             IsBusy = true;
             try
             {
-                await UserService.SetUserPasswordAsync(UserId, Model.Password, Model.Token);
+                await UserAccountService.SetUserPasswordAsync(UserId, Model.Password, Model.Token);
                 Success = true;
             }
             catch (Exception ex)
