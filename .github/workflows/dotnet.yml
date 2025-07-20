@@ -25,8 +25,8 @@ jobs:
       - name: Build
         run: dotnet build OnigiriShop.sln --no-restore --configuration Release
 
-      - name: Install Playwright
-        run: pwsh -Command "npx playwright install"
+      - name: Install Playwright browsers
+        run: pwsh tests/Tests.Playwright/bin/Release/net8.0/playwright.ps1 install
 
       - name: Test
         run: dotnet test OnigiriShop.sln --no-build --configuration Release
