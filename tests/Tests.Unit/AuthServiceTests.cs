@@ -1,5 +1,8 @@
-﻿using Moq;
+﻿using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.JSInterop;
+using Moq;
 using OnigiriShop.Data;
+using OnigiriShop.Data.Interfaces;
 using OnigiriShop.Services;
 using System.Security.Claims;
 
@@ -10,9 +13,15 @@ namespace Tests.Unit
         private static AuthService BuildService(ClaimsPrincipal user)
         {
             var mockProvider = new Mock<SessionAuthenticationStateProvider>(null);
-            var cartProvider = new Mock<CartProvider>();
             mockProvider.Setup(x => x.GetAuthenticationStateAsync())
-                .ReturnsAsync(new Microsoft.AspNetCore.Components.Authorization.AuthenticationState(user));
+                .ReturnsAsync(new AuthenticationState(user));
+
+            var cartService = new Mock<CartService>(MockBehavior.Loose, (ISqliteConnectionFactory)null);
+            var anonCart = new Mock<AnonymousCartService>(MockBehavior.Loose, (IJSRuntime)null);
+            var prodService = new Mock<ProductService>(MockBehavior.Loose, (ISqliteConnectionFactory)null);
+            var authProvider = new Mock<AuthenticationStateProvider>();
+            var cartProvider = new Mock<CartProvider>(cartService.Object, anonCart.Object, prodService.Object, authProvider.Object);
+
             return new AuthService(mockProvider.Object, cartProvider.Object);
         }
 
@@ -101,7 +110,12 @@ namespace Tests.Unit
                 .ReturnsAsync(new Microsoft.AspNetCore.Components.Authorization.AuthenticationState(
                     new ClaimsPrincipal(new ClaimsIdentity())));
             mockProvider.Setup(x => x.SignOutAsync()).Returns(Task.CompletedTask).Verifiable();
-            var cartProvider = new Mock<CartProvider>();
+
+            var cartService = new Mock<CartService>(MockBehavior.Loose, (ISqliteConnectionFactory)null);
+            var anonCart = new Mock<AnonymousCartService>(MockBehavior.Loose, (IJSRuntime)null);
+            var prodService = new Mock<ProductService>(MockBehavior.Loose, (ISqliteConnectionFactory)null);
+            var authProvider = new Mock<AuthenticationStateProvider>();
+            var cartProvider = new Mock<CartProvider>(cartService.Object, anonCart.Object, prodService.Object, authProvider.Object);
 
             var service = new AuthService(mockProvider.Object, cartProvider.Object);
 

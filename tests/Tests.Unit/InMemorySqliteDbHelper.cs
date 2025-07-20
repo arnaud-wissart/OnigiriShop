@@ -9,8 +9,7 @@ namespace Tests.Unit
         private static string GetSchemaPath()
         {
             var baseDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            // Adapter la remontée (..), selon la profondeur réelle du dossier "bin/Debug/net8.0"
-            var schemaPath = Path.GetFullPath(Path.Combine(baseDir, @"..\..\..\..\..\src\OnigiriShop\SQL\init_db.sql"));
+            var schemaPath = Path.GetFullPath(Path.Combine(baseDir, "..", "..", "..", "..", "..", "src", "OnigiriShop", "SQL", "init_db.sql"));
             return schemaPath;
         }
         /// <summary>
@@ -23,7 +22,8 @@ namespace Tests.Unit
             if (!File.Exists(schemaPath))
                 throw new FileNotFoundException($"Fichier de schéma SQL non trouvé : {schemaPath}");
 
-            using var conn = new SqliteConnection("Data Source=:memory:");
+            // Ne pas utiliser 'using' pour conserver la connexion ouverte
+            var conn = new SqliteConnection("Data Source=:memory:");
             await conn.OpenAsync();
 
             var schemaSql = await File.ReadAllTextAsync(schemaPath);
