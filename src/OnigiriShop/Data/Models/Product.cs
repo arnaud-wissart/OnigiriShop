@@ -8,10 +8,10 @@ namespace OnigiriShop.Data.Models
 
         [Required(ErrorMessage = "Le nom est requis.")]
         [StringLength(100, ErrorMessage = "Nom trop long.")]
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         [StringLength(512, ErrorMessage = "Description trop longue.")]
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         [Range(0, 1000, ErrorMessage = "Prix incorrect.")]
         public decimal Price { get; set; }
@@ -19,7 +19,7 @@ namespace OnigiriShop.Data.Models
         public bool IsOnMenu { get; set; }
 
         [StringLength(256)]
-        public string ImagePath { get; set; }
+        public string? ImagePath { get; set; }
         public bool IsDeleted { get; set; }
     }
 }

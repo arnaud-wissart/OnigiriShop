@@ -3,17 +3,17 @@
     public class AdminOrderSummary
     {
         public int Id { get; set; }
-        public string UserDisplayName { get; set; }
-        public string UserEmail { get; set; }
+        public string UserDisplayName { get; set; } = string.Empty;
+        public string UserEmail { get; set; } = string.Empty;
         public decimal TotalAmount { get; set; }
-        public string Status { get; set; }
+        public string Status { get; set; } = string.Empty; 
         public DateTime OrderedAt { get; set; }
-        public string DeliveryPlace { get; set; }
+        public string DeliveryPlace { get; set; } = string.Empty;
         public DateTime DeliveryAt { get; set; }
     }
     public class AdminOrderDetail : AdminOrderSummary
     {
-        public List<OrderItem> Items { get; set; }
+        public List<OrderItem> Items { get; set; } = new();
         public static AdminOrderDetail FromSummary(AdminOrderSummary summary, List<OrderItem> items)
         {
             return new AdminOrderDetail

@@ -7,7 +7,7 @@
         public DateTime DateCreated { get; set; }
         public DateTime DateUpdated { get; set; }
         public bool IsActive { get; set; }
-        public List<CartItem> Items { get; set; } = new();
+        public List<CartItem> Items { get; set; } = [];
     }
 
     public class CartItem
@@ -20,6 +20,6 @@
     }
     public class CartItemWithProduct : CartItem
     {
-        public Product Product { get; set; }
+        public Product? Product { get; set; }
     }
 }
