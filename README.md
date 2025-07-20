@@ -31,7 +31,7 @@ Elle propose :
 - **Frontend** : Blazor Server
 - **Tests** : xUnit et Playwright
 - **Gestion front** : LibMan
-- **CI/CD** : GitHub Actions (pipeline à mettre en place)
+- **CI/CD** : GitHub Actions
 
 ## Démarrage rapide
 
