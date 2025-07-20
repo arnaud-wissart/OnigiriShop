@@ -14,9 +14,14 @@ INSERT INTO Product (Name, Description, Price, IsOnMenu, ImagePath, IsDeleted) V
 INSERT INTO Delivery
 (Place, DeliveryAt, IsRecurring, RecurrenceFrequency, RecurrenceInterval, RecurrenceRule, Comment, IsDeleted, CreatedAt)
 VALUES
-('Place de la République', '2025-07-10 14:00:00', 0, NULL, NULL, NULL, NULL, 0, CURRENT_TIMESTAMP),
 ('Station métro Liberté', '2025-07-12 18:00:00', 0, NULL, NULL, NULL, 'Livraison exceptionnelle', 0, CURRENT_TIMESTAMP),
-('Créteil Echat', '2025-07-17 14:00:00', 1, 2, 1, NULL, 'Livraison chaque jeudi', 0, CURRENT_TIMESTAMP); 
+('Créteil Echat', '2025-07-17 14:00:00', 1, 2, 1, NULL, 'Livraison chaque jeudi', 0, CURRENT_TIMESTAMP);
+-- Livraisons récurrentes à République les mardis et jeudis à 13h00
+INSERT INTO Delivery
+(Place, DeliveryAt, IsRecurring, RecurrenceFrequency, RecurrenceInterval, RecurrenceRule, Comment, IsDeleted, CreatedAt)
+VALUES
+('République', '2025-07-15 13:00:00', 1, 2, 1, NULL, 'Chaque mardi 13h', 0, CURRENT_TIMESTAMP),
+('République', '2025-07-17 13:00:00', 1, 2, 1, NULL, 'Chaque jeudi 13h', 0, CURRENT_TIMESTAMP);
 -- Ici : IsRecurring=1, RecurrenceFrequency=2 (semaine), RecurrenceInterval=1
 
 -- Utilisateur admin (Arnaud Wissart)
@@ -38,8 +43,11 @@ VALUES
  'User');
 
  INSERT INTO 'Order' (UserId, DeliveryId, OrderedAt, Status, TotalAmount, Comment) VALUES
-(1, 1, '2025-07-12 12:34:56', 'En attente', 15.80, ''),
-(1, 2, '2025-07-13 10:01:24', 'Livrée', 8.70, '');
+ (1, 1, '2025-07-12 12:34:56', 'En attente', 15.80, ''),
+ (1, 2, '2025-07-13 10:01:24', 'Livrée', 8.70, ''),
+ (2, 1, '2025-07-05 15:00:00', 'Livrée', 11.20, ''),
+ (2, 4, '2025-07-14 10:00:00', 'En attente', 9.60, ''),
+ (1, 5, '2025-07-10 08:30:00', 'Livrée', 14.10, '');
 
 -- Expéditeurs
 INSERT INTO EmailVariation (Type, Name, Value, Extra) VALUES ('Expeditor', 'Yuki', 'yuki@onigirishop.com', 'Yuki de OnigiriShop');

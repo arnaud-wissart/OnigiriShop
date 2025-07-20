@@ -52,7 +52,8 @@
                         <button class="btn btn-outline-primary btn-sm"
                                 @onclick="ExportOrdersAsync"
                                 data-bs-toggle="tooltip"
-                                title="Exporter les commandes affichées">
+                                title="Exporter les commandes affichées"
+                                disabled="@(!FilteredOrders.Any())">
                             <i class="bi bi-download me-1"></i>
                             Exporter les commandes
                         </button>
