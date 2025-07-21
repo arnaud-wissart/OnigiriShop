@@ -26,10 +26,30 @@ namespace Tests.Playwright
             var projectPath = Path.GetFullPath(Path.Combine(
                 AppContext.BaseDirectory, "..", "..", "..", "..", "..",
                 "src", "OnigiriShop", "OnigiriShop.csproj"));
+            var projectDir = Path.GetDirectoryName(projectPath)!;
+            var buildOutput = Path.Combine(projectDir, "bin", "Release", "net8.0", "OnigiriShop.dll");
+            if (!File.Exists(buildOutput))
+            {
+                var buildInfo = new ProcessStartInfo("dotnet", $"build \"{projectPath}\" -c Release")
+                {
+                    WorkingDirectory = projectDir,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false
+                };
+                var buildProcess = Process.Start(buildInfo)!;
+                buildProcess.OutputDataReceived += (_, e) => { if (e.Data != null) Console.WriteLine(e.Data); };
+                buildProcess.ErrorDataReceived += (_, e) => { if (e.Data != null) Console.WriteLine(e.Data); };
+                buildProcess.BeginOutputReadLine();
+                buildProcess.BeginErrorReadLine();
+                await buildProcess.WaitForExitAsync();
+                if (buildProcess.ExitCode != 0)
+                    throw new InvalidOperationException("La construction du projet a échoué.");
+            }
             var args = $"run --no-build --configuration Release --project \"{projectPath}\" --urls {BaseUrl}";
             var startInfo = new ProcessStartInfo("dotnet", args)
             {
-                WorkingDirectory = Path.GetDirectoryName(projectPath)!,
+                WorkingDirectory = projectDir,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false
