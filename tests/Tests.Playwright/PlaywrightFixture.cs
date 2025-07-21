@@ -12,7 +12,9 @@ namespace Tests.Playwright
         public string BaseUrl { get; } = "http://localhost:5148";
         public async Task InitializeAsync()
         {
-            var projectPath = Path.GetFullPath(Path.Combine("..", "..", "src", "OnigiriShop", "OnigiriShop.csproj"));
+            var projectPath = Path.GetFullPath(Path.Combine(
+                AppContext.BaseDirectory, "..", "..", "..", "..", "..",
+                "src", "OnigiriShop", "OnigiriShop.csproj"));
             var startInfo = new ProcessStartInfo("dotnet", $"run --project \"{projectPath}\" --urls {BaseUrl}")
             {
                 WorkingDirectory = Path.GetDirectoryName(projectPath)!,
@@ -48,16 +50,21 @@ namespace Tests.Playwright
 
         public async Task DisposeAsync()
         {
-            await Page.CloseAsync();
-            await Browser.CloseAsync();
-            Playwright.Dispose();
+            if (Page is not null)
+                await Page.CloseAsync();
+            if (Browser is not null)
+                await Browser.CloseAsync();
+            Playwright?.Dispose();
 
-            if (_appProcess is { HasExited: false })
+            if (_appProcess != null)
             {
-                _appProcess.Kill(entireProcessTree: true);
-                await _appProcess.WaitForExitAsync();
+                if (!_appProcess.HasExited)
+                {
+                    _appProcess.Kill(entireProcessTree: true);
+                    await _appProcess.WaitForExitAsync();
+                }
+                _appProcess.Dispose();
             }
-            _appProcess?.Dispose();
         }
     }
 

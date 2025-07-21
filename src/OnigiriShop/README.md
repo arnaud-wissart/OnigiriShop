@@ -77,11 +77,8 @@ Avant d’exécuter la suite de tests Playwright, installez les navigateurs :
 playwright.ps1 install
 ```
 
-L’application doit ensuite être lancée dans un terminal :
-```bash
-dotnet run --project src/OnigiriShop
-```
-Dans un autre terminal, lancez l’ensemble des tests :
+La fixture de tests démarre automatiquement l’application sur `http://localhost:5148`.
+Il suffit donc d’exécuter directement :
 ```bash
 dotnet test
 ```
