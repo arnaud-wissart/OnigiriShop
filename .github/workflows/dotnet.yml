@@ -26,7 +26,7 @@ jobs:
         run: dotnet build OnigiriShop.sln --no-restore --configuration Release
 
       - name: Install Playwright browsers
-        run: pwsh tests/Tests.Playwright/bin/Release/net8.0/playwright.ps1 install
+        run: pwsh tests/Tests.Playwright/bin/Release/net8.0/playwright.ps1 install --with-deps       
 
       - name: Run tests
         run: dotnet test OnigiriShop.sln --no-build --configuration Release
