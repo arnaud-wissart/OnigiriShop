@@ -13,7 +13,7 @@ namespace Tests.Unit
         public override void Close() => inner.Close();
         public override void ChangeDatabase(string databaseName) => inner.ChangeDatabase(databaseName);
         public override void Open() => inner.Open();
-        public override string ConnectionString { get => inner.ConnectionString; set => inner.ConnectionString = value; }
+        public override string? ConnectionString { get => inner.ConnectionString; set => inner.ConnectionString = value; }
         public override string Database => inner.Database;
         public override ConnectionState State => inner.State;
         public override string DataSource => inner.DataSource;

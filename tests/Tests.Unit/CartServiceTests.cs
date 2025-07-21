@@ -15,9 +15,10 @@ namespace Tests.Unit
 
             var cart = await cartService.GetActiveCartAsync(1, conn);
             Assert.NotNull(cart);
-            Assert.Single(cart.Items);
-            Assert.Equal(2, cart.Items.First().Quantity);
-            Assert.Equal(1, cart.Items.First().ProductId);
+            Assert.NotNull(cart.Items);
+            Assert.Single(cart.Items!);
+            Assert.Equal(2, cart.Items!.First().Quantity);
+            Assert.Equal(1, cart.Items!.First().ProductId);
         }
 
         [Fact]
@@ -31,12 +32,16 @@ namespace Tests.Unit
             await cartService.RemoveItemAsync(1, 1, 1, conn);
 
             var cart = await cartService.GetActiveCartAsync(1, conn);
-            Assert.Single(cart.Items);
-            Assert.Equal(1, cart.Items.First().Quantity);
+            Assert.NotNull(cart);
+            Assert.NotNull(cart.Items);
+            Assert.Single(cart.Items!);
+            Assert.Equal(1, cart.Items!.First().Quantity);
 
             await cartService.RemoveItemAsync(1, 1, 1, conn);
             cart = await cartService.GetActiveCartAsync(1, conn);
-            Assert.Empty(cart.Items);
+            Assert.NotNull(cart);
+            Assert.NotNull(cart.Items);
+            Assert.Empty(cart.Items!);
         }
 
         [Fact]
@@ -50,7 +55,9 @@ namespace Tests.Unit
             await cartService.ClearCartAsync(1, conn);
 
             var cart = await cartService.GetActiveCartAsync(1, conn);
-            Assert.Empty(cart.Items);
+            Assert.NotNull(cart);
+            Assert.NotNull(cart.Items);
+            Assert.Empty(cart.Items!);
         }
 
         [Fact]
@@ -90,9 +97,10 @@ namespace Tests.Unit
 
             var cart = await cartService.GetActiveCartAsync(1, conn);
             Assert.NotNull(cart);
-            Assert.Equal(2, cart.Items.Count);
-            Assert.Contains(cart.Items, x => x.ProductId == 1 && x.Quantity == 2);
-            Assert.Contains(cart.Items, x => x.ProductId == 2 && x.Quantity == 1);
+            Assert.NotNull(cart.Items);
+            Assert.Equal(2, cart.Items!.Count);
+            Assert.Contains(cart.Items!, x => x.ProductId == 1 && x.Quantity == 2);
+            Assert.Contains(cart.Items!, x => x.ProductId == 2 && x.Quantity == 1);
         }
 
         [Fact]

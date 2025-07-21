@@ -8,7 +8,8 @@ namespace Tests.Unit
     {
         private static string GetSchemaPath()
         {
-            var baseDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            var baseDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+                            ?? throw new InvalidOperationException("Base directory not found");
             var schemaPath = Path.GetFullPath(Path.Combine(baseDir, "..", "..", "..", "..", "..", "src", "OnigiriShop", "SQL", "init_db.sql"));
             return schemaPath;
         }

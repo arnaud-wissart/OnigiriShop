@@ -129,7 +129,7 @@
         </div>
     </div>
 </div>
-@if (ShowOrderModal && SelectedOrderDetail != null)
+@if (ShowOrderModal && SelectedOrder != null && SelectedOrderDetail != null)
 {
     <div class="modal fade show d-block" tabindex="-1" style="background:rgba(33,33,33,0.18); z-index:1080;">
         <div class="modal-dialog modal-lg modal-dialog-centered" @onclick:stopPropagation>

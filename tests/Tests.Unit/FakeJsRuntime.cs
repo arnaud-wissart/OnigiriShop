@@ -16,7 +16,9 @@ public class FakeJsRuntime : IJSRuntime
         if (identifier == "localStorage.getItem" && args != null && args.Length > 0 && args[0]?.ToString() == "anonCart")
         {
             object? result = StoredValue;
-            return new ValueTask<TValue>((TValue?)(object?)result!);
+            if (result is null)
+                return new ValueTask<TValue>((TValue)default!);
+            return new ValueTask<TValue>((TValue)result);
         }
         if (identifier == "localStorage.setItem" && args != null && args.Length > 1 && args[0]?.ToString() == "anonCart")
         {

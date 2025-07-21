@@ -12,13 +12,13 @@ namespace Tests.Unit
     {
         private static AuthService BuildService(ClaimsPrincipal user)
         {
-            var mockProvider = new Mock<SessionAuthenticationStateProvider>(null);
+            var mockProvider = new Mock<SessionAuthenticationStateProvider>(null!);
             mockProvider.Setup(x => x.GetAuthenticationStateAsync())
                 .ReturnsAsync(new AuthenticationState(user));
 
-            var cartService = new Mock<CartService>(MockBehavior.Loose, (ISqliteConnectionFactory)null);
-            var anonCart = new Mock<AnonymousCartService>(MockBehavior.Loose, (IJSRuntime)null);
-            var prodService = new Mock<ProductService>(MockBehavior.Loose, (ISqliteConnectionFactory)null);
+            var cartService = new Mock<CartService>(MockBehavior.Loose, (ISqliteConnectionFactory)null!);
+            var anonCart = new Mock<AnonymousCartService>(MockBehavior.Loose, (IJSRuntime)null!);
+            var prodService = new Mock<ProductService>(MockBehavior.Loose, (ISqliteConnectionFactory)null!);
             var authProvider = new Mock<AuthenticationStateProvider>();
             var cartMergeService = new Mock<CartMergeService>(cartService.Object, anonCart.Object, authProvider.Object);
             var cartProvider = new Mock<CartProvider>(cartService.Object, anonCart.Object, prodService.Object, authProvider.Object, cartMergeService.Object);
@@ -106,15 +106,15 @@ namespace Tests.Unit
         [Fact]
         public async Task LogoutAsync_CallsProviderSignOut()
         {
-            var mockProvider = new Mock<SessionAuthenticationStateProvider>(null);
+            var mockProvider = new Mock<SessionAuthenticationStateProvider>(null!);
             mockProvider.Setup(x => x.GetAuthenticationStateAsync())
                 .ReturnsAsync(new Microsoft.AspNetCore.Components.Authorization.AuthenticationState(
                     new ClaimsPrincipal(new ClaimsIdentity())));
             mockProvider.Setup(x => x.SignOutAsync()).Returns(Task.CompletedTask).Verifiable();
 
-            var cartService = new Mock<CartService>(MockBehavior.Loose, (ISqliteConnectionFactory)null);
-            var anonCart = new Mock<AnonymousCartService>(MockBehavior.Loose, (IJSRuntime)null);
-            var prodService = new Mock<ProductService>(MockBehavior.Loose, (ISqliteConnectionFactory)null);
+            var cartService = new Mock<CartService>(MockBehavior.Loose, (ISqliteConnectionFactory)null!);
+            var anonCart = new Mock<AnonymousCartService>(MockBehavior.Loose, (IJSRuntime)null!);
+            var prodService = new Mock<ProductService>(MockBehavior.Loose, (ISqliteConnectionFactory)null!);
             var authProvider = new Mock<AuthenticationStateProvider>();
             var mergeService = new Mock<CartMergeService>(cartService.Object, anonCart.Object, authProvider.Object);
             var cartProvider = new Mock<CartProvider>(cartService.Object, anonCart.Object, prodService.Object, authProvider.Object, mergeService.Object); var service = new AuthService(mockProvider.Object, cartProvider.Object);

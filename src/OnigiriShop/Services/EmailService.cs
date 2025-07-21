@@ -55,7 +55,7 @@ namespace OnigiriShop.Services
             catch (Exception ex)
             {
                 Log.Error(ex, "Exception lors de l'envoi du mail à {ToEmail} ({Subject})", toEmail, subject);
-                errorModalService .ShowModal(
+                errorModalService.ShowModal(
                     "Une erreur est survenue lors de l'envoi de l'email : " + ex.Message,
                     "Erreur"
                 );
@@ -78,7 +78,7 @@ namespace OnigiriShop.Services
                     .Replace("{{Intro}}", intro)
                     .Replace("{{Link}}", invitationLink)
                     .Replace("{{Signature}}", signature);
-                text = template.TextContent!
+                text = (template.TextContent ?? string.Empty)
                     .Replace("{{Intro}}", intro)
                     .Replace("{{Link}}", invitationLink)
                     .Replace("{{Signature}}", signature);
@@ -108,7 +108,7 @@ namespace OnigiriShop.Services
                     .Replace("{{Intro}}", intro)
                     .Replace("{{Link}}", resetLink)
                     .Replace("{{Signature}}", signature);
-                text = template.TextContent!
+                text = (template.TextContent ?? string.Empty)
                     .Replace("{{Intro}}", intro)
                     .Replace("{{Link}}", resetLink)
                     .Replace("{{Signature}}", signature);
@@ -147,7 +147,7 @@ namespace OnigiriShop.Services
                     .Replace("{{DeliveryDate}}", delivery.DeliveryAt.ToString("dddd dd/MM/yyyy HH:mm"))
                     .Replace("{{DeliveryPlace}}", delivery.Place)
                     .Replace("{{Signature}}", signature);
-                text = template.TextContent!
+                text = (template.TextContent ?? string.Empty)
                     .Replace("{{Name}}", string.IsNullOrEmpty(toName) ? toEmail : toName)
                     .Replace("{{OrderId}}", order.Id.ToString())
                     .Replace("{{OrderDate}}", order.OrderedAt.ToString("dd/MM/yyyy à HH:mm"))
@@ -177,7 +177,6 @@ namespace OnigiriShop.Services
         public async Task SendAdminNotificationAsync(string subject, string htmlContent, string textContent)
         {
             var (expEmail, expName) = await variationService.GetRandomExpeditorAsync();
-            // Suppose que tu stockes l'email admin dans les variations ou ailleurs
             var adminEmail = "admin@onigirishop.com";
             await SendEmailAsync(adminEmail, "Admin", subject, htmlContent, textContent, expEmail, expName);
         }
