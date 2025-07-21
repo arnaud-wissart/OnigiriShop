@@ -7,7 +7,7 @@
         public async Task AdminPageShowsLoginModal()
         {
             await fixture.Page.GotoAsync($"{fixture.BaseUrl}/admin");
-            await fixture.Page.WaitForSelectorAsync("text=Connexion");
+            await fixture.Page.WaitForSelectorAsync("#loginModal");
             var content = await fixture.Page.ContentAsync();
             Assert.Contains("Connexion", content);
         }

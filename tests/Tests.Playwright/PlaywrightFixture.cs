@@ -9,9 +9,20 @@ namespace Tests.Playwright
         public IBrowser Browser { get; private set; } = default!;
         public IPage Page { get; private set; } = default!;
         private Process? _appProcess;
-        public string BaseUrl { get; } = "http://localhost:5148";
+        public string BaseUrl { get; private set; } = default!;
+
+        private static int GetFreePort()
+        {
+            var listener = new System.Net.Sockets.TcpListener(System.Net.IPAddress.Loopback, 0);
+            listener.Start();
+            var port = ((System.Net.IPEndPoint)listener.LocalEndpoint).Port;
+            listener.Stop();
+            return port;
+        }
         public async Task InitializeAsync()
         {
+            var port = GetFreePort();
+            BaseUrl = $"http://localhost:{port}";
             var projectPath = Path.GetFullPath(Path.Combine(
                 AppContext.BaseDirectory, "..", "..", "..", "..", "..",
                 "src", "OnigiriShop", "OnigiriShop.csproj"));
@@ -19,10 +30,9 @@ namespace Tests.Playwright
             {
                 WorkingDirectory = Path.GetDirectoryName(projectPath)!,
                 RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                Environment = { ["ASPNETCORE_ENVIRONMENT"] = "Development" }
-            };
-
+                RedirectStandardError = true            };
+            startInfo.Environment["ASPNETCORE_ENVIRONMENT"] = "Development";
+            startInfo.Environment["ASPNETCORE_HTTPS_PORT"] = "0";
             _appProcess = Process.Start(startInfo);
 
             using var client = new HttpClient();
