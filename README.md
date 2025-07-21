@@ -43,3 +43,14 @@ dotnet restore
 dotnet user-secrets set "Mailjet:ApiKey" "VOTRE_CLE"
 dotnet run
 ```
+
+## Tests
+
+Installez d’abord les navigateurs Playwright :
+```bash
+playwright.ps1 install
+```
+L’application est lancée automatiquement par la fixture lors de l’exécution des tests :
+```bash
+dotnet test
+```
