@@ -8,5 +8,4 @@
         public string Value { get; set; } = string.Empty;
         public string Extra { get; set; } = string.Empty;
     }
-
 }
