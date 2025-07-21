@@ -26,18 +26,26 @@ namespace Tests.Playwright
             var projectPath = Path.GetFullPath(Path.Combine(
                 AppContext.BaseDirectory, "..", "..", "..", "..", "..",
                 "src", "OnigiriShop", "OnigiriShop.csproj"));
-            var startInfo = new ProcessStartInfo("dotnet", $"run --project \"{projectPath}\" --urls {BaseUrl}")
+            var args = $"run --no-build --configuration Release --project \"{projectPath}\" --urls {BaseUrl}";
+            var startInfo = new ProcessStartInfo("dotnet", args)
             {
                 WorkingDirectory = Path.GetDirectoryName(projectPath)!,
                 RedirectStandardOutput = true,
-                RedirectStandardError = true            
+                RedirectStandardError = true,
+                UseShellExecute = false
             };
             startInfo.Environment["ASPNETCORE_ENVIRONMENT"] = "Development";
             startInfo.Environment["ASPNETCORE_HTTPS_PORT"] = "0";
-            _appProcess = Process.Start(startInfo);
+
+            _appProcess = Process.Start(startInfo)!;
+            _appProcess.OutputDataReceived += (_, e) => { if (e.Data != null) Console.WriteLine(e.Data); };
+            _appProcess.ErrorDataReceived += (_, e) => { if (e.Data != null) Console.WriteLine(e.Data); };
+            _appProcess.BeginOutputReadLine();
+            _appProcess.BeginErrorReadLine();
 
             using var client = new HttpClient();
-            for (int i = 0; i < 90; i++)
+            var started = false;
+            for (int i = 0; i < 10; i++)
             {
                 await Task.Delay(1000);
                 try
@@ -45,14 +53,19 @@ namespace Tests.Playwright
                     var response = await client.GetAsync(BaseUrl);
                     if (response.IsSuccessStatusCode)
                     {
+                        started = true;
                         break;
-                    }
+                    }                        
                 }
                 catch
                 {
                     // ignore while waiting for the server
                 }
             }
+            if (!started)
+                throw new InvalidOperationException("Le serveur de test ne s'est pas lancé.");
+
+            Program.Main(["install", "chromium"]);
 
             Playwright = await Microsoft.Playwright.Playwright.CreateAsync();
             Browser = await Playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Headless = true });
