@@ -33,7 +33,6 @@ namespace OnigiriShop.Shared
             IsAdmin = User.IsInRole("Admin");
             UserEmail = User.FindFirstValue(ClaimTypes.Email) ?? "";
 
-            // Charger le panier SQL si connecté
             if (IsAuthenticated)
             {
                 var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);

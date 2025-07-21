@@ -11,8 +11,8 @@ namespace OnigiriShop.Services
         private static (IDbConnection Conn, bool Owns) GetOrCreateConnection(IDbConnection connection, ISqliteConnectionFactory factory)
         {
             if (connection != null)
-                return (connection, false); // Connexion gérée à l'extérieur
-            return (factory.CreateConnection(), true); // Connexion créée ici, à disposer
+                return (connection, false);
+            return (factory.CreateConnection(), true);
         }
 
         public async Task<Cart?> GetActiveCartAsync(int userId, IDbConnection connection)

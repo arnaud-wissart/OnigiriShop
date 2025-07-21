@@ -109,7 +109,6 @@ namespace OnigiriShop.Pages
         {
             if (FilteredOrders.Count == 0)
             {
-                // Todo : toast ou modal pour prévenir qu'il n'y a rien à exporter
                 await JS.InvokeVoidAsync("alert", "Aucune commande à exporter.");
                 return;
             }

@@ -92,7 +92,6 @@ window.bootstrapInterop = {
  * Réactive tous les tooltips Bootstrap.
  */
 window.activateTooltips = function () {
-    // Clean tooltips existants
     document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) {
         var tooltip = bootstrap.Tooltip.getInstance(el);
         if (tooltip) tooltip.dispose();
@@ -100,7 +99,6 @@ window.activateTooltips = function () {
     document.querySelectorAll('.tooltip').forEach(function (el) {
         el.parentNode && el.parentNode.removeChild(el);
     });
-    // Re-init
     document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) {
         bootstrap.Tooltip.getOrCreateInstance(el);
     });
@@ -222,7 +220,7 @@ window.onigiriColorModalOpenInput = function () {
  * @param {"ponctuelle"|"recurrente"} type 
  */
 window.openColorModal = function (type) {
-    if (document.getElementById('onigiriColorModal')) return; // déjà affichée
+    if (document.getElementById('onigiriColorModal')) return;
 
     const modal = document.createElement('div');
     modal.className = "color-modal-overlay";

@@ -26,7 +26,6 @@ namespace OnigiriShop.Services
             using var conn = connectionFactory.CreateConnection();
             await ((DbConnection)conn).OpenAsync();
 
-            // Vérifier si un autre utilisateur possède déjà ce nom
             var sqlCheck = "SELECT COUNT(*) FROM User WHERE Name = @name AND Id <> @userId";
             var count = await conn.ExecuteScalarAsync<int>(sqlCheck, new { name, userId });
             if (count > 0)

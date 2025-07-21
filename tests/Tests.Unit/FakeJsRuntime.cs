@@ -6,10 +6,7 @@ public class FakeJsRuntime : IJSRuntime
 {
     public string? StoredValue { get; private set; }
 
-    public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args)
-    {
-        return InvokeAsync<TValue>(identifier, CancellationToken.None, args);
-    }
+    public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args) => InvokeAsync<TValue>(identifier, CancellationToken.None, args);
 
     public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
     {

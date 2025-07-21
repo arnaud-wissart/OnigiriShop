@@ -126,7 +126,6 @@ namespace OnigiriShop.Pages
         {
             if (!string.IsNullOrWhiteSpace(p.ImagePath))
                 return p.ImagePath;
-            // SVG simple, 48x48 gris avec texte
             return "data:image/svg+xml;utf8," + Uri.EscapeDataString(
                 @"<svg width='48' height='48' xmlns='http://www.w3.org/2000/svg'>
             <rect width='100%' height='100%' fill='#e5e5e5'/>
@@ -143,13 +142,11 @@ namespace OnigiriShop.Pages
             var ext = Path.GetExtension(UploadedImage.Name).ToLowerInvariant();
             if (ext != ".jpg" && ext != ".jpeg" && ext != ".png" && ext != ".webp")
             {
-                // Affiche une erreur : format non supporté
                 ModalError = "Format d’image non supporté.";
                 StateHasChanged();
                 return;
             }
 
-            // Nom unique :
             var fileName = $"product_{Guid.NewGuid()}.jpg";
             var relPath = $"images/products/{fileName}";
             var absPath = Path.Combine(WebHostEnv.WebRootPath, "images", "products", fileName);
@@ -159,18 +156,16 @@ namespace OnigiriShop.Pages
             if (!string.IsNullOrEmpty(directoryName))
                 Directory.CreateDirectory(directoryName); 
 
-            // Lecture et resize avec ImageSharp
             using (var image = await Image.LoadAsync(UploadedImage.OpenReadStream(5_000_000))) // 5 Mo max
             {
                 image.Mutate(x => x.Resize(new ResizeOptions
                 {
-                    Size = new Size(400, 400), // max width/height
+                    Size = new Size(400, 400),
                     Mode = ResizeMode.Max
                 }));
                 await image.SaveAsJpegAsync(absPath, new JpegEncoder { Quality = 70 });
             }
 
-            // Mise à jour du modèle courant
             ModalModel.ImagePath = "/" + relPath.Replace("\\", "/");
             StateHasChanged();
         }

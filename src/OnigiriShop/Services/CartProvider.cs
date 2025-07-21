@@ -14,14 +14,11 @@ namespace OnigiriShop.Services
         {
             var (isAuthenticated, userId) = await GetCurrentUserIdAsync();
 
-            // Migration automatique uniquement si pas déjà migré, et pas de conflit (voir DetectCartConflictAsync pour modale)
             if (isAuthenticated && userId.HasValue && cartMergeService.LastMigratedUserId != userId)
             {
-                // On ne migre QUE si pas de conflit
                 var conflict = await cartMergeService.DetectCartConflictAsync();
                 if (conflict == CartMergeStatus.AnonymousOnly)
                     await cartMergeService.MergeCartsAsync(force: true); // Fusion simple
-                // Si BothNonEmpty, on attend la décision de l’utilisateur (modale)
             }
 
             if (isAuthenticated && userId.HasValue)

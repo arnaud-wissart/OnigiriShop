@@ -31,12 +31,10 @@ namespace OnigiriShop.Pages
             var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
             var token = query["token"];
 
-            // Si pas de token
             if (string.IsNullOrWhiteSpace(token))
             {
                 if (await AuthService.IsAuthenticatedAsync())
                 {
-                    // Déjà loggué => rien à activer
                     AlreadyActivated = true;
                     Loaded = true;
                     StateHasChanged();
@@ -48,12 +46,10 @@ namespace OnigiriShop.Pages
                 return;
             }
 
-            // Vérifie le token
             var userId = await UserAccountService.ValidateInviteTokenAsync(token);
             var user = userId > 0 ? (await UserService.GetAllUsersAsync(null)).FirstOrDefault(u => u.Id == userId) : null;
             if (userId == 0)
             {
-                // On regarde si ce token est connu mais expiré pour afficher le bouton “demander un nouveau lien”
                 var expiredUserId = await UserAccountService.FindUserIdByTokenAsync(token);
                 if (expiredUserId > 0)
                 {
@@ -67,7 +63,6 @@ namespace OnigiriShop.Pages
                 return;
             }
 
-            // Token valide mais user déjà activé
             if (user != null && user.IsActive)
             {
                 AlreadyActivated = true;
@@ -76,7 +71,6 @@ namespace OnigiriShop.Pages
                 return;
             }
 
-            // Token valide, user pas activé, mais déjà loggué
             if (await AuthService.IsAuthenticatedAsync())
             {
                 await AuthService.LogoutAsync();
@@ -84,7 +78,6 @@ namespace OnigiriShop.Pages
                 return;
             }
 
-            // Cas normal
             Model.Token = token;
             UserId = userId;
             Loaded = true;
@@ -93,11 +86,9 @@ namespace OnigiriShop.Pages
         }
         protected async Task RequestNewInvite()
         {
-            // Envoie un mail à l’admin, ou relance un magiclink
             if (!string.IsNullOrEmpty(UserEmailForRequest))
             {
                 await UserAccountService.InviteUserAsync(UserEmailForRequest, string.Empty, Nav.BaseUri);
-                // Optionnel : toast ou message pour confirmation
                 await JS.InvokeVoidAsync("alert", "Un nouveau lien d'activation a été envoyé à votre adresse email.");
             }
         }

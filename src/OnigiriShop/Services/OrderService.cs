@@ -18,9 +18,8 @@ namespace OnigiriShop.Services
                 new { userId }
             )).ToList();
 
-            if (!orders.Any()) return orders;
+            if (orders.Count == 0) return orders;
 
-            // Récupère tous les OrderItems liés à ces commandes
             var orderIds = orders.Select(o => o.Id).ToArray();
             var items = (await conn.QueryAsync<OrderItem>(
                 @"SELECT oi.*, p.Name as ProductName
@@ -30,11 +29,8 @@ namespace OnigiriShop.Services
                 new { orderIds }
             )).ToList();
 
-            // On associe les items à leur commande respective
             foreach (var order in orders)
-            {
                 order.Items = items.Where(i => i.OrderId == order.Id).ToList();
-            }
 
             return orders;
         }

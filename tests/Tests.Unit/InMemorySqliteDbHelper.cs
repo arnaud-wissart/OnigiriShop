@@ -46,7 +46,6 @@ namespace Tests.Unit
             await conn.ExecuteAsync("INSERT INTO Product (Name, Description, Price, IsOnMenu, ImagePath, IsDeleted) VALUES ('Test', 'desc', 3.5, 1, '', 0);");
             await conn.ExecuteAsync("INSERT INTO Product (Name, Description, Price, IsOnMenu, ImagePath, IsDeleted) VALUES ('Second', 'desc2', 5, 1, '', 0);");
 
-
             return conn;
         }
     }
