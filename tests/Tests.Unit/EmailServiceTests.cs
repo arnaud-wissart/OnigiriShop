@@ -42,8 +42,8 @@ namespace Tests.Unit
 
             clientMock.Verify(c => c.SendTransactionalEmailAsync(It.IsAny<TransactionalEmail>(), It.IsAny<bool>(), It.IsAny<bool>()), Times.Once);
             Assert.NotNull(sent);
-            var html = (string)typeof(TransactionalEmail).GetProperty("HTMLPart")!.GetValue(sent!);
-            var subject = (string)typeof(TransactionalEmail).GetProperty("Subject")!.GetValue(sent!);
+            var html = (string?)typeof(TransactionalEmail).GetProperty("HTMLPart")!.GetValue(sent!) ?? string.Empty;
+            var subject = (string?)typeof(TransactionalEmail).GetProperty("Subject")!.GetValue(sent!) ?? string.Empty;
             Assert.Contains("Intro", html);
             Assert.Contains(link, html);
             Assert.Contains("Signature", html);

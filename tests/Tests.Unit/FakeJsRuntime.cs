@@ -17,19 +17,19 @@ public class FakeJsRuntime : IJSRuntime
         {
             object? result = StoredValue;
             if (result is null)
-                return new ValueTask<TValue>((TValue)default!);
-            return new ValueTask<TValue>((TValue)result);
+                return ValueTask.FromResult<TValue>(default!);
+            return ValueTask.FromResult((TValue)result);
         }
         if (identifier == "localStorage.setItem" && args != null && args.Length > 1 && args[0]?.ToString() == "anonCart")
         {
             StoredValue = args[1]?.ToString();
-            return new ValueTask<TValue>(default(TValue)!);
+            return ValueTask.FromResult<TValue>(default!);
         }
         if (identifier == "localStorage.removeItem" && args != null && args.Length > 0 && args[0]?.ToString() == "anonCart")
         {
             StoredValue = null;
-            return new ValueTask<TValue>(default(TValue)!);
+            return ValueTask.FromResult<TValue>(default!);
         }
-        return new ValueTask<TValue>(default(TValue)!);
+        return ValueTask.FromResult<TValue>(default!);
     }
 }

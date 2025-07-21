@@ -2,6 +2,7 @@
 using OnigiriShop.Data.Interfaces;
 using System.Data;
 using System.Data.Common;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Tests.Unit
 {
@@ -13,7 +14,8 @@ namespace Tests.Unit
         public override void Close() => inner.Close();
         public override void ChangeDatabase(string databaseName) => inner.ChangeDatabase(databaseName);
         public override void Open() => inner.Open();
-        public override string? ConnectionString { get => inner.ConnectionString; set => inner.ConnectionString = value; }
+        [AllowNull]
+        public override string ConnectionString { get => inner.ConnectionString; set => inner.ConnectionString = value; }
         public override string Database => inner.Database;
         public override ConnectionState State => inner.State;
         public override string DataSource => inner.DataSource;

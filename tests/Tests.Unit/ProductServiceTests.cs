@@ -101,6 +101,7 @@ namespace Tests.Unit
             Assert.True(result);
 
             var product = await _service.GetByIdAsync(1);
+            Assert.NotNull(product);
             Assert.Equal("Test2", product.Name);
             Assert.Equal(4.5m, product.Price);
         }
