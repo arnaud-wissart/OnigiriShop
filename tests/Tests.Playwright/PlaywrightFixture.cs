@@ -37,7 +37,7 @@ namespace Tests.Playwright
             _appProcess = Process.Start(startInfo);
 
             using var client = new HttpClient();
-            for (int i = 0; i < 30; i++)
+            for (int i = 0; i < 90; i++)
             {
                 await Task.Delay(1000);
                 try
