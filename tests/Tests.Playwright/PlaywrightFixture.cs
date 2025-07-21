@@ -30,7 +30,8 @@ namespace Tests.Playwright
             {
                 WorkingDirectory = Path.GetDirectoryName(projectPath)!,
                 RedirectStandardOutput = true,
-                RedirectStandardError = true            };
+                RedirectStandardError = true            
+            };
             startInfo.Environment["ASPNETCORE_ENVIRONMENT"] = "Development";
             startInfo.Environment["ASPNETCORE_HTTPS_PORT"] = "0";
             _appProcess = Process.Start(startInfo);
