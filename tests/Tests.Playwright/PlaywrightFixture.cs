@@ -85,7 +85,7 @@ namespace Tests.Playwright
             if (!started)
                 throw new InvalidOperationException("Le serveur de test ne s'est pas lancé.");
 
-            Program.Main(["install", "chromium"]);
+            Program.Main(["install", "chromium", "--with-deps"]);
 
             Playwright = await Microsoft.Playwright.Playwright.CreateAsync();
             Browser = await Playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Headless = true });
