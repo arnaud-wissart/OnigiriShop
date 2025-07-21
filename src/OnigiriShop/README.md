@@ -62,18 +62,26 @@ pour obtenir `dbPath` dans le code ou les tests.
 ## Démarrage rapide
 
 ```bash
-# Cloner le dépôt
 git clone https://github.com/arnaud-wissart/onigirishop.git
-
-# Restaure les librairies front (LibMan)
+cd OnigiriShopSolution/src/OnigiriShop
 libman restore
-
-# Restaure les packages NuGet
 dotnet restore
-
-# Configure les secrets (Mailjet, etc.) en dev
 dotnet user-secrets set "Mailjet:ApiKey" "VOTRE_CLE"
-# ... (voir la section Configuration)
-
-# Lance l’application
 dotnet run
+```
+
+## Tests
+
+Avant d’exécuter la suite de tests Playwright, installez les navigateurs :
+```bash
+playwright.ps1 install
+```
+
+L’application doit ensuite être lancée dans un terminal :
+```bash
+dotnet run --project src/OnigiriShop
+```
+Dans un autre terminal, lancez l’ensemble des tests :
+```bash
+dotnet test
+```

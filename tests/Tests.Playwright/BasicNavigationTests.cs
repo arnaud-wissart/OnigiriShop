@@ -6,7 +6,7 @@ namespace Tests.Playwright
         [Fact]
         public async Task HomePageLoads()
         {
-            await fixture.Page.GotoAsync("http://localhost:5148/");
+            await fixture.Page.GotoAsync($"{fixture.BaseUrl}/");
             var title = await fixture.Page.TitleAsync();
             Assert.Contains("Onigiri", title);
         }
