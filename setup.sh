@@ -1,4 +1,3 @@
-#!/usr/bin/env bash
-apt-get update
-apt-get install -y <packages indispensables>
+libman restore
 dotnet restore
+dotnet run
