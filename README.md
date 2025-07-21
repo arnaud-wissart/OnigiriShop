@@ -42,3 +42,4 @@ libman restore
 dotnet restore
 dotnet user-secrets set "Mailjet:ApiKey" "VOTRE_CLE"
 dotnet run
+```
