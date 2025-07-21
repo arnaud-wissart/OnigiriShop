@@ -4,14 +4,14 @@ namespace OnigiriShop.Services
 {
     public class CartState
     {
-        public event Action OnChanged;
+        public event Action? OnChanged;
 
-        private List<CartItemWithProduct> _items = new();
+        private List<CartItemWithProduct> _items = [];
         public IReadOnlyList<CartItemWithProduct> Items => _items;
 
         public void SetItems(List<CartItemWithProduct> items)
         {
-            _items = items ?? new();
+            _items = items ?? [];
             OnChanged?.Invoke();
         }
 

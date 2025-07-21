@@ -11,7 +11,7 @@ namespace OnigiriShop.Pages
         [Parameter] public EventCallback OnHide { get; set; }
 
         protected LoginModel LoginModel { get; set; } = new();
-        protected string ErrorMessage { get; set; } = string.Empty;
+        protected string? ErrorMessage { get; set; } = string.Empty;
         protected bool IsBusy { get; set; }
 
         protected void Hide()

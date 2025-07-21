@@ -14,15 +14,15 @@ namespace OnigiriShop.Pages
     {
         [Inject] public IWebHostEnvironment WebHostEnv { get; set; } = default!;
         [Inject] public ProductService ProductService { get; set; } = default!;
-        protected List<Product> Products { get; set; } = new();
+        protected List<Product> Products { get; set; } = [];
         protected List<Product> FilteredProducts => Products;
         protected Product ModalModel { get; set; } = new();
-        protected Product DeleteModel { get; set; }
+        protected Product? DeleteModel { get; set; }
         protected bool ShowModal { get; set; }
         protected bool ShowDeleteConfirm { get; set; }
         protected bool IsEdit { get; set; }
-        protected string ModalTitle { get; set; } = string.Empty;
-        protected string ModalError { get; set; } = string.Empty;
+        protected string? ModalTitle { get; set; }
+        protected string? ModalError { get; set; }
         protected bool IsBusy { get; set; }
 
         protected override async Task OnInitializedAsync()
@@ -121,7 +121,7 @@ namespace OnigiriShop.Pages
             }
         }
 
-        protected IBrowserFile UploadedImage { get; set; }
+        protected IBrowserFile? UploadedImage { get; set; }
         protected string GetProductImage(Product p)
         {
             if (!string.IsNullOrWhiteSpace(p.ImagePath))
@@ -154,7 +154,10 @@ namespace OnigiriShop.Pages
             var relPath = $"images/products/{fileName}";
             var absPath = Path.Combine(WebHostEnv.WebRootPath, "images", "products", fileName);
 
-            Directory.CreateDirectory(Path.GetDirectoryName(absPath)); // Au cas où
+            var directoryName = Path.GetDirectoryName(absPath);
+
+            if (!string.IsNullOrEmpty(directoryName))
+                Directory.CreateDirectory(directoryName); 
 
             // Lecture et resize avec ImageSharp
             using (var image = await Image.LoadAsync(UploadedImage.OpenReadStream(5_000_000))) // 5 Mo max
@@ -171,7 +174,5 @@ namespace OnigiriShop.Pages
             ModalModel.ImagePath = "/" + relPath.Replace("\\", "/");
             StateHasChanged();
         }
-
-
     }
 }

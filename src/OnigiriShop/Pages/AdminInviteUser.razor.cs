@@ -21,7 +21,7 @@ namespace OnigiriShop.Pages
             try
             {
                 var baseUrl = Nav.BaseUri;
-                await UserAccountService.InviteUserAsync(Model.Email.Trim(), Model.Name?.Trim(), baseUrl);
+                await UserAccountService.InviteUserAsync(Model.Email.Trim(), Model.Name.Trim(), baseUrl);
                 Message = "Invitation envoyée !";
                 Model = new InviteUserModel();
             }

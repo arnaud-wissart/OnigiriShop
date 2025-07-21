@@ -1,34 +1,20 @@
 ﻿using Mailjet.Client;
 using Mailjet.Client.TransactionalEmails;
 using OnigiriShop.Data.Models;
-using OnigiriShop.Infrastructure;
 using Serilog;
 
 namespace OnigiriShop.Services
 {
-    public class EmailService
+    public class EmailService(IMailjetClient client, EmailVariationService variationService, ErrorModalService errorModalService, EmailTemplateService templateService)
     {
-        private readonly IMailjetClient _client;
-        private readonly EmailVariationService _variationService;
-        private readonly ErrorModalService _errorModalService;
-        private readonly EmailTemplateService _templateService;
-
-        public EmailService(IMailjetClient client, EmailVariationService variationService, ErrorModalService errorModalService, EmailTemplateService templateService)
-        {
-            _client = client;
-            _variationService = variationService;
-            _errorModalService = errorModalService;
-            _templateService = templateService;
-        }
-
         public async Task SendEmailAsync(
             string toEmail,
             string toName,
             string subject,
             string htmlContent,
-            string textContent = null,
-            string expEmail = null,
-            string expName = null)
+            string? textContent = null,
+            string? expEmail = null,
+            string? expName = null)
         {
             try
             {
@@ -47,7 +33,7 @@ namespace OnigiriShop.Services
 
                 email = email.WithCustomId(Guid.NewGuid().ToString());
 
-                var response = await _client.SendTransactionalEmailAsync(email.Build());
+                var response = await client.SendTransactionalEmailAsync(email.Build());
 
                 if (response == null || response.Messages == null || response.Messages.Length == 0)
                 {
@@ -69,7 +55,7 @@ namespace OnigiriShop.Services
             catch (Exception ex)
             {
                 Log.Error(ex, "Exception lors de l'envoi du mail à {ToEmail} ({Subject})", toEmail, subject);
-                _errorModalService .ShowModal(
+                errorModalService .ShowModal(
                     "Une erreur est survenue lors de l'envoi de l'email : " + ex.Message,
                     "Erreur"
                 );
@@ -78,12 +64,12 @@ namespace OnigiriShop.Services
 
         public async Task SendUserInvitationAsync(string toEmail, string toName, string invitationLink)
         {
-            var (expEmail, expName) = await _variationService.GetRandomExpeditorAsync();
-            var subject = await _variationService.GetRandomValueByTypeAsync("InvitationSubject") ?? "Bienvenue sur OnigiriShop";
-            var intro = await _variationService.GetRandomValueByTypeAsync("InvitationIntro") ?? "Bienvenue !";
-            var signature = await _variationService.GetRandomValueByTypeAsync("Signature") ?? "L’équipe OnigiriShop";
+            var (expEmail, expName) = await variationService.GetRandomExpeditorAsync();
+            var subject = await variationService.GetRandomValueByTypeAsync("InvitationSubject") ?? "Bienvenue sur OnigiriShop";
+            var intro = await variationService.GetRandomValueByTypeAsync("InvitationIntro") ?? "Bienvenue !";
+            var signature = await variationService.GetRandomValueByTypeAsync("Signature") ?? "L’équipe OnigiriShop";
 
-            var template = await _templateService.GetByNameAsync("UserInvitation");
+            var template = await templateService.GetByNameAsync("UserInvitation");
             string html;
             string text;
             if (template != null)
@@ -92,7 +78,7 @@ namespace OnigiriShop.Services
                     .Replace("{{Intro}}", intro)
                     .Replace("{{Link}}", invitationLink)
                     .Replace("{{Signature}}", signature);
-                text = template.TextContent?
+                text = template.TextContent!
                     .Replace("{{Intro}}", intro)
                     .Replace("{{Link}}", invitationLink)
                     .Replace("{{Signature}}", signature);
@@ -108,12 +94,12 @@ namespace OnigiriShop.Services
 
         public async Task SendPasswordResetAsync(string toEmail, string toName, string resetLink)
         {
-            var (expEmail, expName) = await _variationService.GetRandomExpeditorAsync();
-            var subject = await _variationService.GetRandomValueByTypeAsync("PasswordResetSubject") ?? "Réinitialisation de votre mot de passe";
-            var intro = await _variationService.GetRandomValueByTypeAsync("PasswordResetIntro") ?? "Vous avez demandé à réinitialiser votre mot de passe.";
-            var signature = await _variationService.GetRandomValueByTypeAsync("Signature") ?? "L’équipe OnigiriShop";
+            var (expEmail, expName) = await variationService.GetRandomExpeditorAsync();
+            var subject = await variationService.GetRandomValueByTypeAsync("PasswordResetSubject") ?? "Réinitialisation de votre mot de passe";
+            var intro = await variationService.GetRandomValueByTypeAsync("PasswordResetIntro") ?? "Vous avez demandé à réinitialiser votre mot de passe.";
+            var signature = await variationService.GetRandomValueByTypeAsync("Signature") ?? "L’équipe OnigiriShop";
 
-            var template = await _templateService.GetByNameAsync("PasswordReset");
+            var template = await templateService.GetByNameAsync("PasswordReset");
             string html;
             string text;
             if (template != null)
@@ -122,7 +108,7 @@ namespace OnigiriShop.Services
                     .Replace("{{Intro}}", intro)
                     .Replace("{{Link}}", resetLink)
                     .Replace("{{Signature}}", signature);
-                text = template.TextContent?
+                text = template.TextContent!
                     .Replace("{{Intro}}", intro)
                     .Replace("{{Link}}", resetLink)
                     .Replace("{{Signature}}", signature);
@@ -138,16 +124,16 @@ namespace OnigiriShop.Services
 
         public async Task SendOrderConfirmationAsync(string toEmail, string toName, Order order, Delivery delivery)
         {
-            var (expEmail, expName) = await _variationService.GetRandomExpeditorAsync();
-            var subject = await _variationService.GetRandomValueByTypeAsync("OrderSubject") ?? $"Commande n°{order.Id}";
-            var signature = await _variationService.GetRandomValueByTypeAsync("Signature") ?? "L’équipe OnigiriShop";
+            var (expEmail, expName) = await variationService.GetRandomExpeditorAsync();
+            var subject = await variationService.GetRandomValueByTypeAsync("OrderSubject") ?? $"Commande n°{order.Id}";
+            var signature = await variationService.GetRandomValueByTypeAsync("Signature") ?? "L’équipe OnigiriShop";
 
             var orderLines = order.Items != null && order.Items.Any()
                 ? string.Join("", order.Items.Select(i =>
                     $"<li>{i.Quantity} x {i.ProductName} - {(i.UnitPrice * i.Quantity):0.00} €</li>"))
                 : "<li>Pas de détail trouvé.</li>";
 
-            var template = await _templateService.GetByNameAsync("OrderConfirmation");
+            var template = await templateService.GetByNameAsync("OrderConfirmation");
             string html;
             string text;
             if (template != null)
@@ -161,7 +147,7 @@ namespace OnigiriShop.Services
                     .Replace("{{DeliveryDate}}", delivery.DeliveryAt.ToString("dddd dd/MM/yyyy HH:mm"))
                     .Replace("{{DeliveryPlace}}", delivery.Place)
                     .Replace("{{Signature}}", signature);
-                text = template.TextContent?
+                text = template.TextContent!
                     .Replace("{{Name}}", string.IsNullOrEmpty(toName) ? toEmail : toName)
                     .Replace("{{OrderId}}", order.Id.ToString())
                     .Replace("{{OrderDate}}", order.OrderedAt.ToString("dd/MM/yyyy à HH:mm"))
@@ -188,9 +174,9 @@ namespace OnigiriShop.Services
             }
         }
 
-        public async Task SendAdminNotificationAsync(string subject, string htmlContent, string textContent = null)
+        public async Task SendAdminNotificationAsync(string subject, string htmlContent, string textContent)
         {
-            var (expEmail, expName) = await _variationService.GetRandomExpeditorAsync();
+            var (expEmail, expName) = await variationService.GetRandomExpeditorAsync();
             // Suppose que tu stockes l'email admin dans les variations ou ailleurs
             var adminEmail = "admin@onigirishop.com";
             await SendEmailAsync(adminEmail, "Admin", subject, htmlContent, textContent, expEmail, expName);

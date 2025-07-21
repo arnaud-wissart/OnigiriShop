@@ -11,18 +11,21 @@ namespace OnigiriShop.Data
     {
         public async Task SignInAsync(User user)
         {
+            ArgumentNullException.ThrowIfNull(httpContextAccessor);
+            ArgumentNullException.ThrowIfNull(user);
+
             var claims = new List<Claim>
             {
                 new(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new(ClaimTypes.Name, user.Name ?? user.Email),
-                new(ClaimTypes.Email, user.Email),
+                new(ClaimTypes.Name, user.Name ?? user.Email!),
+                new(ClaimTypes.Email, user.Email!),
                 new(ClaimTypes.Role, user.Role ?? AuthConstants.RoleUser),
                 new(ClaimTypes.MobilePhone, user.Phone ?? string.Empty)
             };
             var identity = new ClaimsIdentity(claims, "OnigiriAuth");
             var principal = new ClaimsPrincipal(identity);
 
-            await httpContextAccessor.HttpContext.SignInAsync(
+            await httpContextAccessor.HttpContext!.SignInAsync(
                 "OnigiriAuth",
                 principal,
                 new AuthenticationProperties
@@ -35,7 +38,10 @@ namespace OnigiriShop.Data
 
         public virtual async Task SignOutAsync()
         {
-            await httpContextAccessor.HttpContext.SignOutAsync("OnigiriAuth");
+            if (httpContextAccessor == null)
+                throw new ArgumentNullException(nameof(httpContextAccessor));
+
+            await httpContextAccessor.HttpContext!.SignOutAsync("OnigiriAuth");
             NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()))));
         }
         public override Task<AuthenticationState> GetAuthenticationStateAsync()

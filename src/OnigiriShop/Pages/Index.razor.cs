@@ -11,7 +11,7 @@ namespace OnigiriShop.Pages
         [Inject] public ProductService ProductService { get; set; } = default!;
         [Inject] public NavigationManager Nav { get; set; } = default!;
 
-        protected List<Product> _products;
+        protected List<Product>? _products;
         protected HashSet<int> _addedProductIds = [];
 
         protected override async Task OnInitializedAsync()
@@ -22,7 +22,6 @@ namespace OnigiriShop.Pages
             await CartProvider.RefreshCartStateAsync(CartState);
             CartState.NotifyChanged();
         }
-
 
         private void OnCartChanged() => InvokeAsync(StateHasChanged);
 

@@ -7,7 +7,7 @@ namespace OnigiriShop.Services
 {
     public class CartService(ISqliteConnectionFactory connectionFactory)
     {
-        public event Action CartChanged;
+        public event Action? CartChanged;
         private static (IDbConnection Conn, bool Owns) GetOrCreateConnection(IDbConnection connection, ISqliteConnectionFactory factory)
         {
             if (connection != null)
@@ -15,7 +15,7 @@ namespace OnigiriShop.Services
             return (factory.CreateConnection(), true); // Connexion créée ici, à disposer
         }
 
-        public async Task<Cart> GetActiveCartAsync(int userId, IDbConnection connection = null)
+        public async Task<Cart?> GetActiveCartAsync(int userId, IDbConnection connection)
         {
             var (conn, owns) = GetOrCreateConnection(connection, connectionFactory);
             try
@@ -38,7 +38,7 @@ namespace OnigiriShop.Services
             }
         }
 
-        public async Task<Cart> CreateOrGetActiveCartAsync(int userId, IDbConnection connection = null)
+        public async Task<Cart> CreateOrGetActiveCartAsync(int userId, IDbConnection connection)
         {
             var cart = await GetActiveCartAsync(userId, connection);
             if (cart != null) return cart;
@@ -69,11 +69,11 @@ namespace OnigiriShop.Services
             }
         }
 
-        public async Task AddItemAsync(int userId, int productId, int quantity, IDbConnection connection = null)
+        public async Task AddItemAsync(int userId, int productId, int quantity, IDbConnection? connection = null)
         {
-            var cart = await CreateOrGetActiveCartAsync(userId, connection);
+            var cart = await CreateOrGetActiveCartAsync(userId, connection!);
 
-            var (conn, owns) = GetOrCreateConnection(connection, connectionFactory);
+            var (conn, owns) = GetOrCreateConnection(connection!, connectionFactory);
             try
             {
                 var existing = await conn.QueryFirstOrDefaultAsync<CartItem>(
@@ -91,10 +91,10 @@ namespace OnigiriShop.Services
                 {
                     await conn.ExecuteAsync(
                         @"UPDATE CartItem SET Quantity = Quantity + @Quantity WHERE Id = @Id",
-                        new { Quantity = quantity, Id = existing.Id });
+                        new { Quantity = quantity, existing.Id });
                 }
 
-                await conn.ExecuteAsync("UPDATE Cart SET DateUpdated = @Now WHERE Id = @Id", new { Now = DateTime.UtcNow, Id = cart.Id });
+                await conn.ExecuteAsync("UPDATE Cart SET DateUpdated = @Now WHERE Id = @Id", new { Now = DateTime.UtcNow, cart.Id });
             }
             finally
             {
@@ -103,12 +103,12 @@ namespace OnigiriShop.Services
             }
         }
 
-        public async Task RemoveItemAsync(int userId, int productId, int quantity, IDbConnection connection = null)
+        public async Task RemoveItemAsync(int userId, int productId, int quantity, IDbConnection? connection = null)
         {
-            var cart = await GetActiveCartAsync(userId, connection);
+            var cart = await GetActiveCartAsync(userId, connection!);
             if (cart == null) return;
 
-            var (conn, owns) = GetOrCreateConnection(connection, connectionFactory);
+            var (conn, owns) = GetOrCreateConnection(connection!, connectionFactory);
             try
             {
                 var existing = await conn.QueryFirstOrDefaultAsync<CartItem>(
@@ -118,7 +118,7 @@ namespace OnigiriShop.Services
                 if (existing == null) return;
                 if (existing.Quantity <= quantity)
                 {
-                    await conn.ExecuteAsync("DELETE FROM CartItem WHERE Id = @Id", new { Id = existing.Id });
+                    await conn.ExecuteAsync("DELETE FROM CartItem WHERE Id = @Id", new { existing.Id });
                 }
                 else
                 {
@@ -126,7 +126,7 @@ namespace OnigiriShop.Services
                         new { Quantity = quantity, Id = existing.Id });
                 }
 
-                await conn.ExecuteAsync("UPDATE Cart SET DateUpdated = @Now WHERE Id = @Id", new { Now = DateTime.UtcNow, Id = cart.Id });
+                await conn.ExecuteAsync("UPDATE Cart SET DateUpdated = @Now WHERE Id = @Id", new { Now = DateTime.UtcNow, cart.Id });
             }
             finally
             {
@@ -135,16 +135,16 @@ namespace OnigiriShop.Services
             }
         }
 
-        public async Task ClearCartAsync(int userId, IDbConnection connection = null)
+        public async Task ClearCartAsync(int userId, IDbConnection? connection = null)
         {
-            var cart = await GetActiveCartAsync(userId, connection);
+            var cart = await GetActiveCartAsync(userId, connection!);
             if (cart == null) return;
 
-            var (conn, owns) = GetOrCreateConnection(connection, connectionFactory);
+            var (conn, owns) = GetOrCreateConnection(connection!, connectionFactory);
             try
             {
                 await conn.ExecuteAsync("DELETE FROM CartItem WHERE CartId = @CartId", new { CartId = cart.Id });
-                await conn.ExecuteAsync("UPDATE Cart SET DateUpdated = @Now WHERE Id = @Id", new { Now = DateTime.UtcNow, Id = cart.Id });
+                await conn.ExecuteAsync("UPDATE Cart SET DateUpdated = @Now WHERE Id = @Id", new { Now = DateTime.UtcNow, cart.Id });
             }
             finally
             {
@@ -155,7 +155,7 @@ namespace OnigiriShop.Services
             }
         }
 
-        public async Task<List<CartItem>> GetCartItemsAsync(int userId, IDbConnection connection = null)
+        public async Task<List<CartItem>> GetCartItemsAsync(int userId, IDbConnection connection)
         {
             var cart = await GetActiveCartAsync(userId, connection);
             if (cart == null) return [];
@@ -172,11 +172,11 @@ namespace OnigiriShop.Services
             }
         }
 
-        public async Task<List<CartItemWithProduct>> GetCartItemsWithProductsAsync(int userId, IDbConnection connection = null)
+        public async Task<List<CartItemWithProduct>> GetCartItemsWithProductsAsync(int userId, IDbConnection? connection = null)
         {
-            var cart = await GetActiveCartAsync(userId, connection);
+            var cart = await GetActiveCartAsync(userId, connection!);
             if (cart == null) return [];
-            var (conn, owns) = GetOrCreateConnection(connection, connectionFactory);
+            var (conn, owns) = GetOrCreateConnection(connection!, connectionFactory);
             try
             {
                 var sql = @"

@@ -16,18 +16,18 @@ namespace OnigiriShop.Pages
         [Inject] public NavigationManager Nav { get; set; } = default!;
 
         protected bool _orderSent;
-        protected string _resultMessage;
+        protected string? _resultMessage;
 
         protected List<Delivery> Deliveries = [];
         protected List<Delivery> FilteredDeliveries = [];
         protected List<string> DistinctPlaces = [];
 
         protected int? SelectedDeliveryId = null;
-        protected Delivery SelectedDelivery = null;
-        protected CartItemWithProduct ItemToRemove { get; set; }
+        protected Delivery? SelectedDelivery;
+        protected CartItemWithProduct? ItemToRemove { get; set; }
         protected bool ShowRemoveModal { get; set; }
         protected bool ShowConfirmationModal { get; set; }
-        protected List<CartItemWithProduct> _items = new();
+        protected List<CartItemWithProduct> _items = [];
 
         protected decimal _totalPrice = 0;
 
@@ -179,7 +179,7 @@ namespace OnigiriShop.Pages
                 await AuthService.GetCurrentUserEmailAsync(),
                 await AuthService.GetCurrentUserNameOrEmailAsync(),
                 order,
-                SelectedDelivery);
+                SelectedDelivery!);
 
             await CartProvider.ClearCartAsync();
             CartState.NotifyChanged();
@@ -188,7 +188,6 @@ namespace OnigiriShop.Pages
         }
 
         public void Dispose() => CartState.OnChanged -= OnCartChanged;
-
 
         protected void GoToHome() => Nav.NavigateTo("/");
     }

@@ -12,15 +12,14 @@ namespace OnigiriShop.Pages
     {
         [Inject] public UserService UserService { get; set; } = default!;
         [Inject] public UserAccountService UserAccountService { get; set; } = default!;
-
         [Inject] public NavigationManager NavigationManager { get; set; } = default!;
         [Inject] public ToastService ToastService { get; set; } = default!;
-        public List<User> Users { get; set; } = new();
+        public List<User> Users { get; set; } = [];
         public bool ShowModal { get; set; }
         public bool ShowInviteModal { get; set; }
         public UserInputModel ModalModel { get; set; } = new();
         public int ModalModelId { get; set; }
-        public User InviteUser { get; set; }
+        public User? InviteUser { get; set; }
         public bool IsBusy { get; set; }
         public bool IsEdit { get; set; }
         public string ModalTitle => IsEdit ? "Modifier l'utilisateur" : "Ajouter un utilisateur";
@@ -30,24 +29,23 @@ namespace OnigiriShop.Pages
             set => ModalModel.Role = value ? AuthConstants.RoleAdmin : AuthConstants.RoleUser;
         }
         protected Guid _editFormKey = Guid.NewGuid();
-
         protected bool ShowDeleteConfirm { get; set; }
-        protected User UserToDelete { get; set; }
-        protected EditContext _editContext;
-        private ValidationMessageStore _messageStore;
+        protected User? UserToDelete { get; set; }
+        protected EditContext? _editContext;
+        private ValidationMessageStore? _messageStore;
         protected override async Task OnInitializedAsync()
         {
             await base.OnInitializedAsync();
 
             _editContext = new EditContext(ModalModel);
             _messageStore = new ValidationMessageStore(_editContext);
-            _editContext.OnFieldChanged += EditContext_OnFieldChanged;
+            _editContext.OnFieldChanged += EditContext_OnFieldChanged!;
             await ReloadUsersAsync();
         }
         private void EditContext_OnFieldChanged(object sender, FieldChangedEventArgs e)
         {
-            _messageStore.Clear(e.FieldIdentifier);
-            _editContext.NotifyValidationStateChanged();
+            _messageStore!.Clear(e.FieldIdentifier);
+            _editContext!.NotifyValidationStateChanged();
         }
         protected string SearchTerm { get; set; } = "";
 
@@ -62,11 +60,11 @@ namespace OnigiriShop.Pages
         public void Dispose()
         {
             if (_editContext != null)
-                _editContext.OnFieldChanged -= EditContext_OnFieldChanged;
+                _editContext.OnFieldChanged -= EditContext_OnFieldChanged!;
         }
         public async Task ReloadUsersAsync()
         {
-            Users = await UserService.GetAllUsersAsync();
+            Users = await UserService.GetAllUsersAsync(null);
             StateHasChanged();
         }
         public void ConfirmDeleteUser(User user)
@@ -99,23 +97,23 @@ namespace OnigiriShop.Pages
             ModalModel.Role = AuthConstants.RoleUser;
             ModalModelId = 0;
             IsEdit = false;
-            _messageStore.Clear();
-            _editContext.NotifyValidationStateChanged();
+            _messageStore!.Clear();
+            _editContext!.NotifyValidationStateChanged();
             _editFormKey = Guid.NewGuid();
             ShowModal = true;
         }
 
         public void EditUser(User user)
         {
-            ModalModel.Email = user.Email;
-            ModalModel.Name = user.Name;
-            ModalModel.Phone = user.Phone;
-            ModalModel.IsActive = user.IsActive;
-            ModalModel.Role = user.Role;
+            ModalModel.Email = user.Email!;
+            ModalModel.Name = user.Name!;
+            ModalModel.Phone = user.Phone!;
+            ModalModel.IsActive = user.IsActive!;
+            ModalModel.Role = user.Role!;
             ModalModelId = user.Id;
             IsEdit = true;
-            _messageStore.Clear();
-            _editContext.NotifyValidationStateChanged();
+            _messageStore!.Clear();
+            _editContext!.NotifyValidationStateChanged();
             _editFormKey = Guid.NewGuid();
             ShowModal = true;
         }
@@ -123,8 +121,8 @@ namespace OnigiriShop.Pages
         public void HideModal()
         {
             ShowModal = false;
-            _messageStore.Clear();
-            _editContext.NotifyValidationStateChanged();
+            _messageStore!.Clear();
+            _editContext!.NotifyValidationStateChanged();
         }
 
         public string AlertMessage { get; set; } = string.Empty;
@@ -137,19 +135,19 @@ namespace OnigiriShop.Pages
         private bool HasValidationError(string fieldName)
         {
             var fieldIdentifier = new FieldIdentifier(ModalModel, fieldName);
-            return _messageStore[fieldIdentifier]?.Any() == true;
+            return _messageStore![fieldIdentifier].Any() == true;
         }
         public async Task HandleModalValid()
         {
             IsBusy = true;
-            _messageStore.Clear();
-            _editContext.NotifyValidationStateChanged();
+            _messageStore!.Clear();
+            _editContext!.NotifyValidationStateChanged();
             await InvokeAsync(StateHasChanged);
 
             ShowAlert = false;
             bool hasError = false;
 
-            if (string.IsNullOrWhiteSpace(ModalModel.Email) || !ModalModel.Email.Contains("@") || !ModalModel.Email.Contains("."))
+            if (string.IsNullOrWhiteSpace(ModalModel.Email) || !ModalModel.Email.Contains('@') || !ModalModel.Email.Contains('.'))
             {
                 _messageStore.Add(() => ModalModel.Email, "Veuillez saisir un email valide.");
                 hasError = true;
@@ -159,12 +157,12 @@ namespace OnigiriShop.Pages
                 _messageStore.Add(() => ModalModel.Name, "Le nom est requis.");
                 hasError = true;
             }
-            if (Users.Any(u => u.Email.Equals(ModalModel.Email, StringComparison.OrdinalIgnoreCase) && (!IsEdit || u.Id != ModalModelId)))
+            if (Users.Any(u => u.Email!.Equals(ModalModel.Email, StringComparison.OrdinalIgnoreCase) && (!IsEdit || u.Id != ModalModelId)))
             {
                 _messageStore.Add(() => ModalModel.Email, "Cet email est déjà utilisé.");
                 hasError = true;
             }
-            if (Users.Any(u => u.Name.Equals(ModalModel.Name, StringComparison.OrdinalIgnoreCase) && (!IsEdit || u.Id != ModalModelId)))
+            if (Users.Any(u => u.Name!.Equals(ModalModel.Name, StringComparison.OrdinalIgnoreCase) && (!IsEdit || u.Id != ModalModelId)))
             {
                 _messageStore.Add(() => ModalModel.Name, "Ce nom est déjà utilisé.");
                 hasError = true;
@@ -239,7 +237,7 @@ namespace OnigiriShop.Pages
         public async Task SendInviteAsync()
         {
             IsBusy = true;
-            await UserAccountService.InviteUserAsync(InviteUser.Email, InviteUser.Name, NavigationManager.BaseUri);
+            await UserAccountService.InviteUserAsync(InviteUser?.Email!, InviteUser?.Name!, NavigationManager.BaseUri);
             IsBusy = false;
             HideInviteModal();
         }

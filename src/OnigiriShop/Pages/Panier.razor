@@ -229,10 +229,10 @@
                 <div class="modal-body">
                     <p class="mb-3">Merci de bien vouloir confirmer la commande suivante :</p>
                     <ul class="list-group mb-3">
-                        @foreach (var item in _items)
+                        @foreach (var item in _items!)
                         {
                             <li class="list-group-item d-flex justify-content-between align-items-center" style="border-radius: 10px;">
-                                <span>@item.Quantity x @item.Product.Name</span>
+                                <span>@item.Quantity x @item.Product!.Name</span>
                                 <span class="fw-semibold">@($"{item.Quantity * item.Product.Price:C2}")</span>
                             </li>
                         }

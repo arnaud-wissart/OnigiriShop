@@ -65,7 +65,7 @@ namespace OnigiriShop.Shared
         {
             _items = await CartProvider.GetCurrentCartItemsWithProductsAsync() ?? [];
             _hasItems = _items.Count != 0;
-            _totalPrice = _items.Sum(x => x.Quantity * x.Product.Price);
+            _totalPrice = _items.Sum(x => x.Quantity * x.Product!.Price);
 
             StateHasChanged();
             await JS.InvokeVoidAsync("adjustCartContentHeight");

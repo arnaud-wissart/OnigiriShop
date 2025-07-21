@@ -7,7 +7,7 @@ namespace OnigiriShop.Shared
     {
         [Inject] public IJSRuntime JS { get; set; } = default!;
 
-        private DotNetObjectReference<HtmlEditorBase> objRef;
+        private DotNetObjectReference<HtmlEditorBase>? objRef;
 
         [Parameter] public string Value { get; set; } = string.Empty;
         [Parameter] public EventCallback<string> ValueChanged { get; set; }

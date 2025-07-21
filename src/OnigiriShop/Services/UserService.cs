@@ -11,7 +11,7 @@ namespace OnigiriShop.Services
     {
         private const string AuditSql = @"INSERT INTO AuditLog (UserId, Action, TargetType, TargetId, Timestamp, Details)
                                           VALUES (@UserId, @Action, 'User', @TargetId, @Timestamp, @Details);";
-        public async Task<User> GetByIdAsync(int userId)
+        public async Task<User?> GetByIdAsync(int userId)
         {
             using var conn = connectionFactory.CreateConnection();
             await ((DbConnection)conn).OpenAsync();
@@ -52,7 +52,7 @@ namespace OnigiriShop.Services
             });
         }
 
-        public async Task<List<User>> GetAllUsersAsync(string search = null)
+        public async Task<List<User>> GetAllUsersAsync(string? search)
         {
             using var conn = connectionFactory.CreateConnection();
             var sql = "SELECT Id, Email, Name, Phone, CreatedAt, IsActive, Role FROM User";

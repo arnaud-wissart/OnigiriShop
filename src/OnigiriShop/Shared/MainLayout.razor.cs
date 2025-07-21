@@ -17,7 +17,7 @@ namespace OnigiriShop.Shared
         [Inject] public NavigationManager Nav { get; set; } = default!;
         [Inject] public IJSRuntime JS { get; set; } = default!;
 
-        protected ClaimsPrincipal User { get; set; }
+        protected ClaimsPrincipal? User { get; set; }
         protected string UserEmail { get; set; } = string.Empty;
         protected bool IsAdmin { get; set; }
         protected bool IsAuthenticated { get; set; }
@@ -36,11 +36,11 @@ namespace OnigiriShop.Shared
             // Charger le panier SQL si connecté
             if (IsAuthenticated)
             {
-                var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
                 CartItems = await CartService.GetCartItemsWithProductsAsync(userId);
             }
 
-            Nav.LocationChanged += OnLocationChanged;
+            Nav.LocationChanged += OnLocationChanged!;
             ShowCartSticky = !Nav.Uri.Contains("/panier") && !Nav.Uri.Contains("/profile");
             ErrorModalService.OnShowChanged += StateHasChanged;
         }
@@ -63,7 +63,7 @@ namespace OnigiriShop.Shared
 
         public void Dispose()
         {
-            Nav.LocationChanged -= OnLocationChanged;
+            Nav.LocationChanged -= OnLocationChanged!;
             ErrorModalService.OnShowChanged -= StateHasChanged;
         }
     }

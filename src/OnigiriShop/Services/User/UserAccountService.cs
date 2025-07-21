@@ -105,7 +105,7 @@ WHERE Token = @Token AND UsedAt IS NULL AND Expiry >= @Now", new { Token = token
         return userId ?? 0;
     }
 
-    public async Task<User> AuthenticateAsync(string email, string password)
+    public async Task<User?> AuthenticateAsync(string email, string password)
     {
         using var conn = connectionFactory.CreateConnection();
         var user = await conn.QueryFirstOrDefaultAsync<User>(

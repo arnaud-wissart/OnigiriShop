@@ -1,25 +1,17 @@
 ﻿using Dapper;
-using Mailjet.Client.Resources;
 using OnigiriShop.Data.Interfaces;
 using OnigiriShop.Data.Models;
 
 namespace OnigiriShop.Services
 {
-    public class OrderService
+    public class OrderService(ISqliteConnectionFactory connectionFactory)
     {
-        private readonly ISqliteConnectionFactory _connectionFactory;
-
-        public OrderService(ISqliteConnectionFactory connectionFactory)
-        {
-            _connectionFactory = connectionFactory;
-        }
-
         /// <summary>
         /// Retourne la liste des commandes d’un utilisateur, avec items inclus.
         /// </summary>
         public async Task<List<Order>> GetOrdersByUserIdAsync(int userId)
         {
-            using var conn = _connectionFactory.CreateConnection();
+            using var conn = connectionFactory.CreateConnection();
 
             var orders = (await conn.QueryAsync<Order>(
                 "SELECT * FROM 'Order' WHERE UserId = @userId ORDER BY OrderedAt DESC",
@@ -50,9 +42,9 @@ namespace OnigiriShop.Services
         /// <summary>
         /// Récupère une commande précise (optionnellement pour un userId donné)
         /// </summary>
-        public async Task<Order> GetOrderByIdAsync(int orderId, int? userId = null)
+        public async Task<Order?> GetOrderByIdAsync(int orderId, int? userId = null)
         {
-            using var conn = _connectionFactory.CreateConnection();
+            using var conn = connectionFactory.CreateConnection();
             var sql = "SELECT * FROM 'Order' WHERE Id = @orderId";
             if (userId != null)
                 sql += " AND UserId = @userId";
@@ -69,7 +61,7 @@ namespace OnigiriShop.Services
         /// </summary>
         public async Task<List<OrderItem>> GetOrderItemsAsync(int orderId)
         {
-            using var conn = _connectionFactory.CreateConnection();
+            using var conn = connectionFactory.CreateConnection();
             var sql = @"SELECT oi.*, p.Name AS ProductName
                         FROM OrderItem oi
                         INNER JOIN Product p ON oi.ProductId = p.Id
@@ -83,7 +75,7 @@ namespace OnigiriShop.Services
         /// </summary>
         public async Task<int> CreateOrderAsync(Order order, List<OrderItem> items)
         {
-            using var conn = _connectionFactory.CreateConnection();
+            using var conn = connectionFactory.CreateConnection();
             conn.Open();
             using var tran = conn.BeginTransaction();
 
@@ -106,7 +98,7 @@ namespace OnigiriShop.Services
 
         public async Task<List<AdminOrderSummary>> GetAllAdminOrdersAsync()
         {
-            using var conn = _connectionFactory.CreateConnection();
+            using var conn = connectionFactory.CreateConnection();
             var sql = @"
                 SELECT
                     o.Id,

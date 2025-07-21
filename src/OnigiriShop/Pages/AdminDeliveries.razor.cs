@@ -14,16 +14,16 @@ namespace OnigiriShop.Pages
         [Inject] public DeliveryCalendarService CalendarService { get; set; } = default!;
         [Inject] public IOptions<CalendarSettings> CalendarConfig { get; set; } = default!;
         public enum LegendType { Ponctuelle, Recurrente }
-        public string CouleurPonctuelle { get; set; } = string.Empty;
-        public string CouleurRecurrente { get; set; } = string.Empty;
+        public string? CouleurPonctuelle { get; set; }
+        public string? CouleurRecurrente { get; set; }
 
         protected bool ShowColorModal;
-        protected string SelectedColor;
+        protected string? SelectedColor;
         protected string ModalColorTitle = "Choisissez la couleur";
         private LegendType TypeEnEdition;
         private bool colorModalJustOpened = false;
          
-        protected UserPreferences UserPreferences;
+        protected UserPreferences? UserPreferences;
 
         protected override async Task OnInitializedAsync()
         {
@@ -54,28 +54,25 @@ namespace OnigiriShop.Pages
             StateHasChanged();
         }
 
-
         public void HideColorModal()
         {
             ShowColorModal = false;
             StateHasChanged();
         }
 
-        public void OnColorChange(ChangeEventArgs e)
-        {
-            SelectedColor = e.Value?.ToString() ?? "#198754";
-        }
+        public void OnColorChange(ChangeEventArgs e) => SelectedColor = e.Value?.ToString() ?? "#198754";
+
         public async Task ValidateColorAsync()
         {
             if (TypeEnEdition == LegendType.Ponctuelle)
             {
                 CouleurPonctuelle = SelectedColor;
-                UserPreferences.CouleurPonctuelle = CouleurPonctuelle;
+                UserPreferences!.CouleurPonctuelle = CouleurPonctuelle!;
             }
             else
             {
                 CouleurRecurrente = SelectedColor;
-                UserPreferences.CouleurRecurrente = CouleurRecurrente;
+                UserPreferences!.CouleurRecurrente = CouleurRecurrente!;
             }
 
             await UserPreferenceService.SaveUserPreferencesAsync(UserId, UserPreferences);
@@ -89,19 +86,19 @@ namespace OnigiriShop.Pages
             ShowColorModal = false;
         }
 
-        public List<Delivery> Deliveries { get; set; } = new();
+        public List<Delivery> Deliveries { get; set; } = [];
         public bool ShowModal { get; set; }
         public bool ShowDeleteConfirm { get; set; }
         public bool IsEdit { get; set; }
         public bool IsCalendarModal { get; set; }
         public Delivery ModalModel { get; set; } = new();
-        public Delivery DeleteModel { get; set; }
+        public Delivery? DeleteModel { get; set; }
         public string ModalTitle => IsEdit ? "Modifier la livraison" : "Ajouter une livraison";
         public bool IsBusy { get; set; }
         public DateTime? ModalDate { get; set; }
         public TimeOnly? ModalTime { get; set; }
-        public string ModalError { get; set; } = string.Empty;
-        public string SearchTerm { get; set; } = string.Empty;
+        public string? ModalError { get; set; }
+        public string? SearchTerm { get; set; }
         public int WeekStartDay => CalendarConfig?.Value?.FirstDayOfWeek ?? 1;
 
         public List<Delivery> FilteredDeliveries =>
@@ -112,7 +109,7 @@ namespace OnigiriShop.Pages
                 d.DeliveryAt.ToString("dd/MM/yyyy HH:mm").Contains(SearchTerm, StringComparison.OrdinalIgnoreCase)
             ).ToList();
 
-        protected DotNetObjectReference<AdminDeliveriesBase> objRef;
+        protected DotNetObjectReference<AdminDeliveriesBase>? objRef;
         private bool calendarInitialized = false;
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -146,7 +143,7 @@ namespace OnigiriShop.Pages
         {
             var periodStart = DateTime.Now.Date.AddYears(-2);
             var periodEnd = DateTime.Now.Date.AddYears(20);
-            var events = CalendarService.BuildCalendarEvents(Deliveries, periodStart, periodEnd, CouleurPonctuelle, CouleurRecurrente);
+            var events = CalendarService.BuildCalendarEvents(Deliveries, periodStart, periodEnd, CouleurPonctuelle!, CouleurRecurrente!);
             await JS.InvokeVoidAsync("onigiriCalendar.updateEvents", events);
         }
 
@@ -338,7 +335,7 @@ namespace OnigiriShop.Pages
             var periodStart = DateTime.Parse(startIso);
             var periodEnd = DateTime.Parse(endIso);
 
-            var events = CalendarService.BuildCalendarEvents(Deliveries, periodStart, periodEnd, CouleurPonctuelle, CouleurRecurrente);
+            var events = CalendarService.BuildCalendarEvents(Deliveries, periodStart, periodEnd, CouleurPonctuelle!, CouleurRecurrente!);
             return Task.FromResult(events);
         }
     }

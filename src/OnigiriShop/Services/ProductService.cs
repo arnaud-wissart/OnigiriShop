@@ -22,7 +22,7 @@ namespace OnigiriShop.Services
             return result.AsList();
         }
 
-        public async Task<Product> GetByIdAsync(int id)
+        public async Task<Product?> GetByIdAsync(int id)
         {
             using var conn = connectionFactory.CreateConnection();
             var sql = "SELECT * FROM Product WHERE Id = @id AND IsDeleted = 0";

@@ -14,26 +14,23 @@ namespace OnigiriShop.Pages
     {
         [Inject] public UserService UserService { get; set; } = default!;
         [Inject] public UserAccountService UserAccountService { get; set; } = default!;
-
         [Inject] public OrderService OrderService { get; set; } = default!;
         [Inject] public NavigationManager Nav { get; set; } = default!;
         [Inject] public ToastService ToastService { get; set; } = default!;
         [Inject] public SessionAuthenticationStateProvider SessionAuthProvider { get; set; } = default!;
-
-        [CascadingParameter] public Task<AuthenticationState> AuthState { get; set; }
-
+        [CascadingParameter] public Task<AuthenticationState>? AuthState { get; set; }
         protected UserModel UserModel { get; set; } = new();
-        protected List<Order> Orders { get; set; }
-        protected Order OrderDetail { get; set; }
+        protected List<Order>? Orders { get; set; }
+        protected Order? OrderDetail { get; set; }
         protected bool EditSuccess { get; set; }
-        protected string EditError { get; set; } = string.Empty;
+        protected string? EditError { get; set; }
         protected bool IsBusy { get; set; }
         protected bool IsLoading { get; set; }
         protected bool IsSendingReset { get; set; }
-        protected string ResetResult { get; set; } = string.Empty;
+        protected string? ResetResult { get; set; }
         protected bool IsModified { get; set; }
         protected bool ShowResetModal { get; set; } = false;
-        protected EditContext EditContext;
+        protected EditContext? EditContext;
 
         private UserModel _initialUserModel = new();
 
@@ -128,11 +125,11 @@ namespace OnigiriShop.Pages
                 var user = await UserService.GetByIdAsync(UserModel.Id);
                 if (user != null)
                 {
-                    UserModel.Name = user.Name;
-                    UserModel.Phone = user.Phone;
+                    UserModel.Name = user.Name!;
+                    UserModel.Phone = user.Phone!;
 
-                    _initialUserModel.Name = user.Name;
-                    _initialUserModel.Phone = user.Phone;
+                    _initialUserModel.Name = user.Name!;
+                    _initialUserModel.Phone = user.Phone!;
 
                     await JS.InvokeVoidAsync("onigiriAuth.refreshSession");
                 }
@@ -147,11 +144,7 @@ namespace OnigiriShop.Pages
             }
         }
 
-        protected void ResetProfileForm()
-        {
-            // Recharge les infos user depuis la source initiale (optionnel, nécessite de garder l’état initial)
-            StateHasChanged();
-        }
+        protected void ResetProfileForm() => StateHasChanged();
 
         protected async Task ShowOrderDetailAsync(Order order)
         {
@@ -159,28 +152,25 @@ namespace OnigiriShop.Pages
             OrderDetail = order;
         }
 
-        protected void HideOrderDetail()
-        {
-            OrderDetail = null;
-        }
+        protected void HideOrderDetail() => OrderDetail = null;
         private void InitModelAndEditContext(User user)
         {
             UserModel = new UserModel
             {
                 Id = user.Id,
-                Name = user.Name,
-                Email = user.Email,
-                Phone = user.Phone
+                Name = user.Name!,
+                Email = user.Email!,
+                Phone = user.Phone!
             };
             _initialUserModel = new UserModel
             {
                 Id = user.Id,
-                Name = user.Name,
-                Email = user.Email,
-                Phone = user.Phone
+                Name = user.Name!,
+                Email = user.Email!,
+                Phone = user.Phone!
             };
             EditContext = new EditContext(UserModel);
-            EditContext.OnFieldChanged += HandleFieldChanged;
+            EditContext.OnFieldChanged += HandleFieldChanged!;
         }
 
         protected async Task SendPasswordReset()

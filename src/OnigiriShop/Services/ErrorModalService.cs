@@ -6,7 +6,7 @@
         public string Message { get; private set; } = string.Empty;
         public string Title { get; private set; } = string.Empty;
 
-        public event Action OnShowChanged;
+        public event Action? OnShowChanged;
 
         public void ShowModal(string message, string title = "Erreur")
         {
@@ -16,7 +16,7 @@
             OnShowChanged?.Invoke();
         }
 
-        public void Hide(bool val)
+        public void Hide()
         {
             Show = false;
             OnShowChanged?.Invoke();

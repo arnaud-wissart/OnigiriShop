@@ -10,7 +10,7 @@ namespace OnigiriShop.Infrastructure
 
         [Inject] public ErrorModalService ErrorModalService { get; set; } = default!;
         [Inject] public AuthService AuthService { get; set; } = default!;
-        protected Task HandleAsync(Func<Task> action, string userMessage = null, string title = null, bool showExceptionMessage = false)
+        protected Task HandleAsync(Func<Task> action, string? userMessage = null, string? title = null, bool showExceptionMessage = false)
             => BlazorExceptionHandler.HandleAsync(action, ErrorModalService, userMessage, title, showExceptionMessage);
 
         protected bool UserIsConnected;

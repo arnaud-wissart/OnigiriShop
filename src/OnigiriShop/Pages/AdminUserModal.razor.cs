@@ -10,15 +10,15 @@ namespace OnigiriShop.Pages
         [Parameter] public bool Visible { get; set; }
         [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
         [Parameter] public EventCallback OnUserChanged { get; set; }
-        [Parameter] public User UserToEdit { get; set; }
+        [Parameter] public User? UserToEdit { get; set; }
         [Parameter] public bool IsEditMode { get; set; }
-
+        [Inject] public UserService UserService { get; set; } = default!;
         [Inject] public UserAccountService UserAccountService { get; set; } = default!;
         [Inject] public NavigationManager Nav { get; set; } = default!;
 
         protected User EditModel = new();
         protected bool IsBusy = false;
-        protected string Error;
+        protected string? Error;
 
         protected bool IsAdmin
         {
@@ -30,7 +30,6 @@ namespace OnigiriShop.Pages
         {
             if (UserToEdit != null)
             {
-                // Copie défensive
                 EditModel = new User
                 {
                     Id = UserToEdit.Id,
@@ -43,9 +42,7 @@ namespace OnigiriShop.Pages
                 };
             }
             else
-            {
                 EditModel = new User { Role = AuthConstants.RoleUser, IsActive = true };
-            }
         }
 
         protected async Task SaveUser()
@@ -56,16 +53,9 @@ namespace OnigiriShop.Pages
             try
             {
                 if (IsEditMode)
-                {
-                    // Modification de l'utilisateur (tu peux faire la méthode dans UserService)
-                    // À implémenter dans UserService
-                    throw new NotImplementedException("Méthode de modification non implémentée");
-                }
+                    await UserService.UpdateUserAsync(EditModel);
                 else
-                {
-                    // Ajout = invitation
-                    await UserAccountService.InviteUserAsync(EditModel.Email, EditModel.Name, Nav.BaseUri);
-                }
+                    await UserAccountService.InviteUserAsync(EditModel.Email!, EditModel.Name!, Nav.BaseUri);
 
                 await OnUserChanged.InvokeAsync();
                 await Hide();
@@ -80,9 +70,6 @@ namespace OnigiriShop.Pages
             }
         }
 
-        protected async Task Hide()
-        {
-            await VisibleChanged.InvokeAsync(false);
-        }
+        protected async Task Hide() => await VisibleChanged.InvokeAsync(false);
     }
 }

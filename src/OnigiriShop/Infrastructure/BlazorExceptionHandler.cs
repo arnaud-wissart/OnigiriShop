@@ -7,9 +7,9 @@ namespace OnigiriShop.Infrastructure
         public static async Task HandleAsync(
             Func<Task> action,
             ErrorModalService errorService,
-            string userMessage = null,
-            string title = null,
-            bool showExceptionMessage = false // <-- ajout
+            string? userMessage = null,
+            string? title = null,
+            bool showExceptionMessage = false
         )
         {
             try

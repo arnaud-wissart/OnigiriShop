@@ -16,7 +16,7 @@ namespace OnigiriShop.Pages
         protected bool HasOverdueOrders { get; set; }
 
         protected List<AdminOrderSummary> Orders = [];
-        protected AdminOrderSummary SelectedOrder { get; set; }
+        protected AdminOrderSummary? SelectedOrder { get; set; }
         protected bool ShowOrderModal { get; set; }
         protected string FilterStatus { get; set; } = "";
         protected DateTime? FilterDeliveryDate { get; set; } = DateTime.Today;
@@ -34,7 +34,7 @@ namespace OnigiriShop.Pages
             StateHasChanged();
         }
         protected override async Task OnAfterRenderAsync(bool firstRender) => await JS.InvokeVoidAsync("activateTooltips");
-        protected AdminOrderDetail SelectedOrderDetail { get; set; }
+        protected AdminOrderDetail? SelectedOrderDetail { get; set; }
         protected int TotalItems => FilteredOrders.Count;
         protected int CurrentPage { get; set; } = 1;
         protected int PageSize { get; set; } = 10;
@@ -75,6 +75,9 @@ namespace OnigiriShop.Pages
         {
             SelectedOrder = Orders.FirstOrDefault(o => o.Id == orderId);
 
+            if (SelectedOrder == null)
+                throw new ApplicationException("SelectedOrder is null");
+
             SelectedOrderDetail = null;
             ShowOrderModal = true;
 
@@ -88,7 +91,11 @@ namespace OnigiriShop.Pages
             ShowOrderModal = false;
             SelectedOrder = null;
         }
-        protected void OnStatusChanged(ChangeEventArgs e) => FilterStatus = e.Value?.ToString();
+        protected void OnStatusChanged(ChangeEventArgs e)
+        {
+            if (e != null && e.Value != null)
+                FilterStatus = e.Value.ToString() ?? string.Empty;
+        }
 
         protected void OnDeliveryDateChanged(ChangeEventArgs e)
         {

@@ -16,7 +16,7 @@ namespace OnigiriShop.Pages
         protected bool Loaded { get; set; }
         protected bool TokenInvalid { get; set; }
         protected bool Success { get; set; }
-        protected string Error { get; set; } = string.Empty;
+        protected string? Error { get; set; } = string.Empty;
         protected bool IsBusy { get; set; }
         protected bool AlreadyActivated { get; set; }
         protected bool CanRequestNewInvite { get; set; }
@@ -50,7 +50,7 @@ namespace OnigiriShop.Pages
 
             // Vérifie le token
             var userId = await UserAccountService.ValidateInviteTokenAsync(token);
-            var user = userId > 0 ? (await UserService.GetAllUsersAsync()).FirstOrDefault(u => u.Id == userId) : null;
+            var user = userId > 0 ? (await UserService.GetAllUsersAsync(null)).FirstOrDefault(u => u.Id == userId) : null;
             if (userId == 0)
             {
                 // On regarde si ce token est connu mais expiré pour afficher le bouton “demander un nouveau lien”
@@ -58,8 +58,8 @@ namespace OnigiriShop.Pages
                 if (expiredUserId > 0)
                 {
                     CanRequestNewInvite = true;
-                    var expiredUser = (await UserService.GetAllUsersAsync()).FirstOrDefault(u => u.Id == expiredUserId);
-                    UserEmailForRequest = expiredUser?.Email;
+                    var expiredUser = (await UserService.GetAllUsersAsync(null)).FirstOrDefault(u => u.Id == expiredUserId);
+                    UserEmailForRequest = expiredUser?.Email!;
                 }
                 TokenInvalid = true;
                 Loaded = true;
@@ -96,7 +96,7 @@ namespace OnigiriShop.Pages
             // Envoie un mail à l’admin, ou relance un magiclink
             if (!string.IsNullOrEmpty(UserEmailForRequest))
             {
-                await UserAccountService.InviteUserAsync(UserEmailForRequest, null, Nav.BaseUri);
+                await UserAccountService.InviteUserAsync(UserEmailForRequest, string.Empty, Nav.BaseUri);
                 // Optionnel : toast ou message pour confirmation
                 await JS.InvokeVoidAsync("alert", "Un nouveau lien d'activation a été envoyé à votre adresse email.");
             }

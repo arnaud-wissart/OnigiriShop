@@ -74,7 +74,7 @@ namespace OnigiriShop.Services
             }
         }
 
-        public async Task<Delivery> GetByIdAsync(int id)
+        public async Task<Delivery?> GetByIdAsync(int id)
         {
             using var conn = connectionFactory.CreateConnection();
             var sql = "SELECT * FROM Delivery WHERE Id = @id AND IsDeleted = 0";

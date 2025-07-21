@@ -19,7 +19,7 @@ namespace OnigiriShop.Shared
         protected void ShowLoginModal() => _showLoginModal = true;
         protected bool IsAuthenticated { get; set; }
         protected bool IsAdmin { get; set; }
-        protected string UserNameOrEmail { get; set; } = string.Empty;
+        protected string? UserNameOrEmail { get; set; }
 
         protected override async Task OnInitializedAsync()
         {

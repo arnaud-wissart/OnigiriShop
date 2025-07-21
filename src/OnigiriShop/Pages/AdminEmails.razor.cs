@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Forms;
 using OnigiriShop.Data.Models;
 using OnigiriShop.Infrastructure;
 using OnigiriShop.Services;
@@ -11,24 +10,21 @@ namespace OnigiriShop.Pages
         [Inject] public EmailTemplateService EmailTemplateService { get; set; } = default!;
         [Inject] public EmailVariationService EmailVariationService { get; set; } = default!;
 
-        // Template properties
-        protected List<EmailTemplate> TemplateTemplates { get; set; } = new();
+        protected List<EmailTemplate> TemplateTemplates { get; set; } = [];
         protected EmailTemplate TemplateModalModel { get; set; } = new();
-        protected EmailTemplate TemplateDeleteModel { get; set; }
+        protected EmailTemplate? TemplateDeleteModel { get; set; }
         protected bool TemplateShowModal { get; set; }
         protected bool TemplateIsEdit { get; set; }
         protected bool TemplateShowDeleteConfirm { get; set; }
         protected bool TemplateIsBusy { get; set; }
-        protected string TemplateModalError { get; set; } = string.Empty;
+        protected string? TemplateModalError { get; set; }
         protected string TemplateModalTitle => TemplateIsEdit ? "Modifier un template" : "Ajouter un template";
-
-        // Variation properties
-        protected List<EmailVariation> VariationAllVariations { get; set; } = new();
-        protected List<string> VariationCategories { get; set; } = new()
-        {
+        protected List<EmailVariation> VariationAllVariations { get; set; } = [];
+        protected List<string> VariationCategories { get; set; } =
+        [
             "Expeditor", "InvitationSubject", "InvitationIntro", "PasswordResetSubject",
             "PasswordResetIntro", "OrderSubject", "Signature"
-        };
+        ];
         protected Dictionary<string, string> VariationCategoryLabels = new()
         {
             ["Expeditor"] = "Expéditeurs (adresse + nom affiché)",
@@ -40,9 +36,9 @@ namespace OnigiriShop.Pages
             ["Signature"] = "Signatures"
         };
         protected EmailVariation VariationModalModel { get; set; } = new();
-        protected EmailVariation VariationDeleteModel { get; set; }
+        protected EmailVariation? VariationDeleteModel { get; set; }
         protected string VariationModalTitle => VariationIsEdit ? "Modifier une variation" : "Ajouter une variation";
-        protected string VariationModalError { get; set; } = string.Empty;
+        protected string? VariationModalError { get; set; }
         protected bool VariationShowModal { get; set; }
         protected bool VariationIsEdit { get; set; }
         protected bool VariationShowDeleteConfirm { get; set; }
@@ -55,7 +51,6 @@ namespace OnigiriShop.Pages
             await ReloadVariationsAsync();
         }
 
-        // Template methods
         protected async Task ReloadTemplatesAsync()
         {
             TemplateTemplates = await EmailTemplateService.GetAllAsync();
@@ -149,7 +144,6 @@ namespace OnigiriShop.Pages
             await ReloadTemplatesAsync();
         }
 
-        // Variation methods
         protected async Task ReloadVariationsAsync()
         {
             VariationAllVariations = await EmailVariationService.GetAllAsync();
