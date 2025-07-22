@@ -130,7 +130,7 @@ namespace OnigiriShop.Services
 
             var orderLines = order.Items != null && order.Items.Any()
                 ? string.Join("", order.Items.Select(i =>
-                    $"<li>{i.Quantity} x {i.ProductName} - {(i.UnitPrice * i.Quantity):0.00} €</li>"))
+                    $"<li>{i.Quantity} x {i.ProductName} - {(i.UnitPrice * i.Quantity):0.00} €</li>"))
                 : "<li>Pas de détail trouvé.</li>";
 
             var template = await templateService.GetByNameAsync("OrderConfirmation");
@@ -155,18 +155,18 @@ namespace OnigiriShop.Services
                     .Replace("{{DeliveryDate}}", delivery.DeliveryAt.ToString("dddd dd/MM/yyyy HH:mm"))
                     .Replace("{{DeliveryPlace}}", delivery.Place)
                     .Replace("{{Signature}}", signature)
-                    .Replace("{{OrderLines}}", string.Join("\n", order.Items?.Select(i => $"{i.Quantity} x {i.ProductName} - {(i.UnitPrice * i.Quantity):0.00} €") ?? Enumerable.Empty<string>()));
+                    .Replace("{{OrderLines}}", string.Join("\n", order.Items?.Select(i => $"{i.Quantity} x {i.ProductName} - {(i.UnitPrice * i.Quantity):0.00} €") ?? Enumerable.Empty<string>()));
             }
             else
             {
-                html = $@"<p>Bonjour {(string.IsNullOrEmpty(toName) ? toEmail : toName)},</p><p>Nous avons bien reçu votre commande n°{order.Id} du {order.OrderedAt:dd/MM/yyyy à HH:mm}.</p><ul style=""margin-bottom:1em;"">{orderLines}</ul><p><b>Total : {order.TotalAmount:0.00} €</b></p><p>Livraison prévue : {delivery.DeliveryAt:dddd dd/MM/yyyy HH:mm} - {delivery.Place}</p><hr><p style=""color:#888;font-size:0.9em;"">{signature}</p>";
+                html = $@"<p>Bonjour {(string.IsNullOrEmpty(toName) ? toEmail : toName)},</p><p>Nous avons bien reçu votre commande n°{order.Id} du {order.OrderedAt:dd/MM/yyyy à HH:mm}.</p><ul style=""margin-bottom:1em;"">{orderLines}</ul><p><b>Total : {order.TotalAmount:0.00} €</b></p><p>Livraison prévue : {delivery.DeliveryAt:dddd dd/MM/yyyy HH:mm} - {delivery.Place}</p><hr><p style=""color:#888;font-size:0.9em;"">{signature}</p>";
                 text = $"Bonjour {(string.IsNullOrEmpty(toName) ? toEmail : toName)},\n" +
                        $"Commande n°{order.Id} du {order.OrderedAt:dd/MM/yyyy à HH:mm}\n" +
-                       $"Total : {order.TotalAmount:0.00} €\n" +
+                       $"Total : {order.TotalAmount:0.00} €\n" +
                        $"Livraison prévue : {delivery.DeliveryAt:dddd dd/MM/yyyy HH:mm} - {delivery.Place}\n" +
                        $"Détail :\n" +
                        (order.Items != null
-                           ? string.Join("\n", order.Items.Select(i => $"{i.Quantity} x {i.ProductName} - {(i.UnitPrice * i.Quantity):0.00} €"))
+                           ? string.Join("\n", order.Items.Select(i => $"{i.Quantity} x {i.ProductName} - {(i.UnitPrice * i.Quantity):0.00} €"))
                            : "Pas de détail trouvé.") +
                        $"\n\n{signature}";
 

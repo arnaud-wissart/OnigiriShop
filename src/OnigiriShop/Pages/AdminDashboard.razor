@@ -141,14 +141,14 @@
                     <button type="button" class="btn-close" aria-label="Fermer" @onclick="CloseOrderModal"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="mb-2"><span class="fw-semibold">Client :</span> @SelectedOrder.UserDisplayName</div>
+                    <div class="mb-2"><span class="fw-semibold">Client :</span> @SelectedOrder.UserDisplayName</div>
                     <div class="mb-2">
-                        <span class="fw-semibold">Statut :</span>
+                        <span class="fw-semibold">Statut :</span>
                         <span class="badge @GetStatusBadge(SelectedOrder.Status)">@SelectedOrder.Status</span>
                     </div>
-                    <div class="mb-2"><span class="fw-semibold">Livraison prévue :</span> @SelectedOrder.DeliveryAt.ToString("dddd dd/MM/yyyy HH:mm")</div>
-                    <div class="mb-2"><span class="fw-semibold">Lieu de livraison :</span> @SelectedOrder.DeliveryPlace</div>
-                    <div class="mb-2"><span class="fw-semibold">Total :</span> @SelectedOrder.TotalAmount.ToString("0.00") €</div>
+                    <div class="mb-2"><span class="fw-semibold">Livraison prévue :</span> @SelectedOrder.DeliveryAt.ToString("dddd dd/MM/yyyy HH:mm")</div>
+                    <div class="mb-2"><span class="fw-semibold">Lieu de livraison :</span> @SelectedOrder.DeliveryPlace</div>
+                    <div class="mb-2"><span class="fw-semibold">Total :</span> @SelectedOrder.TotalAmount.ToString("0.00") €</div>
                     @if (SelectedOrderDetail.Items != null && SelectedOrderDetail.Items.Any())
                     {
                         <hr />
@@ -158,7 +158,7 @@
                             {
                                 <li class="list-group-item d-flex justify-content-between align-items-center">
                                     <span>@item.Quantity x @item.ProductName</span>
-                                    <span>@($"{item.UnitPrice:0.00} €")</span>
+                                    <span>@($"{item.UnitPrice:0.00} €")</span>
                                 </li>
                             }
                         </ul>

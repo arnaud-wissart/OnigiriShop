@@ -10,7 +10,7 @@
 ATTENTION, PROJET EN COURS DE DEVELOPPEMENT, IL RESTE DE NOMBREUX POINTS A CORRIGER/OPTIMISER
 
 **OnigiriShop** est une application web conçue pour faciliter la gestion de commandes artisanales de onigiris (spécialités japonaises).  
-Pensée pour une utilisation simple et efficace, elle offre :
+Pensée pour une utilisation simple et efficace, elle offre :
 
 - Affichage de la carte des produits (onigiris, accompagnements, etc.)
 - Passage de commandes en ligne avec sélection des produits, quantités, créneau de retrait/livraison
@@ -19,7 +19,7 @@ Pensée pour une utilisation simple et efficace, elle offre :
   - Gérer le suivi des commandes (statut, historique)
   - Gérer les utilisateurs ayant accès à l’admin
 
-L’objectif : offrir une expérience utilisateur fluide, mobile-friendly, et un back-office robuste pour la gestion quotidienne.
+L’objectif : offrir une expérience utilisateur fluide, mobile-friendly, et un back-office robuste pour la gestion quotidienne.
 
 ## Fonctionnalités principales
 

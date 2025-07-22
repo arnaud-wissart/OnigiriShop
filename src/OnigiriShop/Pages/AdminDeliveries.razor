@@ -188,12 +188,12 @@
                 <div class="modal-body">
                     <p>
                         Confirmer la suppression de la livraison
-                        <b>@DeleteModel?.Place</b> le <b>@DeleteModel?.DeliveryAt.ToString("dd/MM/yyyy HH:mm")</b> ?
+                        <b>@DeleteModel?.Place</b> le <b>@DeleteModel?.DeliveryAt.ToString("dd/MM/yyyy HH:mm")</b> ?
                     </p>
                     @if (DeleteModel?.IsRecurring == true)
                     {
                         <div class="alert alert-warning mt-3">
-                            Cette livraison est récurrente : toutes les occurrences futures seront supprimées.
+                            Cette livraison est récurrente : toutes les occurrences futures seront supprimées.
                         </div>
                     }
                 </div>
