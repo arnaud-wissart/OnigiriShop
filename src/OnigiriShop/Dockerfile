@@ -1,18 +1,17 @@
 ﻿# Étape de build
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-WORKDIR /src
+WORKDIR /src/OnigiriShop
 
 # Installation de LibMan (nécessaire pour restaurer les librairies front)
 RUN dotnet tool install -g Microsoft.Web.LibraryManager.Cli
 ENV PATH="$PATH:/root/.dotnet/tools"
 
 # Copie du fichier projet et restauration des dépendances
-COPY src/OnigiriShop/OnigiriShop.csproj ./OnigiriShop/
-RUN dotnet restore ./OnigiriShop/OnigiriShop.csproj
+COPY src/OnigiriShop/OnigiriShop.csproj ./
+RUN dotnet restore OnigiriShop.csproj
 
 # Copie du reste du projet uniquement
-COPY src/OnigiriShop/ ./OnigiriShop/
-WORKDIR /src/OnigiriShop
+COPY src/OnigiriShop/ ./
 RUN libman restore                          
 # Récupération des libs front
 RUN dotnet publish -c Release -o /app/publish --no-restore
