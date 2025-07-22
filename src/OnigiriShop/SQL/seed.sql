@@ -56,33 +56,33 @@ INSERT INTO EmailVariation (Type, Name, Value, Extra) VALUES ('Expeditor', 'NoRe
 INSERT INTO EmailVariation (Type, Name, Value, Extra) VALUES ('InvitationSubject', NULL, 'Bienvenue sur OnigiriShop – Activez votre compte', NULL);
 INSERT INTO EmailVariation (Type, Name, Value, Extra) VALUES ('InvitationSubject', NULL, 'Votre compte OnigiriShop vous attend !', NULL);
 INSERT INTO EmailVariation (Type, Name, Value, Extra) VALUES ('InvitationSubject', NULL, 'Rejoignez OnigiriShop : activez votre profil', NULL);
-INSERT INTO EmailVariation (Type, Name, Value, Extra) VALUES ('InvitationSubject', NULL, '🎉 OnigiriShop : Bienvenue à bord !', NULL);
+INSERT INTO EmailVariation (Type, Name, Value, Extra) VALUES ('InvitationSubject', NULL, '🎉 OnigiriShop : Bienvenue à bord !', NULL);
 
 -- Intros d'invitation
-INSERT INTO EmailVariation (Type, Name, Value, Extra) VALUES ('InvitationIntro', NULL, 'Bonjour et bienvenue dans l’univers OnigiriShop !', NULL);
-INSERT INTO EmailVariation (Type, Name, Value, Extra) VALUES ('InvitationIntro', NULL, 'Salut à toi, amateur d’onigiris !', NULL);
-INSERT INTO EmailVariation (Type, Name, Value, Extra) VALUES ('InvitationIntro', NULL, 'Kon’nichiwa, nouveau membre OnigiriShop !', NULL);
+INSERT INTO EmailVariation (Type, Name, Value, Extra) VALUES ('InvitationIntro', NULL, 'Bonjour et bienvenue dans l’univers OnigiriShop !', NULL);
+INSERT INTO EmailVariation (Type, Name, Value, Extra) VALUES ('InvitationIntro', NULL, 'Salut à toi, amateur d’onigiris !', NULL);
+INSERT INTO EmailVariation (Type, Name, Value, Extra) VALUES ('InvitationIntro', NULL, 'Kon’nichiwa, nouveau membre OnigiriShop !', NULL);
 
 -- Sujets de réinitialisation de mot de passe
 INSERT INTO EmailVariation (Type, Name, Value, Extra) VALUES ('PasswordResetSubject', NULL, 'Réinitialisation de votre mot de passe OnigiriShop', NULL);
-INSERT INTO EmailVariation (Type, Name, Value, Extra) VALUES ('PasswordResetSubject', NULL, 'Mot de passe oublié ? OnigiriShop vous aide', NULL);
-INSERT INTO EmailVariation (Type, Name, Value, Extra) VALUES ('PasswordResetSubject', NULL, '🔐 OnigiriShop : Demande de nouveau mot de passe', NULL);
+INSERT INTO EmailVariation (Type, Name, Value, Extra) VALUES ('PasswordResetSubject', NULL, 'Mot de passe oublié ? OnigiriShop vous aide', NULL);
+INSERT INTO EmailVariation (Type, Name, Value, Extra) VALUES ('PasswordResetSubject', NULL, '🔐 OnigiriShop : Demande de nouveau mot de passe', NULL);
 
 -- Intros de reset
 INSERT INTO EmailVariation (Type, Name, Value, Extra) VALUES ('PasswordResetIntro', NULL, 'Vous (ou quelqu’un d’autre) avez demandé à réinitialiser votre mot de passe.', NULL);
-INSERT INTO EmailVariation (Type, Name, Value, Extra) VALUES ('PasswordResetIntro', NULL, 'Besoin d’un nouveau mot de passe ? Suivez le lien ci-dessous.', NULL);
+INSERT INTO EmailVariation (Type, Name, Value, Extra) VALUES ('PasswordResetIntro', NULL, 'Besoin d’un nouveau mot de passe ? Suivez le lien ci-dessous.', NULL);
 INSERT INTO EmailVariation (Type, Name, Value, Extra) VALUES ('PasswordResetIntro', NULL, 'Sécurité d’abord : votre lien de réinitialisation est ici.', NULL);
 
 -- Sujets de confirmation de commande
 INSERT INTO EmailVariation (Type, Name, Value, Extra) VALUES ('OrderSubject', NULL, 'Merci pour votre commande n°{0} – OnigiriShop 🍙', NULL);
 INSERT INTO EmailVariation (Type, Name, Value, Extra) VALUES ('OrderSubject', NULL, 'Votre commande {0} a bien été enregistrée', NULL);
-INSERT INTO EmailVariation (Type, Name, Value, Extra) VALUES ('OrderSubject', NULL, 'OnigiriShop : confirmation de la commande #{0}', NULL);
+INSERT INTO EmailVariation (Type, Name, Value, Extra) VALUES ('OrderSubject', NULL, 'OnigiriShop : confirmation de la commande #{0}', NULL);
 INSERT INTO EmailVariation (Type, Name, Value, Extra) VALUES ('OrderSubject', NULL, '🥢 OnigiriShop : commande reçue (n°{0})', NULL);
 
 -- Signatures (communes à tous les types)
 INSERT INTO EmailVariation (Type, Name, Value, Extra) VALUES ('Signature', NULL, 'L’équipe OnigiriShop 🍙', NULL);
 INSERT INTO EmailVariation (Type, Name, Value, Extra) VALUES ('Signature', NULL, 'Votre support OnigiriShop', NULL);
-INSERT INTO EmailVariation (Type, Name, Value, Extra) VALUES ('Signature', NULL, 'À très bientôt chez OnigiriShop !', NULL);
+INSERT INTO EmailVariation (Type, Name, Value, Extra) VALUES ('Signature', NULL, 'À très bientôt chez OnigiriShop !', NULL);
 INSERT INTO EmailVariation (Type, Name, Value, Extra) VALUES ('Signature', NULL, 'L’équipe Sushi du jour 🥢', NULL);
 
 -- Templates d'e-mails par défaut
@@ -91,5 +91,5 @@ INSERT INTO EmailTemplate (Name, HtmlContent, TextContent) VALUES
  '{{Intro}}\nTon compte a été créé.\n{{Link}}\nCe lien expire dans 1 heure.\n\n{{Signature}}'),
 ('PasswordReset', '<p>{{Intro}}</p><p>Cliquez ici pour choisir un nouveau mot de passe&nbsp;:<br><a href="{{Link}}">{{Link}}</a></p><p><small>Ce lien est valable 1 heure.</small></p><hr><p style="color:#888;font-size:0.9em;">{{Signature}}</p>',
  '{{Intro}}\n{{Link}}\nCe lien est valable 1 heure.\n\n{{Signature}}'),
-('OrderConfirmation', '<p>Bonjour {{Name}},</p><p>Nous avons bien reçu votre commande n°{{OrderId}} du {{OrderDate}}.</p><ul style="margin-bottom:1em;">{{OrderLines}}</ul><p><b>Total : {{Total}} €</b></p><p>Livraison prévue : {{DeliveryDate}} - {{DeliveryPlace}}</p><hr><p style="color:#888;font-size:0.9em;">{{Signature}}</p>',
+('OrderConfirmation', '<p>Bonjour {{Name}},</p><p>Nous avons bien reçu votre commande n°{{OrderId}} du {{OrderDate}}.</p><ul style="margin-bottom:1em;">{{OrderLines}}</ul><p><b>Total : {{Total}} €</b></p><p>Livraison prévue : {{DeliveryDate}} - {{DeliveryPlace}}</p><hr><p style="color:#888;font-size:0.9em;">{{Signature}}</p>',
  'Bonjour {{Name}},\nCommande n°{{OrderId}} du {{OrderDate}}\nTotal : {{Total}} €\nLivraison prévue : {{DeliveryDate}} - {{DeliveryPlace}}\n\n{{Signature}}');
