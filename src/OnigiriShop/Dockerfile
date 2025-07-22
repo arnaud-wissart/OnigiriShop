@@ -11,9 +11,10 @@ COPY OnigiriShop.csproj ./OnigiriShop/
 RUN dotnet restore ./OnigiriShop/OnigiriShop.csproj
 
 # Copie du reste du code
-COPY . .
+COPY src/OnigiriShop/ ./
 WORKDIR /src/OnigiriShop
-RUN libman restore                          # Récupération des libs front
+RUN libman restore                          
+# Récupération des libs front
 RUN dotnet publish -c Release -o /app/publish --no-restore
 
 # Étape runtime
