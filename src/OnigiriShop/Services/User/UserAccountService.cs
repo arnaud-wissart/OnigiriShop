@@ -63,6 +63,40 @@ SELECT last_insert_rowid();";
         Log.Information("Invitation envoyée à {Email}, userId={UserId}, token={Token}", email, userId, token);
     }
 
+    public async Task ResendInvitationAsync(int userId, string siteBaseUrl)
+    {
+        using var conn = connectionFactory.CreateConnection();
+
+        var user = await conn.QueryFirstOrDefaultAsync<User>(
+            "SELECT Id, Email, Name FROM User WHERE Id = @Id",
+            new { Id = userId }) ?? throw new InvalidOperationException("Utilisateur non trouvé.");
+        var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(48));
+        var expiry = DateTime.UtcNow.AddMinutes(_expiryMinutes);
+
+        await conn.ExecuteAsync(InsertTokenSql, new
+        {
+            UserId = userId,
+            Token = token,
+            Expiry = expiry,
+            CreatedAt = DateTime.UtcNow
+        });
+
+        await conn.ExecuteAsync(AuditSql, new
+        {
+            UserId = (int?)null,
+            Action = "Invite",
+            TargetId = userId,
+            Timestamp = DateTime.UtcNow,
+            Details = $"Nouvelle invitation envoyée à {user.Email}"
+        });
+
+        var inviteUrl = $"{siteBaseUrl.TrimEnd('/')}/invite?token={Uri.EscapeDataString(token)}";
+
+        await emailService.SendUserInvitationAsync(user.Email!, user.Name ?? user.Email!, inviteUrl);
+
+        Log.Information("Nouvelle invitation envoyée à {Email}, userId={UserId}, token={Token}", user.Email, userId, token);
+    }
+
     public async Task<int> FindUserIdByTokenAsync(string token)
     {
         using var conn = connectionFactory.CreateConnection();

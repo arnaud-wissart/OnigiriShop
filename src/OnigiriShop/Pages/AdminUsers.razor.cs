@@ -237,9 +237,20 @@ namespace OnigiriShop.Pages
         public async Task SendInviteAsync()
         {
             IsBusy = true;
-            await UserAccountService.InviteUserAsync(InviteUser?.Email!, InviteUser?.Name!, NavigationManager.BaseUri);
-            IsBusy = false;
-            HideInviteModal();
+            try
+            {
+                await UserAccountService.ResendInvitationAsync(InviteUser!.Id, NavigationManager.BaseUri);
+                ToastService.ShowToast("Invitation renvoyée avec succès !", string.Empty, ToastLevel.Success);
+            }
+            catch (Exception ex)
+            {
+                ToastService.ShowToast($"Erreur lors de l'envoi de l'invitation : {ex.Message}", "Erreur", ToastLevel.Error);
+            }
+            finally
+            {
+                IsBusy = false;
+                HideInviteModal();
+            }
         }
     }
 

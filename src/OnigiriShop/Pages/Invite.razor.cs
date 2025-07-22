@@ -21,7 +21,7 @@ namespace OnigiriShop.Pages
         protected bool AlreadyActivated { get; set; }
         protected bool CanRequestNewInvite { get; set; }
         protected string UserEmailForRequest { get; set; } = string.Empty;
-
+        protected int UserIdForRequest { get; set; }
         protected void GoHome() => Nav.NavigateTo("/");
         protected override async Task OnInitializedAsync()
         {
@@ -56,6 +56,7 @@ namespace OnigiriShop.Pages
                     CanRequestNewInvite = true;
                     var expiredUser = (await UserService.GetAllUsersAsync(null)).FirstOrDefault(u => u.Id == expiredUserId);
                     UserEmailForRequest = expiredUser?.Email!;
+                    UserIdForRequest = expiredUserId;
                 }
                 TokenInvalid = true;
                 Loaded = true;
@@ -86,10 +87,13 @@ namespace OnigiriShop.Pages
         }
         protected async Task RequestNewInvite()
         {
-            if (!string.IsNullOrEmpty(UserEmailForRequest))
+            if (UserIdForRequest > 0)
             {
-                await UserAccountService.InviteUserAsync(UserEmailForRequest, string.Empty, Nav.BaseUri);
-                await JS.InvokeVoidAsync("alert", "Un nouveau lien d'activation a été envoyé à votre adresse email.");
+                await HandleAsync(async () =>
+                {
+                    await UserAccountService.ResendInvitationAsync(UserIdForRequest, Nav.BaseUri);
+                    await JS.InvokeVoidAsync("alert", "Un nouveau lien d'activation a été envoyé à votre adresse email.");
+                }, "Erreur lors de l'envoi de l'invitation");
             }
         }
 
