@@ -11,7 +11,7 @@ COPY src/OnigiriShop/OnigiriShop.csproj ./OnigiriShop/
 RUN dotnet restore ./OnigiriShop/OnigiriShop.csproj
 
 # Copie du reste du projet uniquement
-COPY src/OnigiriShop/ ./
+COPY src/OnigiriShop/ ./OnigiriShop/
 WORKDIR /src/OnigiriShop
 RUN libman restore                          
 # Récupération des libs front
