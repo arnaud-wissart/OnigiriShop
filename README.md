@@ -37,7 +37,7 @@ Elle propose :
 
 ```bash
 git clone https://github.com/arnaud-wissart/onigirishop.git
-cd OnigiriShopSolution/src/OnigiriShop
+cd onigirishop/src/OnigiriShop
 libman restore
 dotnet restore
 dotnet user-secrets set "Mailjet:ApiKey" "VOTRE_CLE"
