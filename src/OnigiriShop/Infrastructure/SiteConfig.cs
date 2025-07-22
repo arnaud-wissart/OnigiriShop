@@ -2,6 +2,6 @@
 {
     public class SiteConfig
     {
-        public string Name { get; set; } = "Onigiri Shop";
+        public string Name { get; set; } = "Onigiri Shop (par défaut)";
     }
 }

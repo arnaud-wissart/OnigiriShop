@@ -169,9 +169,8 @@ namespace OnigiriShop.Services
                            ? string.Join("\n", order.Items.Select(i => $"{i.Quantity} x {i.ProductName} - {(i.UnitPrice * i.Quantity):0.00} €"))
                            : "Pas de détail trouvé.") +
                        $"\n\n{signature}";
-
-                await SendEmailAsync(toEmail, toName, subject, html, text, expEmail, expName);
             }
+            await SendEmailAsync(toEmail, toName, subject, html, text, expEmail, expName);
         }
 
         public async Task SendAdminNotificationAsync(string subject, string htmlContent, string textContent)
