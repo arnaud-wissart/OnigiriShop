@@ -7,11 +7,11 @@ RUN dotnet tool install -g Microsoft.Web.LibraryManager.Cli
 ENV PATH="$PATH:/root/.dotnet/tools"
 
 # Copie du fichier projet et restauration des dépendances
-COPY OnigiriShop.csproj ./OnigiriShop/
+COPY src/OnigiriShop/OnigiriShop.csproj ./OnigiriShop/
 RUN dotnet restore ./OnigiriShop/OnigiriShop.csproj
 
 # Copie du reste du code
-COPY src/OnigiriShop/ ./
+COPY src/OnigiriShop/ ./OnigiriShop/
 WORKDIR /src/OnigiriShop
 RUN libman restore                          
 # Récupération des libs front
