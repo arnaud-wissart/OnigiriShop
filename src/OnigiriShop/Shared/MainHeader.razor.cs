@@ -54,5 +54,6 @@ namespace OnigiriShop.Shared
         protected void GotoDeliveries() => Nav.NavigateTo("/admin/deliveries");
         protected void GotoShop() => Nav.NavigateTo("/");
         protected void GotoEmails() => Nav.NavigateTo("/admin/emails");
+        protected void GotoLogs() => Nav.NavigateTo("/admin/logs");
     }
 }

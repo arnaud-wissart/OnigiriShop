@@ -23,6 +23,7 @@ public static class BusinessServiceCollectionExtensions
         services.AddScoped<DeliveryCalendarService>();
         services.AddScoped<OrderExportService>();
         services.AddScoped<DeliveryService>();
+        services.AddScoped<MaintenanceService>();
         return services;
     }
 }

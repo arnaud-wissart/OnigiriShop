@@ -356,6 +356,15 @@ window.downloadFileFromText = (filename, text) => {
     document.body.removeChild(element);
 };
 
+window.downloadFileFromBytes = (filename, base64) => {
+    const element = document.createElement('a');
+    element.href = 'data:application/octet-stream;base64,' + base64;
+    element.download = filename;
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+};
+
 // ==================== HTML Editor (Quill) ====================
 
 window.initHtmlEditor = function (id, dotNetHelper, value) {

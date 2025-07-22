@@ -1,0 +1,34 @@
+﻿@page "/admin/logs"
+@layout AdminLayout
+@attribute [Authorize]
+@inherits AdminLogsBase
+
+<div class="card shadow rounded-3 overflow-hidden border mb-4" style="background:#fff;">
+    <div class="card-body">
+        <h4 class="card-title mb-3 fw-bold">Fichiers de log</h4>
+        <select class="form-select mb-3" style="max-width:280px;" @onchange="OnLogFileChanged">
+            @foreach (var file in LogFiles)
+            {
+                <option value="@file" selected="@(file==SelectedLogFile)">@file</option>
+            }
+        </select>
+        <pre class="border p-3" style="max-height:500px; overflow:auto; white-space:pre-wrap;">@LogContent</pre>
+    </div>
+</div>
+
+<div class="card shadow rounded-3 overflow-hidden border" style="background:#fff;">
+    <div class="card-body">
+        <h4 class="card-title mb-3 fw-bold">Base de données</h4>
+        <button class="btn btn-outline-primary me-2" @onclick="DownloadDatabaseAsync">
+            <i class="bi bi-download me-1"></i>Télécharger
+        </button>
+        <InputFile OnChange="OnDbSelected" class="form-control d-inline-block" />
+        <button class="btn btn-danger ms-2" @onclick="ReplaceDatabaseAsync" disabled="@((DbFile == null) || IsBusy)">
+            <i class="bi bi-upload me-1"></i>Remplacer
+            @if (IsBusy)
+            {
+                <span class="spinner-border spinner-border-sm ms-2"></span>
+            }
+        </button>
+    </div>
+</div>
