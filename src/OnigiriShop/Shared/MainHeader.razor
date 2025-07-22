@@ -1,5 +1,7 @@
 ﻿@using OnigiriShop.Pages
 @inherits MainHeaderBase
+@using Microsoft.Extensions.Options
+@inject IOptions<OnigiriShop.Infrastructure.SiteConfig> SiteConfig
 
 <header class="main-title main-title-flex">
     <div class="main-title-left"></div>
@@ -10,7 +12,7 @@
                 <i class="bi bi-shield-lock"></i> ADMIN
             </span>
         }
-        Onigiris et Sponge Cakes
+        @JS
     </div>
     <div class="main-title-right d-flex align-items-end justify-content-end me-3">
         @if (IsAuthenticated)

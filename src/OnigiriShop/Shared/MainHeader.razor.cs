@@ -8,7 +8,6 @@ namespace OnigiriShop.Shared
     public partial class MainHeaderBase: ComponentBase
     {
         [Inject] public AuthenticationStateProvider AuthProvider { get; set; } = default!;
-
         [Inject] public NavigationManager Nav { get; set; } = default!;
         [Inject] public IJSRuntime JS { get; set; } = default!;
         [Inject] public AuthService AuthService { get; set; } = default!;

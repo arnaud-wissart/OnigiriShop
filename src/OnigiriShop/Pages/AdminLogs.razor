@@ -19,16 +19,18 @@
 <div class="card shadow rounded-3 overflow-hidden border" style="background:#fff;">
     <div class="card-body">
         <h4 class="card-title mb-3 fw-bold">Base de données</h4>
-        <button class="btn btn-outline-primary me-2" @onclick="DownloadDatabaseAsync">
-            <i class="bi bi-download me-1"></i>Télécharger
-        </button>
-        <InputFile OnChange="OnDbSelected" class="form-control d-inline-block" />
-        <button class="btn btn-danger ms-2" @onclick="ReplaceDatabaseAsync" disabled="@((DbFile == null) || IsBusy)">
-            <i class="bi bi-upload me-1"></i>Remplacer
-            @if (IsBusy)
-            {
-                <span class="spinner-border spinner-border-sm ms-2"></span>
-            }
-        </button>
+        <div class="d-flex flex-wrap align-items-end gap-2">
+            <button class="btn btn-outline-primary" @onclick="DownloadDatabaseAsync">
+                <i class="bi bi-download me-1"></i>Télécharger
+            </button>
+            <InputFile OnChange="OnDbSelected" class="form-control" style="width:auto;" />
+            <button class="btn btn-danger" @onclick="ReplaceDatabaseAsync" disabled="@((DbFile == null) || IsBusy)">
+                <i class="bi bi-upload me-1"></i>Remplacer
+                @if (IsBusy)
+                {
+                    <span class="spinner-border spinner-border-sm ms-2"></span>
+                }
+            </button>
+        </div>
     </div>
 </div>

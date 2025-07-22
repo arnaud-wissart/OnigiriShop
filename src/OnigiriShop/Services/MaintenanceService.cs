@@ -1,4 +1,5 @@
 ﻿using FluentMigrator.Runner;
+using Microsoft.Data.Sqlite;
 using OnigiriShop.Infrastructure;
 
 namespace OnigiriShop.Services;
@@ -43,7 +44,23 @@ public class MaintenanceService(IWebHostEnvironment env, IMigrationRunner runner
     public async Task<byte[]> GetDatabaseBytesAsync()
     {
         var dbPath = DatabasePaths.GetPath();
-        return await File.ReadAllBytesAsync(dbPath);
+        var tempPath = Path.GetTempFileName();
+        try
+        {
+            using (var source = new SqliteConnection($"Data Source={dbPath};Mode=ReadOnly;Pooling=False"))
+            using (var dest = new SqliteConnection($"Data Source={tempPath};Pooling=False"))
+            {
+                source.Open();
+                dest.Open();
+                source.BackupDatabase(dest);
+            }
+            return await File.ReadAllBytesAsync(tempPath);
+        }
+        finally
+        {
+            if (File.Exists(tempPath))
+                File.Delete(tempPath);
+        }
     }
 
     public async Task ReplaceDatabaseAsync(Stream stream)

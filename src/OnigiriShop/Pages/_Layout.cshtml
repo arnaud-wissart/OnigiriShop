@@ -1,13 +1,15 @@
 ﻿@using Microsoft.AspNetCore.Components.Web
 @namespace OnigiriShop.Pages
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@using Microsoft.Extensions.Options
+@inject IOptions<OnigiriShop.Infrastructure.SiteConfig> SiteConfig
 
 <!DOCTYPE html>
 <html lang="fr-fr">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Onigiri Shop</title>
+    <title>@SiteConfig.Value.Name</title>
     <base href="~/" />
     <link href="~/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
     <link href="~/lib/bootstrap-icons/font/bootstrap-icons.min.css" rel="stylesheet" />

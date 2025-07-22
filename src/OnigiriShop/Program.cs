@@ -20,7 +20,7 @@ builder.Host.UseSerilog();
 
 builder.Services.Configure<MailjetConfig>(builder.Configuration.GetSection("Mailjet"));
 builder.Services.Configure<MagicLinkConfig>(builder.Configuration.GetSection("MagicLink"));
-
+builder.Services.Configure<SiteConfig>(builder.Configuration.GetSection("Site"));
 
 var dbPath = DatabasePaths.GetPath();
 var schemaPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SQL", "init_db.sql");

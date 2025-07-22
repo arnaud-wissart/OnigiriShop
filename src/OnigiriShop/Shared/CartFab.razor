@@ -1,0 +1,11 @@
+﻿@inherits CartFabBase
+
+@if (_hasItems && ShowCart)
+{
+    <a class="cart-fab d-xl-none" href="/panier">
+        <span class="cart-fab-icon">
+            <i class="bi bi-cart-fill"></i>
+            <span class="cart-fab-count">@_itemsCount</span>
+        </span>
+    </a>
+}
