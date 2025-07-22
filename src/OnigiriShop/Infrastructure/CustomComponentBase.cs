@@ -10,8 +10,19 @@ namespace OnigiriShop.Infrastructure
 
         [Inject] public ErrorModalService ErrorModalService { get; set; } = default!;
         [Inject] public AuthService AuthService { get; set; } = default!;
-        protected Task HandleAsync(Func<Task> action, string? userMessage = null, string? title = null, bool showExceptionMessage = false)
-            => BlazorExceptionHandler.HandleAsync(action, ErrorModalService, userMessage, title, showExceptionMessage);
+        [Inject] public IWebHostEnvironment Env { get; set; } = default!;
+
+        protected Task HandleAsync(
+            Func<Task> action,
+            string? userMessage = null,
+            string? title = null,
+            bool showExceptionMessage = false)
+            => BlazorExceptionHandler.HandleAsync(
+                action,
+                ErrorModalService,
+                userMessage,
+                title,
+                showExceptionMessage || Env.IsDevelopment());
 
         protected bool UserIsConnected;
         protected int UserId { get; set; } = -1;

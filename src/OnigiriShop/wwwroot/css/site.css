@@ -196,6 +196,13 @@
     max-width: 48%;
 }
 
+@media (max-width: 600px) {
+    .col-6-custom {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+}
+
 .onigiri-card {
     background: #fff;
     border-radius: 18px;

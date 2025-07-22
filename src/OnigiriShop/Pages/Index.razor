@@ -25,7 +25,7 @@
                                     <div class="d-flex align-items-center justify-content-between mt-2">
                                         <div class="onigiri-price fw-bold fs-5">@($"{product.Price:C2}")</div>
                                         <div style="position:relative;display:inline-block;width:42px;">
-                                            <button class="btn btn-outline-success rounded-circle shadow-sm position-relative @( _addedProductIds.Contains(product.Id) ? "cart-anim" : "" )"
+                                            <button class="btn btn-outline-success rounded-circle shadow-sm position-relative @( _animatedProductIds.Contains(product.Id) ? "cart-anim" : "" )"
                                                     style="width:42px;height:42px;display:flex;align-items:center;justify-content:center;"
                                                     @onclick="@(async () => await OnAddToCartClicked(product))">
                                                 <i class="@GetCartIconClass(qty) fs-4"></i>

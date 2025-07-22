@@ -7,8 +7,13 @@ using OnigiriShop.Infrastructure;
 using Serilog;
 using FluentMigrator.Runner;
 using OnigiriShop.Services.Extensions;
+using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var culture = new CultureInfo("fr-FR");
+CultureInfo.DefaultThreadCurrentCulture = culture;
+CultureInfo.DefaultThreadCurrentUICulture = culture;
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Debug()

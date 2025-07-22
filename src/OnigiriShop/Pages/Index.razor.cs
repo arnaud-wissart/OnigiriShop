@@ -12,7 +12,7 @@ namespace OnigiriShop.Pages
         [Inject] public NavigationManager Nav { get; set; } = default!;
 
         protected List<Product>? _products;
-        protected HashSet<int> _addedProductIds = [];
+        protected HashSet<int> _animatedProductIds = [];
 
         protected override async Task OnInitializedAsync()
         {
@@ -31,11 +31,7 @@ namespace OnigiriShop.Pages
             await CartProvider.RefreshCartStateAsync(CartState);
             CartState.NotifyChanged();
 
-            _addedProductIds.Add(product.Id);
-            StateHasChanged();
-            await Task.Delay(200);
-            _addedProductIds.Remove(product.Id);
-            StateHasChanged();
+            await TriggerButtonAnimation(product.Id);
         }
         public async Task OnRemoveFromCartClicked(Product product)
         {
@@ -43,7 +39,7 @@ namespace OnigiriShop.Pages
             await CartProvider.RefreshCartStateAsync(CartState);
             CartState.NotifyChanged();
 
-            StateHasChanged();
+            await TriggerButtonAnimation(product.Id);
         }
 
 
@@ -66,6 +62,15 @@ namespace OnigiriShop.Pages
 
         protected int GetProductCartQty(int productId)
             => CartState.Items.FirstOrDefault(x => x.ProductId == productId)?.Quantity ?? 0;
+
+        private async Task TriggerButtonAnimation(int productId)
+        {
+            _animatedProductIds.Add(productId);
+            StateHasChanged();
+            await Task.Delay(200);
+            _animatedProductIds.Remove(productId);
+            StateHasChanged();
+        }
 
         public void Dispose() => CartState.OnChanged -= OnCartChanged;
     }

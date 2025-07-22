@@ -16,23 +16,16 @@ namespace OnigiriShop.Pages
         protected InviteUserModel Model { get; set; } = new();
         protected async Task InviteAsync()
         {
-            Message = "";
+            Message = string.Empty;
             IsBusy = true;
-            try
+            await HandleAsync(async () =>
             {
                 var baseUrl = Nav.BaseUri;
                 await UserAccountService.InviteUserAsync(Model.Email.Trim(), Model.Name.Trim(), baseUrl);
                 Message = "Invitation envoyée !";
                 Model = new InviteUserModel();
-            }
-            catch (Exception ex)
-            {
-                Message = $"Erreur lors de l'invitation : {ex.Message}";
-            }
-            finally
-            {
-                IsBusy = false;
-            }
+            }, "Erreur lors de l'invitation");
+            IsBusy = false;
         }
     }
 

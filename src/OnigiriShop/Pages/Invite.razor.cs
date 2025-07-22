@@ -111,19 +111,12 @@ namespace OnigiriShop.Pages
                 return;
             }
             IsBusy = true;
-            try
+            await HandleAsync(async () =>
             {
                 await UserAccountService.SetUserPasswordAsync(UserId, Model.Password, Model.Token);
                 Success = true;
-            }
-            catch (Exception ex)
-            {
-                Error = ex.Message ?? "Erreur lors de l’activation.";
-            }
-            finally
-            {
-                IsBusy = false;
-            }
+            }, "Erreur lors de l’activation");
+            IsBusy = false;
         }
 
         public class InviteModel

@@ -50,7 +50,7 @@ namespace OnigiriShop.Pages
             IsBusy = true;
             Error = null;
 
-            try
+            await HandleAsync(async () =>
             {
                 if (IsEditMode)
                     await UserService.UpdateUserAsync(EditModel);
@@ -59,15 +59,9 @@ namespace OnigiriShop.Pages
 
                 await OnUserChanged.InvokeAsync();
                 await Hide();
-            }
-            catch (Exception ex)
-            {
-                Error = ex.Message;
-            }
-            finally
-            {
-                IsBusy = false;
-            }
+            }, "Erreur lors de l'enregistrement de l'utilisateur");
+
+            IsBusy = false;
         }
 
         protected async Task Hide() => await VisibleChanged.InvokeAsync(false);

@@ -5,6 +5,7 @@ using OnigiriShop.Data.Models;
 using OnigiriShop.Infrastructure;
 using Serilog;
 using System.Security.Cryptography;
+using System.Text;
 
 namespace OnigiriShop.Services;
 
@@ -37,12 +38,13 @@ SELECT last_insert_rowid();";
         });
 
         var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(48));
+        var tokenHash = HashToken(token);
         var expiry = DateTime.UtcNow.AddMinutes(_expiryMinutes);
 
         await conn.ExecuteAsync(InsertTokenSql, new
         {
             UserId = userId,
-            Token = token,
+            Token = tokenHash,
             Expiry = expiry,
             CreatedAt = DateTime.UtcNow
         });
@@ -60,7 +62,10 @@ SELECT last_insert_rowid();";
 
         await emailService.SendUserInvitationAsync(email, name, inviteUrl);
 
-        Log.Information("Invitation envoyée à {Email}, userId={UserId}, token={Token}", email, userId, token);
+        Log.Information("Invitation envoyée à {Email}, userId={UserId}, tokenHash={HashPreview}",
+            email,
+            userId,
+            tokenHash[..8]);
     }
 
     public async Task ResendInvitationAsync(int userId, string siteBaseUrl)
@@ -71,12 +76,13 @@ SELECT last_insert_rowid();";
             "SELECT Id, Email, Name FROM User WHERE Id = @Id",
             new { Id = userId }) ?? throw new InvalidOperationException("Utilisateur non trouvé.");
         var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(48));
+        var tokenHash = HashToken(token);
         var expiry = DateTime.UtcNow.AddMinutes(_expiryMinutes);
 
         await conn.ExecuteAsync(InsertTokenSql, new
         {
             UserId = userId,
-            Token = token,
+            Token = tokenHash,
             Expiry = expiry,
             CreatedAt = DateTime.UtcNow
         });
@@ -94,15 +100,19 @@ SELECT last_insert_rowid();";
 
         await emailService.SendUserInvitationAsync(user.Email!, user.Name ?? user.Email!, inviteUrl);
 
-        Log.Information("Nouvelle invitation envoyée à {Email}, userId={UserId}, token={Token}", user.Email, userId, token);
+        Log.Information("Nouvelle invitation envoyée à {Email}, userId={UserId}, tokenHash={HashPreview}",
+            user.Email,
+            userId,
+            tokenHash[..8]);
     }
 
     public async Task<int> FindUserIdByTokenAsync(string token)
     {
         using var conn = connectionFactory.CreateConnection();
+        var tokenHash = HashToken(token);
         var userId = await conn.ExecuteScalarAsync<int?>(
                     "SELECT UserId FROM MagicLinkToken WHERE Token = @Token",
-                    new { Token = token });
+                    new { Token = tokenHash });
 
         return userId ?? 0;
     }
@@ -118,6 +128,7 @@ SELECT last_insert_rowid();";
         conn.Open();
 
         using var txn = conn.BeginTransaction();
+        var tokenHash = HashToken(token);
 
         await conn.ExecuteAsync(
                     "UPDATE User SET PasswordHash = @Hash, PasswordSalt = @Salt, IsActive = 1 WHERE Id = @UserId",
@@ -125,7 +136,7 @@ SELECT last_insert_rowid();";
 
         await conn.ExecuteAsync(
                     "UPDATE MagicLinkToken SET UsedAt = @Now WHERE Token = @Token",
-                    new { Token = token, Now = DateTime.UtcNow }, txn);
+                    new { Token = tokenHash, Now = DateTime.UtcNow }, txn);
 
         txn.Commit();
         return;
@@ -134,8 +145,10 @@ SELECT last_insert_rowid();";
     public async Task<int> ValidateInviteTokenAsync(string token)
     {
         using var conn = connectionFactory.CreateConnection();
+        var tokenHash = HashToken(token);
+
         var userId = await conn.ExecuteScalarAsync<int?>(@"SELECT UserId FROM MagicLinkToken
-WHERE Token = @Token AND UsedAt IS NULL AND Expiry >= @Now", new { Token = token, Now = DateTime.UtcNow });
+WHERE Token = @Token AND UsedAt IS NULL AND Expiry >= @Now", new { Token = tokenHash, Now = DateTime.UtcNow });
         return userId ?? 0;
     }
 
@@ -184,12 +197,13 @@ WHERE Token = @Token AND UsedAt IS NULL AND Expiry >= @Now", new { Token = token
         var userId = userIdObj.Value;
 
         var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(48));
+        var tokenHash = HashToken(token);
         var expiry = DateTime.UtcNow.AddMinutes(expiryMinutes);
 
         await conn.ExecuteAsync(InsertTokenSql, new
         {
             UserId = userId,
-            Token = token,
+            Token = tokenHash,
             Expiry = expiry,
             CreatedAt = DateTime.UtcNow
         });
@@ -206,5 +220,11 @@ WHERE Token = @Token AND UsedAt IS NULL AND Expiry >= @Now", new { Token = token
         var resetUrl = $"{siteBaseUrl.TrimEnd('/')}/invite?token={Uri.EscapeDataString(token)}";
 
         await emailService.SendPasswordResetAsync(email, name, resetUrl);
+    }
+
+    private static string HashToken(string token)
+    {
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(token));
+        return Convert.ToHexString(bytes);
     }
 }

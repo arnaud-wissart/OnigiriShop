@@ -181,7 +181,7 @@ namespace OnigiriShop.Pages
                 return;
             }
 
-            try
+            await HandleAsync(async () =>
             {
                 if (IsEdit)
                 {
@@ -202,17 +202,8 @@ namespace OnigiriShop.Pages
                 HideModal();
                 await ReloadUsersAsync();
                 await RefreshTooltipsAsync();
-            }
-            catch (Exception ex)
-            {
-                _messageStore.Add(() => ModalModel.Name, ex.Message ?? "Erreur lors de l'opération.");
-                _editContext.NotifyValidationStateChanged();
-                await InvokeAsync(StateHasChanged);
-            }
-            finally
-            {
-                IsBusy = false;
-            }
+            }, "Erreur lors de l'opération");
+            IsBusy = false;
         }
 
 
@@ -237,20 +228,13 @@ namespace OnigiriShop.Pages
         public async Task SendInviteAsync()
         {
             IsBusy = true;
-            try
+            await HandleAsync(async () =>
             {
                 await UserAccountService.ResendInvitationAsync(InviteUser!.Id, NavigationManager.BaseUri);
                 ToastService.ShowToast("Invitation renvoyée avec succès !", string.Empty, ToastLevel.Success);
-            }
-            catch (Exception ex)
-            {
-                ToastService.ShowToast($"Erreur lors de l'envoi de l'invitation : {ex.Message}", "Erreur", ToastLevel.Error);
-            }
-            finally
-            {
-                IsBusy = false;
-                HideInviteModal();
-            }
+            }, "Erreur lors de l'envoi de l'invitation");
+            IsBusy = false;
+            HideInviteModal();
         }
     }
 

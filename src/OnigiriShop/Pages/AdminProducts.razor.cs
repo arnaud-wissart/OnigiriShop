@@ -75,7 +75,7 @@ namespace OnigiriShop.Pages
         protected async Task HandleModalValid()
         {
             IsBusy = true;
-            try
+            await HandleAsync(async () =>
             {
                 if (IsEdit)
                 {
@@ -87,15 +87,8 @@ namespace OnigiriShop.Pages
                 }
                 ShowModal = false;
                 await LoadProducts();
-            }
-            catch (Exception ex)
-            {
-                ModalError = ex.Message;
-            }
-            finally
-            {
-                IsBusy = false;
-            }
+            }, "Erreur lors de l'enregistrement du produit");
+            IsBusy = false;
         }
 
         protected async Task ConfirmDeleteProduct(Product p)

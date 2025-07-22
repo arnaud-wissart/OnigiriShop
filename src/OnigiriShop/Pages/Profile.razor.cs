@@ -39,7 +39,7 @@ namespace OnigiriShop.Pages
             await base.OnInitializedAsync();
 
             IsLoading = true;
-            try
+            await HandleAsync(async () =>
             {
                 var userIdStr = await AuthService.GetCurrentUserIdAsync();
                 if (!int.TryParse(userIdStr, out var userId))
@@ -53,15 +53,8 @@ namespace OnigiriShop.Pages
                     InitModelAndEditContext(user);
                     Orders = await OrderService.GetOrdersByUserIdAsync(userId);
                 }
-            }
-            catch (Exception ex)
-            {
-                EditError = "Erreur lors du chargement du profil : " + ex.Message;
-            }
-            finally
-            {
-                IsLoading = false;
-            }
+            }, "Erreur lors du chargement du profil");
+            IsLoading = false;
         }
 
         private void HandleFieldChanged(object sender, FieldChangedEventArgs e)
@@ -88,7 +81,7 @@ namespace OnigiriShop.Pages
         protected async Task ConfirmResetPassword()
         {
             ShowResetModal = false;
-            try
+            await HandleAsync(async () =>
             {
                 await UserAccountService.GenerateAndSendResetLinkAsync(
                     UserModel.Email,
@@ -100,15 +93,7 @@ namespace OnigiriShop.Pages
                     "Mot de passe réinitialisé",
                     ToastLevel.Success
                 );
-            }
-            catch (Exception ex)
-            {
-                ToastService.ShowToast(
-                    "Erreur lors de l'envoi du mail de réinitialisation : " + ex.Message,
-                    "Erreur",
-                    ToastLevel.Error
-                );
-            }
+            }, "Erreur lors de l'envoi du mail de réinitialisation");
             StateHasChanged();
         }
 
@@ -118,7 +103,7 @@ namespace OnigiriShop.Pages
             EditError = null;
             IsBusy = true;
 
-            try
+            await HandleAsync(async () =>
             {
                 await UserService.UpdateUserProfileAsync(UserModel.Id, UserModel.Name, UserModel.Phone);
                 EditSuccess = true;
@@ -133,15 +118,9 @@ namespace OnigiriShop.Pages
 
                     await JS.InvokeVoidAsync("onigiriAuth.refreshSession");
                 }
-            }
-            catch (Exception ex)
-            {
-                EditError = ex.Message ?? "Erreur lors de la mise à jour.";
-            }
-            finally
-            {
-                IsBusy = false;
-            }
+            }, "Erreur lors de la mise à jour");
+
+            IsBusy = false;
         }
 
         protected void ResetProfileForm() => StateHasChanged();
@@ -177,20 +156,13 @@ namespace OnigiriShop.Pages
         {
             ResetResult = null;
             IsSendingReset = true;
-            try
+            await HandleAsync(async () =>
             {
                 var baseUrl = Nav.BaseUri;
                 await UserAccountService.GenerateAndSendResetLinkAsync(UserModel.Email, UserModel.Name, baseUrl);
                 ResetResult = "Un email de réinitialisation vient d’être envoyé.";
-            }
-            catch (Exception ex)
-            {
-                ResetResult = "Erreur lors de l’envoi du lien : " + ex.Message;
-            }
-            finally
-            {
-                IsSendingReset = false;
-            }
+            }, "Erreur lors de l’envoi du lien");
+            IsSendingReset = false;
         }
     }
 
