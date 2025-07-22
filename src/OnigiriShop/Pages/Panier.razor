@@ -67,8 +67,8 @@
                                                     </button>
                                                 </div>
                                             </td>
-                                            <td class="text-end">@item.Product?.Price.ToString("0.00") €</td>
-                                            <td class="text-end">@((item.Quantity * (item.Product?.Price ?? 0)).ToString("0.00")) €</td>
+                                            <td class="text-end">@item.Product?.Price.ToString("0.00") €</td>
+                                            <td class="text-end">@((item.Quantity * (item.Product?.Price ?? 0)).ToString("0.00")) €</td>
                                             <td class="text-end">
                                                 <button class="btn btn-sm btn-outline-danger"
                                                         @onclick="() => PromptRemoveItem(item)">
@@ -86,7 +86,7 @@
                                 <span class="fw-bold" style="font-size:1.05rem;">Total à payer</span>
                             </div>
                             <span class="fw-bold" style="font-size:1.25rem; letter-spacing:0.01em; min-width:85px; text-align:right;">
-                                @_totalPrice.ToString("0.00") €
+                                @_totalPrice.ToString("0.00") €
                             </span>
                         </div>
                     }
@@ -124,8 +124,8 @@
                                                     </button>
                                                 </div>
                                             </td>
-                                            <td class="text-end">@item.Product?.Price.ToString("0.00") €</td>
-                                            <td class="text-end">@((item.Quantity * (item.Product?.Price ?? 0)).ToString("0.00")) €</td>
+                                            <td class="text-end">@item.Product?.Price.ToString("0.00") €</td>
+                                            <td class="text-end">@((item.Quantity * (item.Product?.Price ?? 0)).ToString("0.00")) €</td>
                                             <td class="text-end">
                                                 <button class="btn btn-sm btn-outline-danger"
                                                         @onclick="() => PromptRemoveItem(item)">
@@ -143,7 +143,7 @@
                                 <span class="fw-bold" style="font-size:1.05rem;">Total à payer</span>
                             </div>
                             <span class="fw-bold" style="font-size:1.25rem; letter-spacing:0.01em; min-width:85px; text-align:right;">
-                                @_totalPrice.ToString("0.00") €
+                                @_totalPrice.ToString("0.00") €
                             </span>
                         </div>
                         <!-- Bloc livraison -->
@@ -207,7 +207,7 @@
                 <div class="modal-body">
                     Êtes-vous sûr(e) de vouloir retirer
                     <b>@ItemToRemove?.Product?.Name</b>
-                    de votre panier ?
+                    de votre panier ?
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" @onclick="CancelRemove">Annuler</button>
