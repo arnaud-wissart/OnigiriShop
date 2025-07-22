@@ -47,7 +47,7 @@ VALUES
 (1, 2, '2025-07-13 10:01:24', 'Livrée', 8.70, '');
 
 -- Expéditeurs
-INSERT INTO EmailVariation (Type, Name, Value, Extra) VALUES ('Expeditor', 'Arnaud', 'arnaud.wissart@gmail.com', 'Arnaud de OnigiriShop');
+INSERT INTO EmailVariation (Type, Name, Value, Extra) VALUES ('Expeditor', 'Arnaud', 'onigirishop94@gmail.com', 'Arnaud de OnigiriShop');
 
 -- Sujets d'invitation
 INSERT INTO EmailVariation (Type, Name, Value, Extra) VALUES ('InvitationSubject', NULL, 'Bienvenue sur OnigiriShop – Activez votre compte', NULL);
