@@ -35,7 +35,7 @@ namespace OnigiriShop.Shared
         }
         protected async Task MergeCarts()
         {
-            await CartProvider.MigrateAnonymousCartToUserAsync(forceMerge: true);
+            await CartProvider.MigrateAnonymousCartToUserAsync();
             _showCartMergeModal = false;
             CartState.NotifyChanged();
             await RefreshCartAsync();
@@ -44,7 +44,7 @@ namespace OnigiriShop.Shared
         protected async Task ReplaceSqlWithAnon()
         {
             await CartProvider.ClearCartAsync();
-            await CartProvider.MigrateAnonymousCartToUserAsync(forceMerge: true);
+            await CartProvider.MigrateAnonymousCartToUserAsync();
             _showCartMergeModal = false;
             CartState.NotifyChanged();
             await RefreshCartAsync();

@@ -82,7 +82,7 @@ public class CartMergeService(
         _lastMigratedUserId = userId;
     }
 
-    public async Task MigrateAnonymousCartToUserAsync(bool forceMerge = false)
+    public async Task MigrateAnonymousCartToUserAsync()
     {
         var (isAuthenticated, userId) = await GetCurrentUserIdAsync();
         if (!isAuthenticated || !userId.HasValue) return;
@@ -92,16 +92,8 @@ public class CartMergeService(
 
         if (anonItems.Count == 0) return;
 
-        var sqlItems = await cartService.GetCartItemsWithProductsAsync(userId.Value) ?? [];
-        if (!forceMerge && sqlItems.Count > 0)
-            return;
-
-        if (forceMerge)
-            foreach (var anonItem in anonItems)
-                await cartService.AddItemAsync(userId.Value, anonItem.ProductId, anonItem.Quantity);
-        else
-            foreach (var anonItem in anonItems)
-                await cartService.AddItemAsync(userId.Value, anonItem.ProductId, anonItem.Quantity);
+        foreach (var anonItem in anonItems)
+            await cartService.AddItemAsync(userId.Value, anonItem.ProductId, anonItem.Quantity);
 
         await anonymousCartService.ClearAsync();
         _lastMigratedUserId = userId;

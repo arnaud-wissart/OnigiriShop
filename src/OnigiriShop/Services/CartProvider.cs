@@ -91,8 +91,7 @@ namespace OnigiriShop.Services
             cartState.SetItems(items);
         }
         public async Task ReplaceSqlWithAnonymousAsync() => await cartMergeService.ReplaceSqlWithAnonymousAsync();
-        public async Task MigrateAnonymousCartToUserAsync(bool forceMerge) => await cartMergeService.MigrateAnonymousCartToUserAsync(forceMerge);
-
+        public async Task MigrateAnonymousCartToUserAsync() => await cartMergeService.MigrateAnonymousCartToUserAsync();
         public async Task<CartMergeStatus> DetectCartConflictAsync() => await cartMergeService.DetectCartConflictAsync();
 
         public enum CartMergeStatus
