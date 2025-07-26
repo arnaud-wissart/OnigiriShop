@@ -14,6 +14,15 @@
         /// </summary>
         public static string GetPath()
         {
+            var envPath = Environment.GetEnvironmentVariable("ONIGIRISHOP_DB_PATH");
+            if (!string.IsNullOrWhiteSpace(envPath))
+            {
+                var dir = Path.GetDirectoryName(envPath);
+                if (!string.IsNullOrEmpty(dir))
+                    Directory.CreateDirectory(dir);
+                return envPath;
+            }
+
             var baseDir = AppDomain.CurrentDomain.BaseDirectory;
             var dbDir = Path.Combine(baseDir, DatabaseFolderName);
             Directory.CreateDirectory(dbDir);

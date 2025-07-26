@@ -64,13 +64,15 @@ builder.Services.AddServerSideBlazor();
 
 var app = builder.Build();
 
-//var restoreCfg = builder.Configuration.GetSection("Backup").Get<BackupConfig>();
-//if (restoreCfg != null && !string.IsNullOrWhiteSpace(restoreCfg.Endpoint))
-//{
-//    using var scope = app.Services.CreateScope();
-//    var svc = scope.ServiceProvider.GetRequiredService<HttpDatabaseBackupService>();
-//    svc.RestoreAsync(dbPath).GetAwaiter().GetResult();
-//}
+var restoreCfg = builder.Configuration.GetSection("Backup").Get<BackupConfig>();
+if (restoreCfg != null && !string.IsNullOrWhiteSpace(restoreCfg.Endpoint))
+{
+    using var scope = app.Services.CreateScope();
+    var svc = scope.ServiceProvider.GetRequiredService<HttpDatabaseBackupService>();
+    var ok = svc.RestoreAsync(restoreCfg.Endpoint, dbPath).GetAwaiter().GetResult();
+    if (!ok)
+        Log.Warning("Aucun backup valide n'a été trouvé à {Endpoint}", restoreCfg.Endpoint);
+}
 
 if (!DatabaseInitializer.IsSchemaUpToDate(dbPath, expectedHash))
     DatabaseInitializer.SetSchemaHash(dbPath, expectedHash);

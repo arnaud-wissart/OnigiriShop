@@ -38,6 +38,30 @@ public class HttpDatabaseBackupServiceTests : IDisposable
         Assert.Equal(1, count);
     }
 
+    [Fact]
+    public async Task RestoreAsync_Restore_Database_From_File()
+    {
+        var backup = _dbPath + "_src";
+        File.Copy(_dbPath, backup);
+        using (var conn = new SqliteConnection($"Data Source={backup}"))
+        {
+            conn.Open();
+            using var cmd2 = conn.CreateCommand();
+            cmd2.CommandText = "INSERT INTO Test(Name) VALUES('B');";
+            cmd2.ExecuteNonQuery();
+        }
+
+        var dest = _dbPath + "_dest";
+        var service = new HttpDatabaseBackupService(new HttpClient());
+        var ok = await service.RestoreAsync(backup, dest);
+        Assert.True(ok);
+        using var destConn = new SqliteConnection($"Data Source={dest};Mode=ReadOnly");
+        destConn.Open();
+        using var cmd = destConn.CreateCommand();
+        cmd.CommandText = "SELECT COUNT(*) FROM Test";
+        var count = Convert.ToInt32(cmd.ExecuteScalar());
+        Assert.Equal(2, count);
+    }
     public void Dispose()
     {
         _conn.Dispose();

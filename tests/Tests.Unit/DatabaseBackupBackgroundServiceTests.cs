@@ -19,10 +19,11 @@ public class DatabaseBackupBackgroundServiceTests : IDisposable
     }
 
     [Fact]
-    public void HandleChangeAsync_Cree_Un_Fichier_Bak()
+    public async Task HandleChangeAsync_Cree_Un_Fichier_Bak()
     {
-        var service = new DatabaseBackupBackgroundService(new NullLogger<DatabaseBackupBackgroundService>());
-        service.HandleChangeAsync(_dbPath);
+        var options = Microsoft.Extensions.Options.Options.Create(new OnigiriShop.Infrastructure.BackupConfig());
+        var service = new DatabaseBackupBackgroundService(new NullLogger<DatabaseBackupBackgroundService>(), new HttpDatabaseBackupService(new HttpClient()), options);
+        await service.HandleChangeAsync(_dbPath);
         var bak = _dbPath + ".bak";
         Assert.True(File.Exists(bak));
         using var destConn = new SqliteConnection($"Data Source={bak};Mode=ReadOnly");

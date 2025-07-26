@@ -1,13 +1,19 @@
 ﻿using Microsoft.Data.Sqlite;
+using Microsoft.Extensions.Options;
 
 namespace OnigiriShop.Infrastructure;
 
 /// <summary>
 /// Service en arrière-plan chargé de créer une copie .bak lorsque la base change.
 /// </summary>
-public class DatabaseBackupBackgroundService(ILogger<DatabaseBackupBackgroundService> logger) : BackgroundService
+public class DatabaseBackupBackgroundService(
+    ILogger<DatabaseBackupBackgroundService> logger,
+    HttpDatabaseBackupService backupService,
+    IOptions<BackupConfig> options) : BackgroundService
 {
     private readonly ILogger<DatabaseBackupBackgroundService> _logger = logger;
+    private readonly HttpDatabaseBackupService _backupService = backupService;
+    private readonly BackupConfig _config = options.Value;
     private FileSystemWatcher? _watcher;
 
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
@@ -18,12 +24,12 @@ public class DatabaseBackupBackgroundService(ILogger<DatabaseBackupBackgroundSer
         {
             NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.Size
         };
-        _watcher.Changed += (_, _) => HandleChangeAsync(dbPath);
+        _watcher.Changed += async (_, _) => await HandleChangeAsync(dbPath);
         _watcher.EnableRaisingEvents = true;
         return Task.CompletedTask;
     }
 
-    public void HandleChangeAsync(string dbPath)
+    public async Task HandleChangeAsync(string dbPath)
     {
         var bakPath = dbPath + ".bak";
         try
@@ -33,6 +39,18 @@ public class DatabaseBackupBackgroundService(ILogger<DatabaseBackupBackgroundSer
             source.Open();
             dest.Open();
             source.BackupDatabase(dest);
+
+            if (!string.IsNullOrWhiteSpace(_config.Endpoint))
+            {
+                try
+                {
+                    await _backupService.BackupAsync(_config.Endpoint);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Erreur lors de la sauvegarde distante");
+                }
+            }
         }
         catch (Exception ex)
         {

@@ -45,4 +45,57 @@ public class HttpDatabaseBackupService(HttpClient client)
                 File.Delete(tempPath);
         }
     }
+
+    /// <summary>
+    /// Restaure la base de données à partir de l'endpoint fourni.
+    /// </summary>
+    /// <param name="endpoint">URL HTTP ou chemin local source.</param>
+    /// <param name="destinationPath">Chemin local de la base à restaurer.</param>
+    /// <returns>True si la restauration a réussi.</returns>
+    public async Task<bool> RestoreAsync(string endpoint, string destinationPath)
+    {
+        var tempPath = Path.GetTempFileName();
+        try
+        {
+            if (endpoint.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            {
+                var response = await _client.GetAsync(endpoint);
+                if (!response.IsSuccessStatusCode)
+                    return false;
+                await using var fs = new FileStream(tempPath, FileMode.Create, FileAccess.Write);
+                await response.Content.CopyToAsync(fs);
+            }
+            else
+            {
+                if (!File.Exists(endpoint))
+                    return false;
+                File.Copy(endpoint, tempPath, true);
+            }
+
+            using (var conn = new SqliteConnection($"Data Source={tempPath};Mode=ReadOnly;Pooling=False"))
+            {
+                conn.Open();
+                using var cmd = conn.CreateCommand();
+                cmd.CommandText = "PRAGMA integrity_check;";
+                var result = (string?)cmd.ExecuteScalar();
+                if (!string.Equals(result, "ok", StringComparison.OrdinalIgnoreCase))
+                    return false;
+            }
+
+            var dir = Path.GetDirectoryName(destinationPath);
+            if (!string.IsNullOrEmpty(dir))
+                Directory.CreateDirectory(dir);
+            File.Copy(tempPath, destinationPath, true);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+        finally
+        {
+            if (File.Exists(tempPath))
+                File.Delete(tempPath);
+        }
+    }
 }
