@@ -78,4 +78,21 @@ public class MaintenanceService(IWebHostEnvironment env, IMigrationRunner runner
         var expectedHash = DatabaseInitializer.ComputeSchemaHash(schemaPath);
         DatabaseInitializer.SetSchemaHash(dbPath, expectedHash);
     }
+
+    public DateTime? GetLastBackupDate()
+    {
+        var path = DatabasePaths.GetBackupPath();
+        return File.Exists(path) ? File.GetLastWriteTime(path) : null;
+    }
+
+    public async Task RestoreLastBackupAsync()
+    {
+        var backupPath = DatabasePaths.GetBackupPath();
+        if (!File.Exists(backupPath))
+            return;
+
+        await using var stream = new FileStream(backupPath, FileMode.Open, FileAccess.Read);
+        await ReplaceDatabaseAsync(stream);
+    }
+
 }

@@ -5,7 +5,6 @@ using Microsoft.Extensions.Options;
 using OnigiriShop.Data;
 using OnigiriShop.Infrastructure;
 using Serilog;
-using FluentMigrator.Runner;
 using OnigiriShop.Services.Extensions;
 using System.Globalization;
 
@@ -26,13 +25,14 @@ builder.Host.UseSerilog();
 builder.Services.Configure<MailjetConfig>(builder.Configuration.GetSection("Mailjet"));
 builder.Services.Configure<MagicLinkConfig>(builder.Configuration.GetSection("MagicLink"));
 builder.Services.Configure<SiteConfig>(builder.Configuration.GetSection("Site"));
+builder.Services.Configure<BackupConfig>(builder.Configuration.GetSection("Backup"));
+
+builder.Services.AddHttpClient<HttpDatabaseBackupService>();
+builder.Services.AddHostedService<DatabaseBackupBackgroundService>();
 
 var dbPath = DatabasePaths.GetPath();
 var schemaPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SQL", "init_db.sql");
 var expectedHash = DatabaseInitializer.ComputeSchemaHash(schemaPath);
-
-if (!DatabaseInitializer.IsSchemaUpToDate(dbPath, expectedHash))
-    DatabaseInitializer.DeleteDatabase(dbPath);
 
 var connectionString = $"Data Source={dbPath}";
 
@@ -64,12 +64,16 @@ builder.Services.AddServerSideBlazor();
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
-{
-    var runner = scope.ServiceProvider.GetRequiredService<IMigrationRunner>();
-    runner.MigrateUp();
+//var restoreCfg = builder.Configuration.GetSection("Backup").Get<BackupConfig>();
+//if (restoreCfg != null && !string.IsNullOrWhiteSpace(restoreCfg.Endpoint))
+//{
+//    using var scope = app.Services.CreateScope();
+//    var svc = scope.ServiceProvider.GetRequiredService<HttpDatabaseBackupService>();
+//    svc.RestoreAsync(dbPath).GetAwaiter().GetResult();
+//}
+
+if (!DatabaseInitializer.IsSchemaUpToDate(dbPath, expectedHash))
     DatabaseInitializer.SetSchemaHash(dbPath, expectedHash);
-}
 
 app.UseStaticFiles();
 app.UseRouting();

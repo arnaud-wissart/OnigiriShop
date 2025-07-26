@@ -15,6 +15,8 @@ public class AdminLogsBase : CustomComponentBase
     protected string LogContent { get; set; } = string.Empty;
     protected IBrowserFile? DbFile { get; set; }
     protected bool IsBusy { get; set; }
+    protected bool ShowRestoreConfirm { get; set; }
+    protected DateTime? LastBackupDate { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -22,6 +24,7 @@ public class AdminLogsBase : CustomComponentBase
         LogFiles = MaintenanceService.GetLogFiles().ToList();
         SelectedLogFile = LogFiles.FirstOrDefault();
         await LoadLogAsync();
+        LastBackupDate = MaintenanceService.GetLastBackupDate();
     }
 
     protected async Task OnLogFileChanged(ChangeEventArgs e)
@@ -54,5 +57,18 @@ public class AdminLogsBase : CustomComponentBase
         var bytes = await MaintenanceService.GetDatabaseBytesAsync();
         var base64 = Convert.ToBase64String(bytes);
         await JS.InvokeVoidAsync("downloadFileFromBytes", "OnigiriShop.db", base64);
+    }
+
+    protected void ConfirmRestoreBackup() => ShowRestoreConfirm = true;
+
+    protected void CancelRestore() => ShowRestoreConfirm = false;
+
+    protected async Task RestoreBackupConfirmed()
+    {
+        ShowRestoreConfirm = false;
+        IsBusy = true;
+        await MaintenanceService.RestoreLastBackupAsync();
+        LastBackupDate = MaintenanceService.GetLastBackupDate();
+        IsBusy = false;
     }
 }
