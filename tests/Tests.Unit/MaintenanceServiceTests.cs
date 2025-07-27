@@ -14,7 +14,7 @@ public class MaintenanceServiceTests
         Directory.CreateDirectory(tempDir);
         var dbPath = Path.Combine(tempDir, "db.db");
         var backupPath = Path.ChangeExtension(dbPath, ".bak");
-        using (var conn = new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={dbPath}"))
+        using (var conn = new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={dbPath};Pooling=False"))
         {
             conn.Open();
             var cmd = conn.CreateCommand();
@@ -22,7 +22,7 @@ public class MaintenanceServiceTests
             cmd.ExecuteNonQuery();
         }
         File.Copy(dbPath, backupPath);
-        using (var conn = new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={backupPath}"))
+        using (var conn = new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={backupPath};Pooling=False"))
         {
             conn.Open();
             var cmd = conn.CreateCommand();
@@ -43,8 +43,7 @@ public class MaintenanceServiceTests
 
             await service.RestoreLastBackupAsync();
 
-            using var connCheck = new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={dbPath}");
-            connCheck.Open();
+            using var connCheck = new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={dbPath};Pooling=False"); connCheck.Open();
             var cmdCheck = connCheck.CreateCommand();
             cmdCheck.CommandText = "SELECT COUNT(*) FROM t";
             var count = (long)cmdCheck.ExecuteScalar()!;

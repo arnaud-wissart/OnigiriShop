@@ -26,7 +26,7 @@ public class DatabaseBackupBackgroundServiceTests : IDisposable
         await service.HandleChangeAsync(_dbPath);
         var bak = _dbPath + ".bak";
         Assert.True(File.Exists(bak));
-        using var destConn = new SqliteConnection($"Data Source={bak};Mode=ReadOnly");
+        using var destConn = new SqliteConnection($"Data Source={bak};Mode=ReadOnly;Pooling=False");
         destConn.Open();
         using var cmd = destConn.CreateCommand();
         cmd.CommandText = "SELECT COUNT(*) FROM T";

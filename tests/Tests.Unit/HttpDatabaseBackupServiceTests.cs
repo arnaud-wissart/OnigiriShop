@@ -30,7 +30,7 @@ public class HttpDatabaseBackupServiceTests : IDisposable
         var dest = _dbPath + ".bak";
         await service.BackupAsync(dest);
         Assert.True(File.Exists(dest));
-        using var destConn = new SqliteConnection($"Data Source={dest};Mode=ReadOnly");
+        using var destConn = new SqliteConnection($"Data Source={dest};Mode=ReadOnly;Pooling=False");
         destConn.Open();
         using var cmd = destConn.CreateCommand();
         cmd.CommandText = "SELECT COUNT(*) FROM Test";
@@ -43,7 +43,7 @@ public class HttpDatabaseBackupServiceTests : IDisposable
     {
         var backup = _dbPath + "_src";
         File.Copy(_dbPath, backup);
-        using (var conn = new SqliteConnection($"Data Source={backup}"))
+        using (var conn = new SqliteConnection($"Data Source={backup};Pooling=False"))
         {
             conn.Open();
             using var cmd2 = conn.CreateCommand();
@@ -55,7 +55,7 @@ public class HttpDatabaseBackupServiceTests : IDisposable
         var service = new HttpDatabaseBackupService(new HttpClient());
         var ok = await service.RestoreAsync(backup, dest);
         Assert.True(ok);
-        using var destConn = new SqliteConnection($"Data Source={dest};Mode=ReadOnly");
+        using var destConn = new SqliteConnection($"Data Source={dest};Mode=ReadOnly;Pooling=False");
         destConn.Open();
         using var cmd = destConn.CreateCommand();
         cmd.CommandText = "SELECT COUNT(*) FROM Test";

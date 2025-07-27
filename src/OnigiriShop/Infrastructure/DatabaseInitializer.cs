@@ -32,7 +32,7 @@ namespace OnigiriShop.Infrastructure
 
             try
             {
-                using var conn = new SqliteConnection($"Data Source={dbPath}");
+                using var conn = new SqliteConnection($"Data Source={dbPath};Pooling=False");
                 conn.Open();
                 using var cmd = conn.CreateCommand();
                 cmd.CommandText = "PRAGMA user_version;";
@@ -48,7 +48,7 @@ namespace OnigiriShop.Infrastructure
 
         public static void SetSchemaHash(string dbPath, uint hash)
         {
-            using var conn = new SqliteConnection($"Data Source={dbPath}");
+            using var conn = new SqliteConnection($"Data Source={dbPath};Pooling=False");
             conn.Open();
             using var cmd = conn.CreateCommand();
             cmd.CommandText = $"PRAGMA user_version = {hash};";

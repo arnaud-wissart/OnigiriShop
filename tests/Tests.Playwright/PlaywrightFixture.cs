@@ -31,7 +31,7 @@ namespace Tests.Playwright
             var dbPath = Path.Combine(Path.GetTempPath(), $"onigiri_{Guid.NewGuid()}.db");
             Environment.SetEnvironmentVariable("ONIGIRISHOP_DB_PATH", dbPath);
             var services = new ServiceCollection()
-                .AddOnigiriMigrations($"Data Source={dbPath}");
+                .AddOnigiriMigrations($"Data Source={dbPath};Pooling=False");
 
             services.AddLogging(lb => lb.AddFluentMigratorConsole());
             using (var sp = services.BuildServiceProvider())
