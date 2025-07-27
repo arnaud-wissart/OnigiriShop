@@ -91,8 +91,11 @@ public class MaintenanceService(IWebHostEnvironment env, IMigrationRunner runner
         if (!File.Exists(backupPath))
             return;
 
-        await using var stream = new FileStream(backupPath, FileMode.Open, FileAccess.Read);
+        await using var stream = new FileStream(
+                    backupPath,
+                    FileMode.Open,
+                    FileAccess.Read,
+                    FileShare.ReadWrite | FileShare.Delete);
         await ReplaceDatabaseAsync(stream);
     }
-
 }

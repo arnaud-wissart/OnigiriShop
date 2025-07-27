@@ -1,6 +1,7 @@
 ﻿using FluentMigrator.Runner;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Playwright;
+using OnigiriShop.Infrastructure;
 using System.Diagnostics;
 
 namespace Tests.Playwright
@@ -30,11 +31,9 @@ namespace Tests.Playwright
             var dbPath = Path.Combine(Path.GetTempPath(), $"onigiri_{Guid.NewGuid()}.db");
             Environment.SetEnvironmentVariable("ONIGIRISHOP_DB_PATH", dbPath);
             var services = new ServiceCollection()
-                .AddFluentMigratorCore()
-                .ConfigureRunner(r => r.AddSQLite()
-                    .WithGlobalConnectionString($"Data Source={dbPath}")
-                    .ScanIn(typeof(Program).Assembly).For.Migrations())
-                .AddLogging(lb => lb.AddFluentMigratorConsole());
+                .AddOnigiriMigrations($"Data Source={dbPath}");
+
+            services.AddLogging(lb => lb.AddFluentMigratorConsole());
             using (var sp = services.BuildServiceProvider())
             {
                 var runner = sp.GetRequiredService<IMigrationRunner>();

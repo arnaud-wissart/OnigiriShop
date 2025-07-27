@@ -9,7 +9,7 @@ namespace OnigiriShop.Infrastructure
             services.AddFluentMigratorCore()
                 .ConfigureRunner(rb => rb.AddSQLite()
                     .WithGlobalConnectionString(connectionString)
-                    .ScanIn(typeof(Program).Assembly).For.Migrations())
+                    .ScanIn(typeof(Data.Migrations.InitialMigration).Assembly).For.Migrations())
                 .AddLogging(lb => lb.AddFluentMigratorConsole());
             return services;
         }
