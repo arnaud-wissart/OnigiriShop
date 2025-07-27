@@ -1,7 +1,6 @@
 ﻿@using OnigiriShop.Pages
 @inherits MainHeaderBase
 @using OnigiriShop.Services
-@inject SiteNameService SiteNameService
 
 <header class="main-title main-title-flex">
     <div class="main-title-left"></div>
@@ -82,6 +81,13 @@
                             title="Gérer les livraisons"
                             @onclick="GotoDeliveries">
                         <i class="bi bi-truck"></i>
+                    </button>
+                    <button class="header-btn header-btn-success"
+                            data-bs-toggle="tooltip"
+                            data-bs-placement="bottom"
+                            title="Statistiques"
+                            @onclick="GotoStats">
+                        <i class="bi bi-bar-chart"></i>
                     </button>
                     <button class="header-btn header-btn-success"
                             data-bs-toggle="tooltip"

@@ -57,6 +57,7 @@ namespace OnigiriShop.Shared
         protected void GotoUsers() => Nav.NavigateTo("/admin/users");
         protected void GotoCatalog() => Nav.NavigateTo("/admin/products");
         protected void GotoDeliveries() => Nav.NavigateTo("/admin/deliveries");
+        protected void GotoStats() => Nav.NavigateTo("/admin/stats");
         protected void GotoShop() => Nav.NavigateTo("/");
         protected void GotoEmails() => Nav.NavigateTo("/admin/emails");
         protected void GotoLogs() => Nav.NavigateTo("/admin/logs");

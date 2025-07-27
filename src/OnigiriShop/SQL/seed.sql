@@ -22,6 +22,14 @@ INSERT INTO Delivery
 VALUES
 ('République', '2025-07-15 13:00:00', 1, 2, 1, NULL, 'Chaque mardi 13h', 0, CURRENT_TIMESTAMP),
 ('République', '2025-07-17 13:00:00', 1, 2, 1, NULL, 'Chaque jeudi 13h', 0, CURRENT_TIMESTAMP);
+-- Livraisons supplémentaires pour l'historique
+INSERT INTO Delivery
+(Place, DeliveryAt, IsRecurring, RecurrenceFrequency, RecurrenceInterval, RecurrenceRule, Comment, IsDeleted, CreatedAt)
+VALUES
+('République', '2025-05-10 13:00:00', 0, NULL, NULL, NULL, '', 0, CURRENT_TIMESTAMP),
+('Créteil Echat', '2025-05-20 14:00:00', 0, NULL, NULL, NULL, '', 0, CURRENT_TIMESTAMP),
+('République', '2025-06-10 13:00:00', 0, NULL, NULL, NULL, '', 0, CURRENT_TIMESTAMP),
+('Créteil Echat', '2025-06-20 14:00:00', 0, NULL, NULL, NULL, '', 0, CURRENT_TIMESTAMP);
 -- Ici : IsRecurring=1, RecurrenceFrequency=2 (semaine), RecurrenceInterval=1
 
 -- Utilisateur admin (Arnaud Wissart)
@@ -41,10 +49,114 @@ VALUES
  'CS6YXiyM+5VPk4xTnt3GHclQxdkUcMveS6dDeJN3lJIuFQHAS2EEBrEu4kj25mozrOWoLkvcjkJezZUehSmeeQ==',
  '4IoHzu9DqwZjVKYT22TOd9XKGRAd1rYdJkuLPv3IMiAvqdjByM2aTPtKQvTFwGJNHvk4y9UPnt1z1IrQAlQcrw==',
  'User');
+ INSERT INTO User (Email, Name, Phone, CreatedAt, IsActive, PasswordHash, PasswordSalt, Role) VALUES
+('mario@example.com', 'Mario Rossi', '0600000001', CURRENT_TIMESTAMP, 1,
+ 'CS6YXiyM+5VPk4xTnt3GHclQxdkUcMveS6dDeJN3lJIuFQHAS2EEBrEu4kj25mozrOWoLkvcjkJezZUehSmeeQ==',
+ '4IoHzu9DqwZjVKYT22TOd9XKGRAd1rYdJkuLPv3IMiAvqdjByM2aTPtKQvTFwGJNHvk4y9UPnt1z1IrQAlQcrw==',
+ 'User'),
+('linda@example.com', 'Linda Martin', '0600000002', CURRENT_TIMESTAMP, 1,
+ 'CS6YXiyM+5VPk4xTnt3GHclQxdkUcMveS6dDeJN3lJIuFQHAS2EEBrEu4kj25mozrOWoLkvcjkJezZUehSmeeQ==',
+ '4IoHzu9DqwZjVKYT22TOd9XKGRAd1rYdJkuLPv3IMiAvqdjByM2aTPtKQvTFwGJNHvk4y9UPnt1z1IrQAlQcrw==',
+ 'User'),
+('alex@example.com', 'Alex Dubois', '0600000003', CURRENT_TIMESTAMP, 1,
+ 'CS6YXiyM+5VPk4xTnt3GHclQxdkUcMveS6dDeJN3lJIuFQHAS2EEBrEu4kj25mozrOWoLkvcjkJezZUehSmeeQ==',
+ '4IoHzu9DqwZjVKYT22TOd9XKGRAd1rYdJkuLPv3IMiAvqdjByM2aTPtKQvTFwGJNHvk4y9UPnt1z1IrQAlQcrw==',
+ 'User');
 
  INSERT INTO 'Order' (UserId, DeliveryId, OrderedAt, Status, TotalAmount, Comment) VALUES
 (1, 1, '2025-07-12 12:34:56', 'En attente', 15.80, ''),
 (1, 2, '2025-07-13 10:01:24', 'Livrée', 8.70, '');
+-- Historique de commandes
+INSERT INTO 'Order' (UserId, DeliveryId, OrderedAt, Status, TotalAmount, Comment) VALUES (2, 5, '2025-05-01 10:00:00', 'Livrée', 3.2, '');
+INSERT INTO OrderItem (OrderId, ProductId, Quantity, UnitPrice) VALUES (last_insert_rowid(), 2, 1, 3.2);
+INSERT INTO 'Order' (UserId, DeliveryId, OrderedAt, Status, TotalAmount, Comment) VALUES (3, 5, '2025-05-02 10:00:00', 'Livrée', 3.5, '');
+INSERT INTO OrderItem (OrderId, ProductId, Quantity, UnitPrice) VALUES (last_insert_rowid(), 1, 1, 3.5);
+INSERT INTO 'Order' (UserId, DeliveryId, OrderedAt, Status, TotalAmount, Comment) VALUES (4, 5, '2025-05-03 10:00:00', 'Livrée', 3.5, '');
+INSERT INTO OrderItem (OrderId, ProductId, Quantity, UnitPrice) VALUES (last_insert_rowid(), 1, 1, 3.5);
+INSERT INTO 'Order' (UserId, DeliveryId, OrderedAt, Status, TotalAmount, Comment) VALUES (5, 5, '2025-05-04 10:00:00', 'Livrée', 3.2, '');
+INSERT INTO OrderItem (OrderId, ProductId, Quantity, UnitPrice) VALUES (last_insert_rowid(), 2, 1, 3.2);
+INSERT INTO 'Order' (UserId, DeliveryId, OrderedAt, Status, TotalAmount, Comment) VALUES (2, 5, '2025-05-05 10:00:00', 'Livrée', 3.5, '');
+INSERT INTO OrderItem (OrderId, ProductId, Quantity, UnitPrice) VALUES (last_insert_rowid(), 1, 1, 3.5);
+INSERT INTO 'Order' (UserId, DeliveryId, OrderedAt, Status, TotalAmount, Comment) VALUES (3, 5, '2025-05-06 10:00:00', 'Livrée', 3.5, '');
+INSERT INTO OrderItem (OrderId, ProductId, Quantity, UnitPrice) VALUES (last_insert_rowid(), 1, 1, 3.5);
+INSERT INTO 'Order' (UserId, DeliveryId, OrderedAt, Status, TotalAmount, Comment) VALUES (4, 5, '2025-05-07 10:00:00', 'Livrée', 3.2, '');
+INSERT INTO OrderItem (OrderId, ProductId, Quantity, UnitPrice) VALUES (last_insert_rowid(), 2, 1, 3.2);
+INSERT INTO 'Order' (UserId, DeliveryId, OrderedAt, Status, TotalAmount, Comment) VALUES (5, 5, '2025-05-08 10:00:00', 'Livrée', 3.5, '');
+INSERT INTO OrderItem (OrderId, ProductId, Quantity, UnitPrice) VALUES (last_insert_rowid(), 1, 1, 3.5);
+INSERT INTO 'Order' (UserId, DeliveryId, OrderedAt, Status, TotalAmount, Comment) VALUES (2, 6, '2025-05-11 10:00:00', 'Livrée', 3.0, '');
+INSERT INTO OrderItem (OrderId, ProductId, Quantity, UnitPrice) VALUES (last_insert_rowid(), 3, 1, 3.0);
+INSERT INTO 'Order' (UserId, DeliveryId, OrderedAt, Status, TotalAmount, Comment) VALUES (3, 6, '2025-05-12 10:00:00', 'Livrée', 3.5, '');
+INSERT INTO OrderItem (OrderId, ProductId, Quantity, UnitPrice) VALUES (last_insert_rowid(), 1, 1, 3.5);
+INSERT INTO 'Order' (UserId, DeliveryId, OrderedAt, Status, TotalAmount, Comment) VALUES (4, 6, '2025-05-13 10:00:00', 'Livrée', 3.5, '');
+INSERT INTO OrderItem (OrderId, ProductId, Quantity, UnitPrice) VALUES (last_insert_rowid(), 1, 1, 3.5);
+INSERT INTO 'Order' (UserId, DeliveryId, OrderedAt, Status, TotalAmount, Comment) VALUES (5, 6, '2025-05-14 10:00:00', 'Livrée', 3.0, '');
+INSERT INTO OrderItem (OrderId, ProductId, Quantity, UnitPrice) VALUES (last_insert_rowid(), 3, 1, 3.0);
+INSERT INTO 'Order' (UserId, DeliveryId, OrderedAt, Status, TotalAmount, Comment) VALUES (2, 6, '2025-05-15 10:00:00', 'Livrée', 3.5, '');
+INSERT INTO OrderItem (OrderId, ProductId, Quantity, UnitPrice) VALUES (last_insert_rowid(), 1, 1, 3.5);
+INSERT INTO 'Order' (UserId, DeliveryId, OrderedAt, Status, TotalAmount, Comment) VALUES (3, 6, '2025-05-16 10:00:00', 'Livrée', 3.5, '');
+INSERT INTO OrderItem (OrderId, ProductId, Quantity, UnitPrice) VALUES (last_insert_rowid(), 1, 1, 3.5);
+INSERT INTO 'Order' (UserId, DeliveryId, OrderedAt, Status, TotalAmount, Comment) VALUES (4, 6, '2025-05-17 10:00:00', 'Livrée', 3.0, '');
+INSERT INTO OrderItem (OrderId, ProductId, Quantity, UnitPrice) VALUES (last_insert_rowid(), 3, 1, 3.0);
+INSERT INTO 'Order' (UserId, DeliveryId, OrderedAt, Status, TotalAmount, Comment) VALUES (2, 7, '2025-06-01 10:00:00', 'Livrée', 3.2, '');
+INSERT INTO OrderItem (OrderId, ProductId, Quantity, UnitPrice) VALUES (last_insert_rowid(), 2, 1, 3.2);
+INSERT INTO 'Order' (UserId, DeliveryId, OrderedAt, Status, TotalAmount, Comment) VALUES (3, 7, '2025-06-02 10:00:00', 'Livrée', 3.5, '');
+INSERT INTO OrderItem (OrderId, ProductId, Quantity, UnitPrice) VALUES (last_insert_rowid(), 1, 1, 3.5);
+INSERT INTO 'Order' (UserId, DeliveryId, OrderedAt, Status, TotalAmount, Comment) VALUES (4, 7, '2025-06-03 10:00:00', 'Livrée', 3.5, '');
+INSERT INTO OrderItem (OrderId, ProductId, Quantity, UnitPrice) VALUES (last_insert_rowid(), 1, 1, 3.5);
+INSERT INTO 'Order' (UserId, DeliveryId, OrderedAt, Status, TotalAmount, Comment) VALUES (5, 7, '2025-06-04 10:00:00', 'Livrée', 3.2, '');
+INSERT INTO OrderItem (OrderId, ProductId, Quantity, UnitPrice) VALUES (last_insert_rowid(), 2, 1, 3.2);
+INSERT INTO 'Order' (UserId, DeliveryId, OrderedAt, Status, TotalAmount, Comment) VALUES (2, 7, '2025-06-05 10:00:00', 'Livrée', 3.5, '');
+INSERT INTO OrderItem (OrderId, ProductId, Quantity, UnitPrice) VALUES (last_insert_rowid(), 1, 1, 3.5);
+INSERT INTO 'Order' (UserId, DeliveryId, OrderedAt, Status, TotalAmount, Comment) VALUES (3, 7, '2025-06-06 10:00:00', 'Livrée', 3.5, '');
+INSERT INTO OrderItem (OrderId, ProductId, Quantity, UnitPrice) VALUES (last_insert_rowid(), 1, 1, 3.5);
+INSERT INTO 'Order' (UserId, DeliveryId, OrderedAt, Status, TotalAmount, Comment) VALUES (4, 7, '2025-06-07 10:00:00', 'Livrée', 3.2, '');
+INSERT INTO OrderItem (OrderId, ProductId, Quantity, UnitPrice) VALUES (last_insert_rowid(), 2, 1, 3.2);
+INSERT INTO 'Order' (UserId, DeliveryId, OrderedAt, Status, TotalAmount, Comment) VALUES (5, 7, '2025-06-08 10:00:00', 'Livrée', 3.5, '');
+INSERT INTO OrderItem (OrderId, ProductId, Quantity, UnitPrice) VALUES (last_insert_rowid(), 1, 1, 3.5);
+INSERT INTO 'Order' (UserId, DeliveryId, OrderedAt, Status, TotalAmount, Comment) VALUES (2, 8, '2025-06-11 10:00:00', 'Livrée', 3.0, '');
+INSERT INTO OrderItem (OrderId, ProductId, Quantity, UnitPrice) VALUES (last_insert_rowid(), 3, 1, 3.0);
+INSERT INTO 'Order' (UserId, DeliveryId, OrderedAt, Status, TotalAmount, Comment) VALUES (3, 8, '2025-06-12 10:00:00', 'Livrée', 3.5, '');
+INSERT INTO OrderItem (OrderId, ProductId, Quantity, UnitPrice) VALUES (last_insert_rowid(), 1, 1, 3.5);
+INSERT INTO 'Order' (UserId, DeliveryId, OrderedAt, Status, TotalAmount, Comment) VALUES (4, 8, '2025-06-13 10:00:00', 'Livrée', 3.5, '');
+INSERT INTO OrderItem (OrderId, ProductId, Quantity, UnitPrice) VALUES (last_insert_rowid(), 1, 1, 3.5);
+INSERT INTO 'Order' (UserId, DeliveryId, OrderedAt, Status, TotalAmount, Comment) VALUES (5, 8, '2025-06-14 10:00:00', 'Livrée', 3.0, '');
+INSERT INTO OrderItem (OrderId, ProductId, Quantity, UnitPrice) VALUES (last_insert_rowid(), 3, 1, 3.0);
+INSERT INTO 'Order' (UserId, DeliveryId, OrderedAt, Status, TotalAmount, Comment) VALUES (2, 8, '2025-06-15 10:00:00', 'Livrée', 3.5, '');
+INSERT INTO OrderItem (OrderId, ProductId, Quantity, UnitPrice) VALUES (last_insert_rowid(), 1, 1, 3.5);
+INSERT INTO 'Order' (UserId, DeliveryId, OrderedAt, Status, TotalAmount, Comment) VALUES (3, 8, '2025-06-16 10:00:00', 'Livrée', 3.5, '');
+INSERT INTO OrderItem (OrderId, ProductId, Quantity, UnitPrice) VALUES (last_insert_rowid(), 1, 1, 3.5);
+INSERT INTO 'Order' (UserId, DeliveryId, OrderedAt, Status, TotalAmount, Comment) VALUES (4, 8, '2025-06-17 10:00:00', 'Livrée', 3.0, '');
+INSERT INTO OrderItem (OrderId, ProductId, Quantity, UnitPrice) VALUES (last_insert_rowid(), 3, 1, 3.0);
+INSERT INTO 'Order' (UserId, DeliveryId, OrderedAt, Status, TotalAmount, Comment) VALUES (2, 3, '2025-07-01 10:00:00', 'Livrée', 3.2, '');
+INSERT INTO OrderItem (OrderId, ProductId, Quantity, UnitPrice) VALUES (last_insert_rowid(), 2, 1, 3.2);
+INSERT INTO 'Order' (UserId, DeliveryId, OrderedAt, Status, TotalAmount, Comment) VALUES (3, 3, '2025-07-02 10:00:00', 'Livrée', 3.5, '');
+INSERT INTO OrderItem (OrderId, ProductId, Quantity, UnitPrice) VALUES (last_insert_rowid(), 1, 1, 3.5);
+INSERT INTO 'Order' (UserId, DeliveryId, OrderedAt, Status, TotalAmount, Comment) VALUES (4, 3, '2025-07-03 10:00:00', 'Livrée', 3.5, '');
+INSERT INTO OrderItem (OrderId, ProductId, Quantity, UnitPrice) VALUES (last_insert_rowid(), 1, 1, 3.5);
+INSERT INTO 'Order' (UserId, DeliveryId, OrderedAt, Status, TotalAmount, Comment) VALUES (5, 3, '2025-07-04 10:00:00', 'Livrée', 3.2, '');
+INSERT INTO OrderItem (OrderId, ProductId, Quantity, UnitPrice) VALUES (last_insert_rowid(), 2, 1, 3.2);
+INSERT INTO 'Order' (UserId, DeliveryId, OrderedAt, Status, TotalAmount, Comment) VALUES (2, 3, '2025-07-05 10:00:00', 'Livrée', 3.5, '');
+INSERT INTO OrderItem (OrderId, ProductId, Quantity, UnitPrice) VALUES (last_insert_rowid(), 1, 1, 3.5);
+INSERT INTO 'Order' (UserId, DeliveryId, OrderedAt, Status, TotalAmount, Comment) VALUES (3, 3, '2025-07-06 10:00:00', 'Livrée', 3.5, '');
+INSERT INTO OrderItem (OrderId, ProductId, Quantity, UnitPrice) VALUES (last_insert_rowid(), 1, 1, 3.5);
+INSERT INTO 'Order' (UserId, DeliveryId, OrderedAt, Status, TotalAmount, Comment) VALUES (4, 3, '2025-07-07 10:00:00', 'Livrée', 3.2, '');
+INSERT INTO OrderItem (OrderId, ProductId, Quantity, UnitPrice) VALUES (last_insert_rowid(), 2, 1, 3.2);
+INSERT INTO 'Order' (UserId, DeliveryId, OrderedAt, Status, TotalAmount, Comment) VALUES (5, 3, '2025-07-08 10:00:00', 'Livrée', 3.5, '');
+INSERT INTO OrderItem (OrderId, ProductId, Quantity, UnitPrice) VALUES (last_insert_rowid(), 1, 1, 3.5);
+INSERT INTO 'Order' (UserId, DeliveryId, OrderedAt, Status, TotalAmount, Comment) VALUES (2, 4, '2025-07-11 10:00:00', 'Livrée', 3.0, '');
+INSERT INTO OrderItem (OrderId, ProductId, Quantity, UnitPrice) VALUES (last_insert_rowid(), 3, 1, 3.0);
+INSERT INTO 'Order' (UserId, DeliveryId, OrderedAt, Status, TotalAmount, Comment) VALUES (3, 4, '2025-07-12 10:00:00', 'Livrée', 3.5, '');
+INSERT INTO OrderItem (OrderId, ProductId, Quantity, UnitPrice) VALUES (last_insert_rowid(), 1, 1, 3.5);
+INSERT INTO 'Order' (UserId, DeliveryId, OrderedAt, Status, TotalAmount, Comment) VALUES (4, 4, '2025-07-13 10:00:00', 'Livrée', 3.5, '');
+INSERT INTO OrderItem (OrderId, ProductId, Quantity, UnitPrice) VALUES (last_insert_rowid(), 1, 1, 3.5);
+INSERT INTO 'Order' (UserId, DeliveryId, OrderedAt, Status, TotalAmount, Comment) VALUES (5, 4, '2025-07-14 10:00:00', 'Livrée', 3.0, '');
+INSERT INTO OrderItem (OrderId, ProductId, Quantity, UnitPrice) VALUES (last_insert_rowid(), 3, 1, 3.0);
+INSERT INTO 'Order' (UserId, DeliveryId, OrderedAt, Status, TotalAmount, Comment) VALUES (2, 4, '2025-07-15 10:00:00', 'Livrée', 3.5, '');
+INSERT INTO OrderItem (OrderId, ProductId, Quantity, UnitPrice) VALUES (last_insert_rowid(), 1, 1, 3.5);
+INSERT INTO 'Order' (UserId, DeliveryId, OrderedAt, Status, TotalAmount, Comment) VALUES (3, 4, '2025-07-16 10:00:00', 'Livrée', 3.5, '');
+INSERT INTO OrderItem (OrderId, ProductId, Quantity, UnitPrice) VALUES (last_insert_rowid(), 1, 1, 3.5);
+INSERT INTO 'Order' (UserId, DeliveryId, OrderedAt, Status, TotalAmount, Comment) VALUES (4, 4, '2025-07-17 10:00:00', 'Livrée', 3.0, '');
+INSERT INTO OrderItem (OrderId, ProductId, Quantity, UnitPrice) VALUES (last_insert_rowid(), 3, 1, 3.0);
 
 -- Expéditeurs
 INSERT INTO EmailVariation (Type, Name, Value, Extra) VALUES ('Expeditor', 'Arnaud', 'onigirishop94@gmail.com', 'Arnaud de OnigiriShop');
