@@ -157,3 +157,9 @@ CREATE TABLE IF NOT EXISTS EmailTemplate (
     HtmlContent TEXT NOT NULL,
     TextContent TEXT
 );
+
+-- Table de configuration (clef/valeur)
+CREATE TABLE IF NOT EXISTS Setting (
+    Key TEXT PRIMARY KEY,
+    Value TEXT NOT NULL
+);

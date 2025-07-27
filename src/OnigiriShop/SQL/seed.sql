@@ -90,3 +90,7 @@ INSERT INTO EmailTemplate (Name, HtmlContent, TextContent) VALUES
  '{{Intro}}\n{{Link}}\nCe lien est valable 1 heure.\n\n{{Signature}}'),
 ('OrderConfirmation', '<p>Bonjour {{Name}},</p><p>Nous avons bien reçu votre commande n°{{OrderId}} du {{OrderDate}}.</p><ul style="margin-bottom:1em;">{{OrderLines}}</ul><p><b>Total : {{Total}} €</b></p><p>Livraison prévue : {{DeliveryDate}} - {{DeliveryPlace}}</p><hr><p style="color:#888;font-size:0.9em;">{{Signature}}</p>',
  'Bonjour {{Name}},\nCommande n°{{OrderId}} du {{OrderDate}}\nTotal : {{Total}} €\nLivraison prévue : {{DeliveryDate}} - {{DeliveryPlace}}\n\n{{Signature}}');
+
+ 
+-- Paramètres par défaut
+INSERT INTO Setting (Key, Value) VALUES ('SiteName', 'Onigiris & sponge Cakes');

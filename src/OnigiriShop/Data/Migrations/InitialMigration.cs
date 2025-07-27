@@ -31,7 +31,8 @@ DROP TABLE IF EXISTS ProductCatalog;
 DROP TABLE IF EXISTS Catalog;
 DROP TABLE IF EXISTS Product;
 DROP TABLE IF EXISTS MagicLinkToken;
-DROP TABLE IF EXISTS User;");
+DROP TABLE IF EXISTS User;
+DROP TABLE IF EXISTS Setting;)");
         }
     }
 }

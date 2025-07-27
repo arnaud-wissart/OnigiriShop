@@ -4,6 +4,7 @@ public static class BusinessServiceCollectionExtensions
 {
     public static IServiceCollection AddBusinessServices(this IServiceCollection services)
     {
+        services.AddScoped<SiteNameService>();
         services.AddSingleton<ToastService>();
         services.AddSingleton<ErrorModalService>();
         services.AddScoped<AuthService>();
