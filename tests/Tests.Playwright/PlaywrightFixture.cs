@@ -116,11 +116,6 @@ namespace Tests.Playwright
                 await Browser.CloseAsync();
             Playwright?.Dispose();
 
-            var dbPath = Environment.GetEnvironmentVariable("ONIGIRISHOP_DB_PATH");
-            if (!string.IsNullOrWhiteSpace(dbPath) && File.Exists(dbPath))
-                File.Delete(dbPath);
-            Environment.SetEnvironmentVariable("ONIGIRISHOP_DB_PATH", null);
-
             if (_appProcess != null)
             {
                 if (!_appProcess.HasExited)
@@ -130,6 +125,11 @@ namespace Tests.Playwright
                 }
                 _appProcess.Dispose();
             }
+
+            var dbPath = Environment.GetEnvironmentVariable("ONIGIRISHOP_DB_PATH");
+            if (!string.IsNullOrWhiteSpace(dbPath) && File.Exists(dbPath))
+                File.Delete(dbPath);
+            Environment.SetEnvironmentVariable("ONIGIRISHOP_DB_PATH", null);
         }
     }
 

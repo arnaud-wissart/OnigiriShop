@@ -11,7 +11,7 @@ public class DatabaseBackupBackgroundServiceTests : IDisposable
 
     public DatabaseBackupBackgroundServiceTests()
     {
-        _conn = new SqliteConnection($"Data Source={_dbPath}");
+        _conn = new SqliteConnection($"Data Source={_dbPath};Pooling=False");
         _conn.Open();
         using var cmd = _conn.CreateCommand();
         cmd.CommandText = "CREATE TABLE T (Id INTEGER PRIMARY KEY, Name TEXT); INSERT INTO T(Name) VALUES('x');";
