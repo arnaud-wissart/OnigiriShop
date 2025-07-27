@@ -1,9 +1,12 @@
-﻿namespace OnigiriShop.Services.Extensions;
+﻿using OnigiriShop.Infrastructure;
+
+namespace OnigiriShop.Services.Extensions;
 
 public static class BusinessServiceCollectionExtensions
 {
     public static IServiceCollection AddBusinessServices(this IServiceCollection services)
     {
+        services.AddSingleton<RemoteDriveService>();
         services.AddScoped<SiteNameService>();
         services.AddScoped<StatsService>();
         services.AddSingleton<ToastService>();
@@ -26,6 +29,7 @@ public static class BusinessServiceCollectionExtensions
         services.AddScoped<OrderExportService>();
         services.AddScoped<DeliveryService>();
         services.AddScoped<MaintenanceService>();
+        services.AddSingleton<IGoogleDriveService, GoogleDriveService>();
         return services;
     }
 }

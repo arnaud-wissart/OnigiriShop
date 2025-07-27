@@ -61,6 +61,8 @@ namespace OnigiriShop.Shared
         protected void GotoShop() => Nav.NavigateTo("/");
         protected void GotoEmails() => Nav.NavigateTo("/admin/emails");
         protected void GotoLogs() => Nav.NavigateTo("/admin/logs");
+        protected void GotoDrive() => Nav.NavigateTo("/admin/drive");
+
         protected void StartEdit()
         {
             EditedSiteName = SiteName;

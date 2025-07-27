@@ -27,11 +27,13 @@ builder.Services.Configure<MailjetConfig>(builder.Configuration.GetSection("Mail
 builder.Services.Configure<MagicLinkConfig>(builder.Configuration.GetSection("MagicLink"));
 builder.Services.Configure<SiteConfig>(builder.Configuration.GetSection("Site"));
 builder.Services.Configure<BackupConfig>(builder.Configuration.GetSection("Backup"));
+builder.Services.Configure<DriveConfig>(builder.Configuration.GetSection("GoogleDrive"));
 
 builder.Services.AddHttpClient<HttpDatabaseBackupService>();
 builder.Services.AddHostedService<DatabaseBackupBackgroundService>();
 
 var dbPath = DatabasePaths.GetPath();
+Log.Information("Database path resolved to {DbPath}", dbPath);
 var schemaPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SQL", "init_db.sql");
 var expectedHash = DatabaseInitializer.ComputeSchemaHash(schemaPath);
 

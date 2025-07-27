@@ -1,0 +1,26 @@
+﻿@page "/admin/drive"
+@layout AdminLayout
+@inherits AdminDriveBase
+@attribute [Authorize]
+
+<div class="container-fluid pt-3">
+    <div class="row">
+        <div class="col-12 col-lg-8">
+            <h4 class="fw-bold mb-3">Sauvegarde Google Drive</h4>
+            <div class="mb-3">
+                <label class="form-label">Identifiant du dossier</label>
+                <input class="form-control" @bind="DriveFolderId" />
+            </div>
+            <button class="btn btn-primary me-2" @onclick="SaveAsync">
+                <i class="bi bi-save me-1"></i>Enregistrer
+            </button>
+            <button class="btn btn-outline-secondary" @onclick="BackupNowAsync">
+                <i class="bi bi-cloud-upload me-1"></i>Sauvegarder maintenant
+            </button>
+            @if (!string.IsNullOrEmpty(Message))
+            {
+                <span class="ms-2">@Message</span>
+            }
+        </div>
+    </div>
+</div>

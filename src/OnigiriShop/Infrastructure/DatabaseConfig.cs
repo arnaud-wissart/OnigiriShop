@@ -8,7 +8,11 @@ namespace OnigiriShop.Infrastructure
         public static void AddOnigiriDatabase(this IServiceCollection services, string dbPath)
         {
             var connectionString = $"Data Source={dbPath}";
-            services.AddSingleton<ISqliteConnectionFactory>(new SqliteConnectionFactory(connectionString));
+            services.AddSingleton<ISqliteConnectionFactory>(sp =>
+            {
+                var logger = sp.GetRequiredService<ILogger<SqliteConnectionFactory>>();
+                return new SqliteConnectionFactory(connectionString, logger);
+            });
         }
     }
 }

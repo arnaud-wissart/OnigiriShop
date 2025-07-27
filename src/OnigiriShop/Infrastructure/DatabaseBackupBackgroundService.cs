@@ -1,5 +1,6 @@
 ﻿using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Options;
+using OnigiriShop.Services;
 
 namespace OnigiriShop.Infrastructure;
 
@@ -9,14 +10,14 @@ namespace OnigiriShop.Infrastructure;
 public class DatabaseBackupBackgroundService(
     ILogger<DatabaseBackupBackgroundService> logger,
     HttpDatabaseBackupService backupService,
+    RemoteDriveService driveService,
+    IGoogleDriveService googleDrive,
     IOptions<BackupConfig> options) : BackgroundService
 {
-    private readonly ILogger<DatabaseBackupBackgroundService> _logger = logger;
-    private readonly HttpDatabaseBackupService _backupService = backupService;
     private readonly BackupConfig _config = options.Value;
     private FileSystemWatcher? _watcher;
 
-    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         var dbPath = DatabasePaths.GetPath();
         var dir = Path.GetDirectoryName(dbPath) ?? ".";
@@ -26,10 +27,51 @@ public class DatabaseBackupBackgroundService(
         };
         _watcher.Changed += async (_, _) => await HandleChangeAsync(dbPath);
         _watcher.EnableRaisingEvents = true;
-        return Task.CompletedTask;
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            var now = DateTime.Now;
+            var next = now.Date.AddDays(1).AddTicks(1);
+            var delay = next - now;
+            try
+            {
+                await Task.Delay(delay, stoppingToken);
+            }
+            catch (TaskCanceledException)
+            {
+                break;
+            }
+
+            if (stoppingToken.IsCancellationRequested)
+                break;
+
+            if (!string.IsNullOrWhiteSpace(_config.Endpoint))
+            {
+                try
+                {
+                    await backupService.BackupAsync(_config.Endpoint);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Erreur lors de la sauvegarde distante programmée");
+                }
+            }
+
+            var folderId = await driveService.GetFolderIdAsync();
+            if (!string.IsNullOrWhiteSpace(folderId))
+            {
+                try
+                {
+                    await googleDrive.UploadBackupAsync(folderId, stoppingToken);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Erreur lors de l'envoi sur Google Drive");
+                }
+            }
+        }
     }
 
-    public async Task HandleChangeAsync(string dbPath)
+    public Task HandleChangeAsync(string dbPath)
     {
         var bakPath = dbPath + ".bak";
         try
@@ -39,23 +81,12 @@ public class DatabaseBackupBackgroundService(
             source.Open();
             dest.Open();
             source.BackupDatabase(dest);
-
-            if (!string.IsNullOrWhiteSpace(_config.Endpoint))
-            {
-                try
-                {
-                    await _backupService.BackupAsync(_config.Endpoint);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Erreur lors de la sauvegarde distante");
-                }
-            }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erreur lors de la sauvegarde de la base de données");
+            logger.LogError(ex, "Erreur lors de la sauvegarde de la base de données");
         }
+        return Task.CompletedTask;
     }
 
     public override void Dispose()

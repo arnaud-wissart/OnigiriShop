@@ -1,6 +1,7 @@
 ﻿using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Logging.Abstractions;
 using OnigiriShop.Infrastructure;
+using OnigiriShop.Services;
 
 namespace Tests.Unit;
 
@@ -22,8 +23,14 @@ public class DatabaseBackupBackgroundServiceTests : IDisposable
     public async Task HandleChangeAsync_Cree_Un_Fichier_Bak()
     {
         var options = Microsoft.Extensions.Options.Options.Create(new OnigiriShop.Infrastructure.BackupConfig());
-        var service = new DatabaseBackupBackgroundService(new NullLogger<DatabaseBackupBackgroundService>(), new HttpDatabaseBackupService(new HttpClient()), options);
-        await service.HandleChangeAsync(_dbPath);
+        var driveSvc = new RemoteDriveService(new FakeSqliteConnectionFactory(_conn));
+        var googleSvc = new FakeGoogleDriveService();
+        var service = new DatabaseBackupBackgroundService(
+            new NullLogger<DatabaseBackupBackgroundService>(),
+            new HttpDatabaseBackupService(new HttpClient()),
+            driveSvc,
+            googleSvc,
+            options); await service.HandleChangeAsync(_dbPath);
         var bak = _dbPath + ".bak";
         Assert.True(File.Exists(bak));
         using var destConn = new SqliteConnection($"Data Source={bak};Mode=ReadOnly;Pooling=False");
