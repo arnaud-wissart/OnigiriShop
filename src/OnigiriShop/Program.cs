@@ -7,6 +7,7 @@ using OnigiriShop.Infrastructure;
 using Serilog;
 using OnigiriShop.Services.Extensions;
 using System.Globalization;
+using FluentMigrator.Runner;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -63,6 +64,13 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 
 var app = builder.Build();
+
+// Applique les migrations au démarrage afin de disposer d'un schéma cohérent
+using (var scope = app.Services.CreateScope())
+{
+    var runner = scope.ServiceProvider.GetRequiredService<IMigrationRunner>();
+    runner.MigrateUp();
+}
 
 var restoreCfg = builder.Configuration.GetSection("Backup").Get<BackupConfig>();
 if (restoreCfg != null && !string.IsNullOrWhiteSpace(restoreCfg.Endpoint))

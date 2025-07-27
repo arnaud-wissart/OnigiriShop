@@ -67,7 +67,6 @@ public class HttpDatabaseBackupServiceTests : IDisposable
         _conn.Dispose();
         if (File.Exists(_dbPath)) File.Delete(_dbPath);
         if (File.Exists(_dbPath + ".bak")) File.Delete(_dbPath + ".bak");
-        var servicePath = DatabasePaths.GetPath();
-        if (File.Exists(servicePath)) File.Delete(servicePath);
+        Environment.SetEnvironmentVariable("ONIGIRISHOP_DB_PATH", null);
     }
 }

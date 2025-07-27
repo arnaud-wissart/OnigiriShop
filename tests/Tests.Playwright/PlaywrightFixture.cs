@@ -1,4 +1,6 @@
-﻿using Microsoft.Playwright;
+﻿using FluentMigrator.Runner;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Playwright;
 using System.Diagnostics;
 
 namespace Tests.Playwright
@@ -23,6 +25,21 @@ namespace Tests.Playwright
         {
             var port = GetFreePort();
             BaseUrl = $"http://localhost:{port}";
+
+            // Prépare une base dédiée pour les tests et exécute les migrations
+            var dbPath = Path.Combine(Path.GetTempPath(), $"onigiri_{Guid.NewGuid()}.db");
+            Environment.SetEnvironmentVariable("ONIGIRISHOP_DB_PATH", dbPath);
+            var services = new ServiceCollection()
+                .AddFluentMigratorCore()
+                .ConfigureRunner(r => r.AddSQLite()
+                    .WithGlobalConnectionString($"Data Source={dbPath}")
+                    .ScanIn(typeof(Program).Assembly).For.Migrations())
+                .AddLogging(lb => lb.AddFluentMigratorConsole());
+            using (var sp = services.BuildServiceProvider())
+            {
+                var runner = sp.GetRequiredService<IMigrationRunner>();
+                runner.MigrateUp();
+            }
             var projectPath = Path.GetFullPath(Path.Combine(
                 AppContext.BaseDirectory, "..", "..", "..", "..", "..",
                 "src", "OnigiriShop", "OnigiriShop.csproj"));
@@ -99,6 +116,11 @@ namespace Tests.Playwright
             if (Browser is not null)
                 await Browser.CloseAsync();
             Playwright?.Dispose();
+
+            var dbPath = Environment.GetEnvironmentVariable("ONIGIRISHOP_DB_PATH");
+            if (!string.IsNullOrWhiteSpace(dbPath) && File.Exists(dbPath))
+                File.Delete(dbPath);
+            Environment.SetEnvironmentVariable("ONIGIRISHOP_DB_PATH", null);
 
             if (_appProcess != null)
             {
