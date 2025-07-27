@@ -62,11 +62,25 @@ public class HttpDatabaseBackupServiceTests : IDisposable
         var count = Convert.ToInt32(cmd.ExecuteScalar());
         Assert.Equal(2, count);
     }
+
+    [Fact]
+    public async Task RestoreAsync_ReturnFalse_WhenFileIsNotDatabase()
+    {
+        var invalid = _dbPath + "_invalid";
+        await File.WriteAllTextAsync(invalid, "nope");
+        var dest = _dbPath + "_invalid_dest";
+        var service = new HttpDatabaseBackupService(new HttpClient());
+        var ok = await service.RestoreAsync(invalid, dest);
+        Assert.False(ok);
+    }
     public void Dispose()
     {
         _conn.Dispose();
         if (File.Exists(_dbPath)) File.Delete(_dbPath);
         if (File.Exists(_dbPath + ".bak")) File.Delete(_dbPath + ".bak");
+        if (File.Exists(_dbPath + "_dest")) File.Delete(_dbPath + "_dest");
+        if (File.Exists(_dbPath + "_invalid")) File.Delete(_dbPath + "_invalid");
+        if (File.Exists(_dbPath + "_invalid_dest")) File.Delete(_dbPath + "_invalid_dest");
         Environment.SetEnvironmentVariable("ONIGIRISHOP_DB_PATH", null);
     }
 }
