@@ -71,22 +71,48 @@ public class DatabaseBackupBackgroundService(
         }
     }
 
-    public Task HandleChangeAsync(string dbPath)
+    public async Task HandleChangeAsync(string dbPath, CancellationToken ct = default)
     {
         var bakPath = dbPath + ".bak";
         try
         {
-            using var source = new SqliteConnection($"Data Source={dbPath};Mode=ReadOnly;Pooling=False");
-            using var dest = new SqliteConnection($"Data Source={bakPath};Pooling=False");
-            source.Open();
-            dest.Open();
-            source.BackupDatabase(dest);
+            using (var source = new SqliteConnection($"Data Source={dbPath};Mode=ReadOnly;Pooling=False"))
+            using (var dest = new SqliteConnection($"Data Source={bakPath};Pooling=False"))
+            {
+                source.Open();
+                dest.Open();
+                source.BackupDatabase(dest);
+            }
+
+            if (!string.IsNullOrWhiteSpace(_config.Endpoint))
+            {
+                try
+                {
+                    await backupService.BackupAsync(_config.Endpoint);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Erreur lors de la sauvegarde distante immédiate");
+                }
+            }
+
+            var folderId = await driveService.GetFolderIdAsync();
+            if (!string.IsNullOrWhiteSpace(folderId))
+            {
+                try
+                {
+                    await googleDrive.UploadBackupAsync(folderId, ct);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Erreur lors de l'envoi sur Google Drive");
+                }
+            }
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Erreur lors de la sauvegarde de la base de données");
         }
-        return Task.CompletedTask;
     }
 
     public override void Dispose()
