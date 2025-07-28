@@ -30,15 +30,16 @@ public class DatabaseBackupBackgroundServiceTests : IDisposable
     [Fact]
     public async Task HandleChangeAsync_Cree_Un_Fichier_Bak()
     {
-        var options = Microsoft.Extensions.Options.Options.Create(new OnigiriShop.Infrastructure.BackupConfig());
-        var driveSvc = new RemoteDriveService(new FakeSqliteConnectionFactory(_conn));
+        var options = Microsoft.Extensions.Options.Options.Create(new BackupConfig());
+        var driveOptions = Microsoft.Extensions.Options.Options.Create(new DriveConfig());
         var googleSvc = new FakeGoogleDriveService();
         var service = new DatabaseBackupBackgroundService(
             new NullLogger<DatabaseBackupBackgroundService>(),
             new HttpDatabaseBackupService(new HttpClient()),
-            driveSvc,
             googleSvc,
-            options); await service.HandleChangeAsync(_dbPath);
+            options,
+            driveOptions);
+        await service.HandleChangeAsync(_dbPath);
         var bak = _dbPath + ".bak";
         Assert.True(File.Exists(bak));
         using var destConn = new SqliteConnection($"Data Source={bak};Mode=ReadOnly;Pooling=False");
@@ -52,19 +53,21 @@ public class DatabaseBackupBackgroundServiceTests : IDisposable
     [Fact]
     public async Task HandleChangeAsync_Sauvegarde_Distante_Si_Config()
     {
-        var options = Microsoft.Extensions.Options.Options.Create(new BackupConfig
+        var options = Microsoft.Extensions.Options.Options.Create(new OnigiriShop.Infrastructure.BackupConfig
         {
             Endpoint = _dbPath + ".remote"
         });
-        var driveSvc = new RemoteDriveService(new FakeSqliteConnectionFactory(_conn));
-        await driveSvc.SetFolderIdAsync("folder");
+        var driveOptions = Microsoft.Extensions.Options.Options.Create(new OnigiriShop.Infrastructure.DriveConfig
+        {
+            FolderId = "folder"
+        });
         var googleSvc = new FakeGoogleDriveService();
         var service = new DatabaseBackupBackgroundService(
             new NullLogger<DatabaseBackupBackgroundService>(),
             new HttpDatabaseBackupService(new HttpClient()),
-            driveSvc,
             googleSvc,
-            options);
+            options,
+            driveOptions);
         await service.HandleChangeAsync(_dbPath);
         Assert.True(File.Exists(options.Value.Endpoint));
         Assert.Contains("folder", googleSvc.Uploaded);

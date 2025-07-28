@@ -44,7 +44,9 @@ public class GoogleDriveService(IOptions<DriveConfig> config) : IGoogleDriveServ
             await using var fs = new FileStream(temp, FileMode.Open, FileAccess.Read);
             var request = _service.Files.Create(meta, fs, "application/x-sqlite3");
             request.Fields = "id";
-            await request.UploadAsync(ct);
+            var result = await request.UploadAsync(ct);
+            if (result.Status != Google.Apis.Upload.UploadStatus.Completed)
+                throw new IOException($"Échec de l'envoi sur Google Drive : {result.Exception?.Message}");
         }
         finally
         {

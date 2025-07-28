@@ -10,12 +10,15 @@ namespace OnigiriShop.Infrastructure;
 public class DatabaseBackupBackgroundService(
     ILogger<DatabaseBackupBackgroundService> logger,
     HttpDatabaseBackupService backupService,
-    RemoteDriveService driveService,
     IGoogleDriveService googleDrive,
-    IOptions<BackupConfig> options) : BackgroundService
+    IOptions<BackupConfig> options,
+    IOptions<DriveConfig> driveOptions) : BackgroundService
 {
     private readonly BackupConfig _config = options.Value;
+    private readonly DriveConfig _driveConfig = driveOptions.Value;
+
     private FileSystemWatcher? _watcher;
+    private FileSystemWatcher? _walWatcher;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -27,6 +30,16 @@ public class DatabaseBackupBackgroundService(
         };
         _watcher.Changed += async (_, _) => await HandleChangeAsync(dbPath);
         _watcher.EnableRaisingEvents = true;
+
+        // Surveille aussi le fichier WAL si la base utilise ce mode journal
+        var walName = Path.GetFileName(dbPath) + "-wal";
+        _walWatcher = new FileSystemWatcher(dir, walName)
+        {
+            NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.Size
+        };
+        _walWatcher.Changed += async (_, _) => await HandleChangeAsync(dbPath);
+        _walWatcher.EnableRaisingEvents = true;
+
         while (!stoppingToken.IsCancellationRequested)
         {
             var now = DateTime.Now;
@@ -56,7 +69,7 @@ public class DatabaseBackupBackgroundService(
                 }
             }
 
-            var folderId = await driveService.GetFolderIdAsync();
+            var folderId = _driveConfig.FolderId;
             if (!string.IsNullOrWhiteSpace(folderId))
             {
                 try
@@ -96,7 +109,7 @@ public class DatabaseBackupBackgroundService(
                 }
             }
 
-            var folderId = await driveService.GetFolderIdAsync();
+            var folderId = _driveConfig.FolderId;
             if (!string.IsNullOrWhiteSpace(folderId))
             {
                 try
@@ -119,5 +132,6 @@ public class DatabaseBackupBackgroundService(
     {
         base.Dispose();
         _watcher?.Dispose();
+        _walWatcher?.Dispose();
     }
 }
