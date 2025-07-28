@@ -1,4 +1,5 @@
-﻿using OnigiriShop.Infrastructure;
+﻿using Microsoft.Extensions.Options;
+using OnigiriShop.Infrastructure;
 
 namespace OnigiriShop.Services.Extensions;
 
@@ -29,7 +30,13 @@ public static class BusinessServiceCollectionExtensions
         services.AddScoped<OrderExportService>();
         services.AddScoped<DeliveryService>();
         services.AddScoped<MaintenanceService>();
-        services.AddSingleton<IGoogleDriveService, GoogleDriveService>();
+        services.AddSingleton<IGoogleDriveService>(sp =>
+        {
+            var cfg = sp.GetRequiredService<IOptions<DriveConfig>>().Value;
+            if (string.IsNullOrWhiteSpace(cfg.CredentialsPath))
+                return new NullGoogleDriveService();
+            return new GoogleDriveService(sp.GetRequiredService<IOptions<DriveConfig>>());
+        });
         return services;
     }
 }
