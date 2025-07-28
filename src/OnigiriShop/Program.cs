@@ -27,7 +27,7 @@ builder.Services.Configure<MailjetConfig>(builder.Configuration.GetSection("Mail
 builder.Services.Configure<MagicLinkConfig>(builder.Configuration.GetSection("MagicLink"));
 builder.Services.Configure<SiteConfig>(builder.Configuration.GetSection("Site"));
 builder.Services.Configure<BackupConfig>(builder.Configuration.GetSection("Backup"));
-builder.Services.Configure<DriveConfig>(builder.Configuration.GetSection("GoogleDrive"));
+builder.Services.Configure<GitHubBackupConfig>(builder.Configuration.GetSection("GitHubBackup"));
 
 builder.Services.AddHttpClient<HttpDatabaseBackupService>();
 builder.Services.AddHostedService<DatabaseBackupBackgroundService>();
@@ -69,18 +69,18 @@ var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
-    var driveCfg = scope.ServiceProvider.GetRequiredService<IOptions<DriveConfig>>().Value;
+    var githubCfg = scope.ServiceProvider.GetRequiredService<IOptions<GitHubBackupConfig>>().Value;
     var backupCfg = scope.ServiceProvider.GetRequiredService<IOptions<BackupConfig>>().Value;
-    var google = scope.ServiceProvider.GetRequiredService<IGoogleDriveService>();
+    var github = scope.ServiceProvider.GetRequiredService<IGitHubBackupService>();
     var httpBackup = scope.ServiceProvider.GetRequiredService<HttpDatabaseBackupService>();
     var runner = scope.ServiceProvider.GetRequiredService<IMigrationRunner>();
 
     var restored = false;
-    if (!string.IsNullOrWhiteSpace(driveCfg.CredentialsPath) && !string.IsNullOrWhiteSpace(driveCfg.FolderId))
+    if (!string.IsNullOrWhiteSpace(githubCfg.Token))
     {
-        restored = google.DownloadBackupAsync(driveCfg.FolderId, dbPath).GetAwaiter().GetResult();
+        restored = github.DownloadBackupAsync(dbPath).GetAwaiter().GetResult();
         if (!restored)
-            Log.Warning("Aucune sauvegarde Drive valide trouvée dans {FolderId}", driveCfg.FolderId);
+            Log.Warning("Aucune sauvegarde GitHub valide trouvée");
     }
 
     if (!restored && !string.IsNullOrWhiteSpace(backupCfg.Endpoint))

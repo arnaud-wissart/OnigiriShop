@@ -10,12 +10,12 @@ namespace OnigiriShop.Infrastructure;
 public class DatabaseBackupBackgroundService(
     ILogger<DatabaseBackupBackgroundService> logger,
     HttpDatabaseBackupService backupService,
-    IGoogleDriveService googleDrive,
+    IGitHubBackupService gitHub,
     IOptions<BackupConfig> options,
-    IOptions<DriveConfig> driveOptions) : BackgroundService
+    IOptions<GitHubBackupConfig> driveOptions) : BackgroundService
 {
     private readonly BackupConfig _config = options.Value;
-    private readonly DriveConfig _driveConfig = driveOptions.Value;
+    private readonly GitHubBackupConfig _driveConfig = driveOptions.Value;
 
     private FileSystemWatcher? _watcher;
     private FileSystemWatcher? _walWatcher;
@@ -69,16 +69,15 @@ public class DatabaseBackupBackgroundService(
                 }
             }
 
-            var folderId = _driveConfig.FolderId;
-            if (!string.IsNullOrWhiteSpace(folderId))
+            if (!string.IsNullOrWhiteSpace(_driveConfig.Token))
             {
                 try
                 {
-                    await googleDrive.UploadBackupAsync(folderId, stoppingToken);
+                    await gitHub.UploadBackupAsync(stoppingToken);
                 }
                 catch (Exception ex)
                 {
-                    logger.LogError(ex, "Erreur lors de l'envoi sur Google Drive");
+                    logger.LogError(ex, "Erreur lors de l'envoi sur GitHub");
                 }
             }
         }
@@ -109,16 +108,15 @@ public class DatabaseBackupBackgroundService(
                 }
             }
 
-            var folderId = _driveConfig.FolderId;
-            if (!string.IsNullOrWhiteSpace(folderId))
+            if (!string.IsNullOrWhiteSpace(_driveConfig.Token))
             {
                 try
                 {
-                    await googleDrive.UploadBackupAsync(folderId, ct);
+                    await gitHub.UploadBackupAsync(ct);
                 }
                 catch (Exception ex)
                 {
-                    logger.LogError(ex, "Erreur lors de l'envoi sur Google Drive");
+                    logger.LogError(ex, "Erreur lors de l'envoi sur GitHub");
                 }
             }
         }

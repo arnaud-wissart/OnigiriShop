@@ -1,7 +1,6 @@
 ﻿using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Logging.Abstractions;
 using OnigiriShop.Infrastructure;
-using OnigiriShop.Services;
 
 namespace Tests.Unit;
 
@@ -31,12 +30,12 @@ public class DatabaseBackupBackgroundServiceTests : IDisposable
     public async Task HandleChangeAsync_Cree_Un_Fichier_Bak()
     {
         var options = Microsoft.Extensions.Options.Options.Create(new BackupConfig());
-        var driveOptions = Microsoft.Extensions.Options.Options.Create(new DriveConfig());
-        var googleSvc = new FakeGoogleDriveService();
+        var driveOptions = Microsoft.Extensions.Options.Options.Create(new GitHubBackupConfig());
+        var githubSvc = new FakeGitHubBackupService();
         var service = new DatabaseBackupBackgroundService(
             new NullLogger<DatabaseBackupBackgroundService>(),
             new HttpDatabaseBackupService(new HttpClient()),
-            googleSvc,
+            githubSvc,
             options,
             driveOptions);
         await service.HandleChangeAsync(_dbPath);
@@ -57,20 +56,20 @@ public class DatabaseBackupBackgroundServiceTests : IDisposable
         {
             Endpoint = _dbPath + ".remote"
         });
-        var driveOptions = Microsoft.Extensions.Options.Options.Create(new OnigiriShop.Infrastructure.DriveConfig
+        var driveOptions = Microsoft.Extensions.Options.Options.Create(new OnigiriShop.Infrastructure.GitHubBackupConfig
         {
-            FolderId = "folder"
+            Token = "x"
         });
-        var googleSvc = new FakeGoogleDriveService();
+        var githubSvc = new FakeGitHubBackupService();
         var service = new DatabaseBackupBackgroundService(
             new NullLogger<DatabaseBackupBackgroundService>(),
             new HttpDatabaseBackupService(new HttpClient()),
-            googleSvc,
+            githubSvc,
             options,
             driveOptions);
         await service.HandleChangeAsync(_dbPath);
         Assert.True(File.Exists(options.Value.Endpoint));
-        Assert.Contains("folder", googleSvc.Uploaded);
+        Assert.True(githubSvc.Uploaded);
     }
 
     public void Dispose()

@@ -7,7 +7,6 @@ public static class BusinessServiceCollectionExtensions
 {
     public static IServiceCollection AddBusinessServices(this IServiceCollection services)
     {
-        services.AddSingleton<RemoteDriveService>();
         services.AddScoped<SiteNameService>();
         services.AddScoped<StatsService>();
         services.AddSingleton<ToastService>();
@@ -30,13 +29,10 @@ public static class BusinessServiceCollectionExtensions
         services.AddScoped<OrderExportService>();
         services.AddScoped<DeliveryService>();
         services.AddScoped<MaintenanceService>();
-        services.AddSingleton<IGoogleDriveService>(sp =>
+        services.AddSingleton<IGitHubBackupService>(sp =>
         {
-            var cfg = sp.GetRequiredService<IOptions<DriveConfig>>().Value;
-            if (string.IsNullOrWhiteSpace(cfg.CredentialsPath))
-                return new NullGoogleDriveService();
-            var logger = sp.GetRequiredService<ILogger<GoogleDriveService>>();
-            return new GoogleDriveService(sp.GetRequiredService<IOptions<DriveConfig>>(), logger);
+            var logger = sp.GetRequiredService<ILogger<GitHubBackupService>>();
+            return new GitHubBackupService(sp.GetRequiredService<IOptions<GitHubBackupConfig>>(), logger);
         });
         return services;
     }
