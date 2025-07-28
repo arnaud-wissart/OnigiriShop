@@ -14,7 +14,7 @@ public class GoogleDriveService(IOptions<DriveConfig> config) : IGoogleDriveServ
     private readonly DriveService _service = new(new BaseClientService.Initializer
     {
         HttpClientInitializer = GoogleCredential.FromFile(config.Value.CredentialsPath)
-            .CreateScoped(DriveService.Scope.DriveFile),
+            .CreateScoped(DriveService.Scope.Drive),
         ApplicationName = "OnigiriShop"
     });
 
@@ -38,7 +38,7 @@ public class GoogleDriveService(IOptions<DriveConfig> config) : IGoogleDriveServ
             var meta = new Google.Apis.Drive.v3.Data.File
             {
                 Name = Path.GetFileName(dbPath),
-                Parents = new[] { folderId }
+                Parents = [folderId]
             };
 
             await using var fs = new FileStream(temp, FileMode.Open, FileAccess.Read);
