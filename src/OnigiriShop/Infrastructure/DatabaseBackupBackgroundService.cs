@@ -17,6 +17,8 @@ public class DatabaseBackupBackgroundService(
     private readonly GitHubBackupConfig _driveConfig = driveOptions.Value;
 
     private readonly SemaphoreSlim _semaphore = new(1, 1);
+    private const int RetryAttempts = 3;
+    private static readonly TimeSpan RetryDelay = TimeSpan.FromMilliseconds(300);
 
     private FileSystemWatcher? _watcher;
     private FileSystemWatcher? _walWatcher;
@@ -90,18 +92,32 @@ public class DatabaseBackupBackgroundService(
         await _semaphore.WaitAsync(ct);
         try
         {
-            using (var source = new SqliteConnection($"Data Source={dbPath};Mode=ReadOnly;Pooling=False"))
-            using (var dest = new SqliteConnection($"Data Source={bakPath};Pooling=False"))
+            for (var attempt = 1; attempt <= RetryAttempts; attempt++)
             {
-                source.Open();
-                using var cmd = source.CreateCommand();
-                cmd.CommandText = "PRAGMA busy_timeout=5000;";
-                cmd.ExecuteNonQuery();
+                try
+                {
+                    using (var source = new SqliteConnection($"Data Source={dbPath};Mode=ReadOnly;Pooling=False;Cache=Shared"))
+                    using (var dest = new SqliteConnection($"Data Source={bakPath};Pooling=False"))
+                    {
+                        source.Open();
+                        using var cmd = source.CreateCommand();
+                        cmd.CommandText = "PRAGMA busy_timeout=5000;";
+                        cmd.ExecuteNonQuery();
 
-                dest.Open();
-                using var destCmd = dest.CreateCommand();
-                destCmd.CommandText = "PRAGMA busy_timeout=5000;";
-                destCmd.ExecuteNonQuery(); source.BackupDatabase(dest);
+                        dest.Open();
+                        using var destCmd = dest.CreateCommand();
+                        destCmd.CommandText = "PRAGMA busy_timeout=5000;";
+                        destCmd.ExecuteNonQuery();
+
+                        source.BackupDatabase(dest);
+                    }
+                    break;
+                }
+                catch (SqliteException ex) when ((ex.SqliteErrorCode == 5 || ex.SqliteErrorCode == 6) && attempt < RetryAttempts)
+                {
+                    logger.LogWarning(ex, "Base verrouillée, tentative {Attempt}/{Max}", attempt, RetryAttempts);
+                    await Task.Delay(RetryDelay, ct);
+                }
             }
 
             if (!string.IsNullOrWhiteSpace(_config.Endpoint))
