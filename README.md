@@ -35,6 +35,20 @@ L’objectif : proposer une expérience fluide sur mobile comme sur desktop et u
 - **Gestion front** : LibMan
 - **CI/CD** : GitHub Actions
 
+## Choix techniques
+
+Le projet a pour objectif d'être **gratuit** à l'usage. Il n'est donc pas
+possible de s'appuyer sur un serveur de base de données payant. C'est pourquoi
+la base est stockée dans un fichier **SQLite**. Le chemin est résolu via la
+méthode `DatabasePaths.GetPath()` afin de pouvoir l'héberger aussi bien en
+local que sur le serveur.
+
+Pour le déploiement, nous utilisons [Render.com](https://render.com). Chaque
+déploiement recrée le conteneur Docker et efface les fichiers précédents. Afin
+de ne pas perdre la base SQLite, un service sauvegarde régulièrement la base
+sur un répertoire GitHub privé via `GitHubBackupService`. Lors du démarrage de
+l'application, cette sauvegarde peut être restaurée automatiquement.
+
 ## Qualité & bonnes pratiques
 
 - **Aucun secret dans le repo** : tout est géré par user‑secrets ou ignoré dans Git
