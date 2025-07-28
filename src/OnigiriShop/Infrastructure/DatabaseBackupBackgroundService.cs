@@ -16,6 +16,8 @@ public class DatabaseBackupBackgroundService(
     private readonly BackupConfig _config = options.Value;
     private readonly GitHubBackupConfig _driveConfig = driveOptions.Value;
 
+    private readonly SemaphoreSlim _semaphore = new(1, 1);
+
     private FileSystemWatcher? _watcher;
     private FileSystemWatcher? _walWatcher;
 
@@ -85,14 +87,21 @@ public class DatabaseBackupBackgroundService(
     public async Task HandleChangeAsync(string dbPath, CancellationToken ct = default)
     {
         var bakPath = dbPath + ".bak";
+        await _semaphore.WaitAsync(ct);
         try
         {
             using (var source = new SqliteConnection($"Data Source={dbPath};Mode=ReadOnly;Pooling=False"))
             using (var dest = new SqliteConnection($"Data Source={bakPath};Pooling=False"))
             {
                 source.Open();
+                using var cmd = source.CreateCommand();
+                cmd.CommandText = "PRAGMA busy_timeout=5000;";
+                cmd.ExecuteNonQuery();
+
                 dest.Open();
-                source.BackupDatabase(dest);
+                using var destCmd = dest.CreateCommand();
+                destCmd.CommandText = "PRAGMA busy_timeout=5000;";
+                destCmd.ExecuteNonQuery(); source.BackupDatabase(dest);
             }
 
             if (!string.IsNullOrWhiteSpace(_config.Endpoint))
@@ -122,6 +131,10 @@ public class DatabaseBackupBackgroundService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Erreur lors de la sauvegarde de la base de données");
+        }
+        finally
+        {
+            _semaphore.Release();
         }
     }
 

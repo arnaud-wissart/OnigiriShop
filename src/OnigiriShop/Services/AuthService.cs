@@ -4,6 +4,9 @@ using System.Security.Claims;
 
 namespace OnigiriShop.Services
 {
+    /// <summary>
+    /// Fournit les méthodes liées à l'authentification et à la session utilisateur.
+    /// </summary>
     public class AuthService(SessionAuthenticationStateProvider sessionAuthProvider, CartProvider cartProvider)
     {
         private readonly SessionAuthenticationStateProvider _sessionAuthProvider = sessionAuthProvider
