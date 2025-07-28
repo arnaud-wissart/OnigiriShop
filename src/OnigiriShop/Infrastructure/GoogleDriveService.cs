@@ -1,4 +1,5 @@
-﻿using Google.Apis.Auth.OAuth2;
+﻿using Azure.Core;
+using Google.Apis.Auth.OAuth2;
 using Google.Apis.Drive.v3;
 using Google.Apis.Services;
 using Microsoft.Data.Sqlite;
@@ -9,14 +10,26 @@ namespace OnigiriShop.Infrastructure;
 /// <summary>
 /// Service chargé d'envoyer une sauvegarde de la base dans un dossier Google Drive.
 /// </summary>
-public class GoogleDriveService(IOptions<DriveConfig> config) : IGoogleDriveService
+public class GoogleDriveService : IGoogleDriveService
 {
-    private readonly DriveService _service = new(new BaseClientService.Initializer
+    private readonly DriveService _service;
+    private readonly ILogger<GoogleDriveService> _logger;
+
+    public GoogleDriveService(IOptions<DriveConfig> config, ILogger<GoogleDriveService> logger)
     {
-        HttpClientInitializer = GoogleCredential.FromFile(config.Value.CredentialsPath)
-            .CreateScoped(DriveService.Scope.Drive),
-        ApplicationName = "OnigiriShop"
-    });
+        _logger = logger;
+        var credential = GoogleCredential.FromFile(config.Value.CredentialsPath)
+            .CreateScoped(DriveService.Scope.Drive);
+
+        if (!string.IsNullOrWhiteSpace(config.Value.DelegatedUser))
+            credential = credential.CreateWithUser(config.Value.DelegatedUser);
+
+        _service = new DriveService(new BaseClientService.Initializer
+        {
+            HttpClientInitializer = credential,
+            ApplicationName = "OnigiriShop"
+        });
+    }
 
     /// <summary>
     /// Charge la base de données dans le dossier Google Drive indiqué.
@@ -38,7 +51,7 @@ public class GoogleDriveService(IOptions<DriveConfig> config) : IGoogleDriveServ
             var meta = new Google.Apis.Drive.v3.Data.File
             {
                 Name = Path.GetFileName(dbPath),
-                Parents = [folderId]
+                Parents = new[] { folderId }
             };
 
             await using var fs = new FileStream(temp, FileMode.Open, FileAccess.Read);
@@ -46,7 +59,9 @@ public class GoogleDriveService(IOptions<DriveConfig> config) : IGoogleDriveServ
             request.Fields = "id";
             var result = await request.UploadAsync(ct);
             if (result.Status != Google.Apis.Upload.UploadStatus.Completed)
+            {
                 throw new IOException($"Échec de l'envoi sur Google Drive : {result.Exception?.Message}");
+            }
         }
         finally
         {
@@ -60,43 +75,47 @@ public class GoogleDriveService(IOptions<DriveConfig> config) : IGoogleDriveServ
     /// </summary>
     public async Task<bool> DownloadBackupAsync(string folderId, string destinationPath, CancellationToken ct = default)
     {
-        var request = _service.Files.List();
-        request.Q = $"'{folderId}' in parents and trashed = false";
-        request.Fields = "files(id, name, createdTime)";
-        var files = await request.ExecuteAsync(ct);
-        var file = files.Files
-            .Where(f => f.Name == Path.GetFileName(destinationPath))
-            .OrderByDescending(f => f.CreatedTimeDateTimeOffset)
-            .FirstOrDefault();
-        if (file == null)
-            return false;
-
-        var temp = Path.GetTempFileName();
         try
         {
-            await using (var fs = new FileStream(temp, FileMode.Create, FileAccess.Write))
-            {
-                var get = _service.Files.Get(file.Id);
-                await get.DownloadAsync(fs, ct);
-            }
-
-            if (!SqliteHelper.IsSqliteDatabase(temp))
+            var request = _service.Files.List();
+            request.Q = $"'{folderId}' in parents and trashed = false";
+            request.Fields = "files(id, name, createdTime)";
+            var files = await request.ExecuteAsync(ct);
+            var file = files.Files
+                .Where(f => f.Name == Path.GetFileName(destinationPath))
+                .OrderByDescending(f => f.CreatedTimeDateTimeOffset)
+                .FirstOrDefault();
+            if (file == null)
                 return false;
 
-            var dir = Path.GetDirectoryName(destinationPath);
-            if (!string.IsNullOrEmpty(dir))
-                Directory.CreateDirectory(dir);
-            File.Copy(temp, destinationPath, true);
-            return true;
+            var temp = Path.GetTempFileName();
+            try
+            {
+                await using (var fs = new FileStream(temp, FileMode.Create, FileAccess.Write))
+                {
+                    var get = _service.Files.Get(file.Id);
+                    await get.DownloadAsync(fs, ct);
+                }
+
+                if (!SqliteHelper.IsSqliteDatabase(temp))
+                    return false;
+
+                var dir = Path.GetDirectoryName(destinationPath);
+                if (!string.IsNullOrEmpty(dir))
+                    Directory.CreateDirectory(dir);
+                File.Copy(temp, destinationPath, true);
+                return true;
+            }
+            finally
+            {
+                if (File.Exists(temp))
+                    File.Delete(temp);
+            }
         }
-        catch
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "Erreur lors du téléchargement depuis Google Drive");
             return false;
-        }
-        finally
-        {
-            if (File.Exists(temp))
-                File.Delete(temp);
         }
     }
 }

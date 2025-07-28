@@ -35,7 +35,8 @@ public static class BusinessServiceCollectionExtensions
             var cfg = sp.GetRequiredService<IOptions<DriveConfig>>().Value;
             if (string.IsNullOrWhiteSpace(cfg.CredentialsPath))
                 return new NullGoogleDriveService();
-            return new GoogleDriveService(sp.GetRequiredService<IOptions<DriveConfig>>());
+            var logger = sp.GetRequiredService<ILogger<GoogleDriveService>>();
+            return new GoogleDriveService(sp.GetRequiredService<IOptions<DriveConfig>>(), logger);
         });
         return services;
     }

@@ -14,5 +14,11 @@
         /// Identifiant du dossier contenant la sauvegarde distante.
         /// </summary>
         public string FolderId { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Adresse e-mail de l'utilisateur à impersonner lors de l'utilisation
+        /// d'une délégation OAuth (optionnel).
+        /// </summary>
+        public string DelegatedUser { get; set; } = string.Empty;
     }
 }
