@@ -31,8 +31,12 @@ public static class BusinessServiceCollectionExtensions
         services.AddScoped<MaintenanceService>();
         services.AddSingleton<IGitHubBackupService>(sp =>
         {
+            var options = sp.GetRequiredService<IOptions<GitHubBackupConfig>>();
+            if (string.IsNullOrWhiteSpace(options.Value.Token))
+                return new NullGitHubBackupService();
+
             var logger = sp.GetRequiredService<ILogger<GitHubBackupService>>();
-            return new GitHubBackupService(sp.GetRequiredService<IOptions<GitHubBackupConfig>>(), logger);
+            return new GitHubBackupService(options, logger);
         });
         return services;
     }

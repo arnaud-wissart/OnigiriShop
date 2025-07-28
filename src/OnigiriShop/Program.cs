@@ -71,12 +71,14 @@ using (var scope = app.Services.CreateScope())
 {
     var githubCfg = scope.ServiceProvider.GetRequiredService<IOptions<GitHubBackupConfig>>().Value;
     var backupCfg = scope.ServiceProvider.GetRequiredService<IOptions<BackupConfig>>().Value;
-    var github = scope.ServiceProvider.GetRequiredService<IGitHubBackupService>();
     var httpBackup = scope.ServiceProvider.GetRequiredService<HttpDatabaseBackupService>();
+    IGitHubBackupService? github = null;
+    if (!string.IsNullOrWhiteSpace(githubCfg.Token))
+        github = scope.ServiceProvider.GetRequiredService<IGitHubBackupService>();
     var runner = scope.ServiceProvider.GetRequiredService<IMigrationRunner>();
 
     var restored = false;
-    if (!string.IsNullOrWhiteSpace(githubCfg.Token))
+    if (github is not null)
     {
         restored = github.DownloadBackupAsync(dbPath).GetAwaiter().GetResult();
         if (!restored)
