@@ -67,25 +67,34 @@ builder.Services.AddServerSideBlazor();
 
 var app = builder.Build();
 
-// Applique les migrations au démarrage afin de disposer d'un schéma cohérent
 using (var scope = app.Services.CreateScope())
 {
+    var driveCfg = scope.ServiceProvider.GetRequiredService<IOptions<DriveConfig>>().Value;
+    var backupCfg = scope.ServiceProvider.GetRequiredService<IOptions<BackupConfig>>().Value;
+    var google = scope.ServiceProvider.GetRequiredService<IGoogleDriveService>();
+    var httpBackup = scope.ServiceProvider.GetRequiredService<HttpDatabaseBackupService>();
     var runner = scope.ServiceProvider.GetRequiredService<IMigrationRunner>();
+
+    var restored = false;
+    if (!string.IsNullOrWhiteSpace(driveCfg.CredentialsPath) && !string.IsNullOrWhiteSpace(driveCfg.FolderId))
+    {
+        restored = google.DownloadBackupAsync(driveCfg.FolderId, dbPath).GetAwaiter().GetResult();
+        if (!restored)
+            Log.Warning("Aucune sauvegarde Drive valide trouvée dans {FolderId}", driveCfg.FolderId);
+    }
+
+    if (!restored && !string.IsNullOrWhiteSpace(backupCfg.Endpoint))
+    {
+        restored = httpBackup.RestoreAsync(backupCfg.Endpoint, dbPath).GetAwaiter().GetResult();
+        if (!restored)
+            Log.Warning("Aucun backup valide n'a été trouvé  {Endpoint}", backupCfg.Endpoint);
+    }
+
     runner.MigrateUp();
-}
 
-var restoreCfg = builder.Configuration.GetSection("Backup").Get<BackupConfig>();
-if (restoreCfg != null && !string.IsNullOrWhiteSpace(restoreCfg.Endpoint))
-{
-    using var scope = app.Services.CreateScope();
-    var svc = scope.ServiceProvider.GetRequiredService<HttpDatabaseBackupService>();
-    var ok = svc.RestoreAsync(restoreCfg.Endpoint, dbPath).GetAwaiter().GetResult();
-    if (!ok)
-        Log.Warning("Aucun backup valide n'a été trouvé à {Endpoint}", restoreCfg.Endpoint);
+    if (!DatabaseInitializer.IsSchemaUpToDate(dbPath, expectedHash))
+        DatabaseInitializer.SetSchemaHash(dbPath, expectedHash);
 }
-
-if (!DatabaseInitializer.IsSchemaUpToDate(dbPath, expectedHash))
-    DatabaseInitializer.SetSchemaHash(dbPath, expectedHash);
 
 app.UseStaticFiles();
 app.UseRouting();

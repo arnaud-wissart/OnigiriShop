@@ -10,5 +10,12 @@ namespace Tests.Unit
             Uploaded.Add(folderId);
             return Task.CompletedTask;
         }
+
+        public Task<bool> DownloadBackupAsync(string folderId, string destinationPath, CancellationToken ct = default)
+        {
+            // Simule une restauration réussie en écrivant un fichier vide
+            File.WriteAllText(destinationPath, string.Empty);
+            return Task.FromResult(true);
+        }
     }
 }

@@ -52,4 +52,49 @@ public class GoogleDriveService(IOptions<DriveConfig> config) : IGoogleDriveServ
                 File.Delete(temp);
         }
     }
+
+    /// <summary>
+    /// Télécharge la dernière sauvegarde présente dans le dossier spécifié.
+    /// </summary>
+    public async Task<bool> DownloadBackupAsync(string folderId, string destinationPath, CancellationToken ct = default)
+    {
+        var request = _service.Files.List();
+        request.Q = $"'{folderId}' in parents and trashed = false";
+        request.Fields = "files(id, name, createdTime)";
+        var files = await request.ExecuteAsync(ct);
+        var file = files.Files
+            .Where(f => f.Name == Path.GetFileName(destinationPath))
+            .OrderByDescending(f => f.CreatedTimeDateTimeOffset)
+            .FirstOrDefault();
+        if (file == null)
+            return false;
+
+        var temp = Path.GetTempFileName();
+        try
+        {
+            await using (var fs = new FileStream(temp, FileMode.Create, FileAccess.Write))
+            {
+                var get = _service.Files.Get(file.Id);
+                await get.DownloadAsync(fs, ct);
+            }
+
+            if (!SqliteHelper.IsSqliteDatabase(temp))
+                return false;
+
+            var dir = Path.GetDirectoryName(destinationPath);
+            if (!string.IsNullOrEmpty(dir))
+                Directory.CreateDirectory(dir);
+            File.Copy(temp, destinationPath, true);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+        finally
+        {
+            if (File.Exists(temp))
+                File.Delete(temp);
+        }
+    }
 }

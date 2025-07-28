@@ -5,6 +5,6 @@
     /// </summary>
     public interface IGoogleDriveService
     {
-        Task UploadBackupAsync(string folderId, CancellationToken ct = default);
+        Task<bool> DownloadBackupAsync(string folderId, string destinationPath, CancellationToken ct = default);
     }
 }

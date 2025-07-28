@@ -71,7 +71,7 @@ public class HttpDatabaseBackupService(HttpClient client)
                 File.Copy(endpoint, tempPath, true);
             }
 
-            if (!IsSqliteDatabase(tempPath))
+            if (!SqliteHelper.IsSqliteDatabase(tempPath))
                 return false;
 
             using (var conn = new SqliteConnection($"Data Source={tempPath};Mode=ReadOnly;Pooling=False"))
@@ -98,23 +98,6 @@ public class HttpDatabaseBackupService(HttpClient client)
         {
             if (File.Exists(tempPath))
                 File.Delete(tempPath);
-        }
-    }
-
-    private static bool IsSqliteDatabase(string path)
-    {
-        const string header = "SQLite format 3\0";
-        var buffer = new byte[header.Length];
-        try
-        {
-            using var fs = new FileStream(path, FileMode.Open, FileAccess.Read);
-            if (fs.Read(buffer, 0, buffer.Length) != buffer.Length)
-                return false;
-            return Encoding.ASCII.GetString(buffer) == header;
-        }
-        catch
-        {
-            return false;
         }
     }
 }

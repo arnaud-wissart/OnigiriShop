@@ -11,5 +11,10 @@
             // Aucun envoi réalisé.
             return Task.CompletedTask;
         }
+
+        public Task<bool> DownloadBackupAsync(string folderId, string destinationPath, CancellationToken ct = default)
+        {
+            return Task.FromResult(false);
+        }
     }
 }
