@@ -87,7 +87,7 @@ using (var scope = app.Services.CreateScope())
     {
         restored = httpBackup.RestoreAsync(backupCfg.Endpoint, dbPath).GetAwaiter().GetResult();
         if (!restored)
-            Log.Warning("Aucun backup valide n'a été trouvé  {Endpoint}", backupCfg.Endpoint);
+            Log.Warning("Aucun backup valide n'a été trouvé à {Endpoint}", backupCfg.Endpoint);
     }
 
     runner.MigrateUp();

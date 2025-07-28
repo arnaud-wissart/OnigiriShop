@@ -1,6 +1,5 @@
 ﻿using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Options;
-using OnigiriShop.Services;
 
 namespace OnigiriShop.Infrastructure;
 
