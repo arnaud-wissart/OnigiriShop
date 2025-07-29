@@ -23,7 +23,13 @@ namespace OnigiriShop.Pages
             CartState.NotifyChanged();
         }
 
-        private void OnCartChanged() => InvokeAsync(StateHasChanged);
+        private void OnCartChanged() => InvokeAsync(RefreshCartAsync);
+
+        private async Task RefreshCartAsync()
+        {
+            await CartProvider.RefreshCartStateAsync(CartState);
+            StateHasChanged();
+        }
 
         protected void OpenProductModal(Product product)
         {
@@ -32,7 +38,7 @@ namespace OnigiriShop.Pages
         }
 
         protected int GetQuantity(int productId)
-            => CartState.Items.FirstOrDefault(i => i.ProductId == productId)?.Quantity ?? 0;
+                    => CartState.Items.FirstOrDefault(i => i.ProductId == productId)?.Quantity ?? 0;
 
         protected async Task AddToCart(Product product)
         {

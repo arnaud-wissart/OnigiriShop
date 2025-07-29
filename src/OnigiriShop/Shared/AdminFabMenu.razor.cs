@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.JSInterop;
 using OnigiriShop.Infrastructure;
-using System;
 
 namespace OnigiriShop.Shared;
 
@@ -22,13 +22,19 @@ public class AdminFabMenuBase : CustomComponentBase, IDisposable
         IsAdmin = await AuthService.IsAdminAsync();
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender) => await JS.InvokeVoidAsync("activateTooltips");
+
     private async void AuthStateChanged(Task<AuthenticationState> task)
     {
         IsAdmin = await AuthService.IsAdminAsync();
         await InvokeAsync(StateHasChanged);
     }
 
-    protected void ToggleMenu() => ShowMenu = !ShowMenu;
+    protected async Task ToggleMenu()
+    {
+        ShowMenu = !ShowMenu;
+        await JS.InvokeVoidAsync("activateTooltips");
+    }
 
     protected void GotoAdmin() => Nav.NavigateTo("/admin");
     protected void GotoUsers() => Nav.NavigateTo("/admin/users");
@@ -39,8 +45,5 @@ public class AdminFabMenuBase : CustomComponentBase, IDisposable
     protected void GotoLogs() => Nav.NavigateTo("/admin/logs");
     protected void GotoShop() => Nav.NavigateTo("/");
 
-    public void Dispose()
-    {
-        AuthProvider.AuthenticationStateChanged -= AuthStateChanged;
-    }
+    public void Dispose() => AuthProvider.AuthenticationStateChanged -= AuthStateChanged;
 }
