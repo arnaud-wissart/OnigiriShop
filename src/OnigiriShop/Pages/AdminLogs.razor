@@ -14,9 +14,11 @@
         </select>
         <div class="row g-2 mb-3" style="max-width:560px;">
             <div class="col">
+                <label class="form-label">Début</label>
                 <input type="datetime-local" class="form-control" @bind="FilterStart" />
             </div>
             <div class="col">
+                <label class="form-label">Fin</label>
                 <input type="datetime-local" class="form-control" @bind="FilterEnd" />
             </div>
             <div class="col-auto">
@@ -42,9 +44,6 @@
                     <span class="spinner-border spinner-border-sm ms-2"></span>
                 }
             </button>
-            <button class="btn btn-warning" @onclick="ConfirmRestoreBackup" disabled="@(!LastBackupDate.HasValue)">
-                <i class="bi bi-arrow-clockwise me-1"></i>Restaurer le dernier backup
-            </button>
             @if (LastBackupDate is DateTime d)
             {
                 <span class="text-muted small align-self-center">Dernier backup&nbsp;: @d.ToString("dd/MM/yyyy HH:mm")</span>
@@ -52,23 +51,3 @@
         </div>
     </div>
 </div>
-
-@if (ShowRestoreConfirm)
-{
-    <div class="modal fade show d-block" tabindex="-1" style="background:rgba(33,33,33,0.18);">
-        <div class="modal-dialog modal-dialog-centered" @onclick:stopPropagation>
-            <div class="modal-content border-0 shadow-lg">
-                <div class="modal-header">
-                    <h5 class="modal-title">Confirmation restauration</h5>
-                </div>
-                <div class="modal-body">
-                    <p>Cette opération va remplacer la base actuelle par la dernière sauvegarde disponible. Toutes les données récentes seront perdues.</p>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" @onclick="CancelRestore">Annuler</button>
-                    <button class="btn btn-danger" @onclick="RestoreBackupConfirmed">Restaurer</button>
-                </div>
-            </div>
-        </div>
-    </div>
-}

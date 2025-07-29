@@ -394,3 +394,21 @@ window.disposeHtmlEditor = function (id) {
         delete window.quillEditors[id];
     }
 };
+
+window.updateStatsChart = function (data) {
+    if (!window.Chart) return;
+    const ctx = document.getElementById('statsChart');
+    if (!ctx) return;
+    if (window.statsChart) window.statsChart.destroy();
+    window.statsChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Commandes', 'Clients', 'CA'],
+            datasets: [{
+                data: [data.totalOrders, data.uniqueCustomers, data.totalRevenue],
+                backgroundColor: ['#0d6efd', '#198754', '#fd7e14']
+            }]
+        },
+        options: { responsive: true, plugins: { legend: { display: false } } }
+    });
+};

@@ -181,8 +181,7 @@ namespace OnigiriShop.Services
             {
                 var sql = @"
             SELECT ci.*, 
-                   p.Id, p.Name, p.Description, p.Price, p.IsOnMenu, p.ImagePath, p.IsDeleted
-            FROM CartItem ci
+                   p.Id, p.Name, p.Description, p.Price, p.IsOnMenu, p.ImageBase64, p.IsDeleted            FROM CartItem ci
             INNER JOIN Product p ON ci.ProductId = p.Id
             WHERE ci.CartId = @CartId";
                 var results = await conn.QueryAsync<CartItemWithProduct, Product, CartItemWithProduct>(

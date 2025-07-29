@@ -23,6 +23,7 @@
         </div>
         @if (Result != null)
         {
+            <canvas id="statsChart" height="120" class="mb-3"></canvas>
             <ul class="list-group">
                 <li class="list-group-item">Nombre de commandes : <strong>@Result.TotalOrders</strong></li>
                 <li class="list-group-item">Clients distincts : <strong>@Result.UniqueCustomers</strong></li>

@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
 using OnigiriShop.Data.Models;
 using OnigiriShop.Infrastructure;
 using OnigiriShop.Services;
@@ -12,7 +11,8 @@ namespace OnigiriShop.Pages
         [Inject] public NavigationManager Nav { get; set; } = default!;
 
         protected List<Product>? _products;
-        protected HashSet<int> _animatedProductIds = [];
+        protected Product? ModalProduct;
+        protected int ModalQuantity = 1;
 
         protected override async Task OnInitializedAsync()
         {
@@ -25,51 +25,37 @@ namespace OnigiriShop.Pages
 
         private void OnCartChanged() => InvokeAsync(StateHasChanged);
 
-        public async Task TryAddToCart(Product product)
+        protected void OpenProductModal(Product product)
         {
-            await CartProvider.AddItemAsync(product.Id, 1);
+            ModalProduct = product;
+            ModalQuantity = 1;
+        }
+
+        protected string GetProductImage(Product? p)
+        {
+            if (p == null || string.IsNullOrWhiteSpace(p.ImageBase64))
+                return string.Empty;
+            return p.ImageBase64.StartsWith("data:image")
+                ? p.ImageBase64
+                : $"data:image/jpeg;base64,{p.ImageBase64}";
+        }
+
+        protected void CloseProductModal() => ModalProduct = null;
+
+        protected void IncreaseQty() => ModalQuantity++;
+
+        protected void DecreaseQty()
+        {
+            if (ModalQuantity > 1) ModalQuantity--;
+        }
+
+        protected async Task AddSelectedToCart()
+        {
+            if (ModalProduct == null) return;
+            await CartProvider.AddItemAsync(ModalProduct.Id, ModalQuantity);
             await CartProvider.RefreshCartStateAsync(CartState);
             CartState.NotifyChanged();
-
-            await TriggerButtonAnimation(product.Id);
-        }
-        public async Task OnRemoveFromCartClicked(Product product)
-        {
-            await CartProvider.RemoveItemAsync(product.Id, 1);
-            await CartProvider.RefreshCartStateAsync(CartState);
-            CartState.NotifyChanged();
-
-            await TriggerButtonAnimation(product.Id);
-        }
-
-
-        public async Task OnAddToCartClicked(Product product)
-        {
-            await HandleAsync(
-                async () => await TryAddToCart(product),
-                "Erreur lors de l’ajout au panier.",
-                null,
-                true
-            );
-            await JS.InvokeVoidAsync("closeAllTooltips");
-        }
-
-        protected string GetCartIconClass(int productId)
-        {
-            var qty = GetProductCartQty(productId);
-            return qty > 0 ? "bi bi-cart-check-fill" : "bi bi-cart-plus";
-        }
-
-        protected int GetProductCartQty(int productId)
-            => CartState.Items.FirstOrDefault(x => x.ProductId == productId)?.Quantity ?? 0;
-
-        private async Task TriggerButtonAnimation(int productId)
-        {
-            _animatedProductIds.Add(productId);
-            StateHasChanged();
-            await Task.Delay(200);
-            _animatedProductIds.Remove(productId);
-            StateHasChanged();
+            ModalProduct = null;
         }
 
         public void Dispose() => CartState.OnChanged -= OnCartChanged;

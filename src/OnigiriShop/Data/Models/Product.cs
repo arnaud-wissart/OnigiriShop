@@ -18,8 +18,8 @@ namespace OnigiriShop.Data.Models
 
         public bool IsOnMenu { get; set; }
 
-        [StringLength(256)]
-        public string? ImagePath { get; set; }
+        public string? ImageBase64 { get; set; }
+
         public bool IsDeleted { get; set; }
     }
 }

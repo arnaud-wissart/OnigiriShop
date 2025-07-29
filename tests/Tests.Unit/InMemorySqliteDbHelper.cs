@@ -43,8 +43,8 @@ namespace Tests.Unit
             // Ajout d'entités
             await conn.ExecuteAsync("INSERT INTO User (Id, Email, Name, Phone, CreatedAt, IsActive, PasswordHash, PasswordSalt, Role) VALUES (1, 'test@test.com', 'Toto', '0102030405', CURRENT_TIMESTAMP, 1, 'password', 'password', 'Admin');");
             await conn.ExecuteAsync("INSERT INTO User (Id, Email, Name, Phone, CreatedAt, IsActive, PasswordHash, PasswordSalt, Role) VALUES (2, 'test2@test.com', 'Toto2', '0102030405', CURRENT_TIMESTAMP, 1, 'password', 'password', 'User');");
-            await conn.ExecuteAsync("INSERT INTO Product (Name, Description, Price, IsOnMenu, ImagePath, IsDeleted) VALUES ('Test', 'desc', 3.5, 1, '', 0);");
-            await conn.ExecuteAsync("INSERT INTO Product (Name, Description, Price, IsOnMenu, ImagePath, IsDeleted) VALUES ('Second', 'desc2', 5, 1, '', 0);");
+            await conn.ExecuteAsync("INSERT INTO Product (Name, Description, Price, IsOnMenu, ImageBase64, IsDeleted) VALUES ('Test', 'desc', 3.5, 1, '', 0);");
+            await conn.ExecuteAsync("INSERT INTO Product (Name, Description, Price, IsOnMenu, ImageBase64, IsDeleted) VALUES ('Second', 'desc2', 5, 1, '', 0);");
 
             return conn;
         }

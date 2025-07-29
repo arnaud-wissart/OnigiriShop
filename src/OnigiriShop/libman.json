@@ -17,6 +17,10 @@
     {
       "library": "quill@2.0.2",
       "destination": "wwwroot/quill/"
+    },
+    {
+      "library": "Chart.js@4.4.1",
+      "destination": "wwwroot/Chart.js/"
     }
   ]
 }

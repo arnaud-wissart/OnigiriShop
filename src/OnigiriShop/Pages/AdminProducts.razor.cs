@@ -12,7 +12,6 @@ namespace OnigiriShop.Pages
 {
     public class AdminProductsBase : CustomComponentBase
     {
-        [Inject] public IWebHostEnvironment WebHostEnv { get; set; } = default!;
         [Inject] public ProductService ProductService { get; set; } = default!;
         protected List<Product> Products { get; set; } = [];
         protected List<Product> FilteredProducts => Products;
@@ -58,7 +57,7 @@ namespace OnigiriShop.Pages
                 Description = p.Description,
                 Price = p.Price,
                 IsOnMenu = p.IsOnMenu,
-                ImagePath = p.ImagePath,
+                ImageBase64 = p.ImageBase64,
                 IsDeleted = p.IsDeleted
             };
             ModalError = null;
@@ -117,13 +116,14 @@ namespace OnigiriShop.Pages
         protected IBrowserFile? UploadedImage { get; set; }
         protected string GetProductImage(Product p)
         {
-            if (!string.IsNullOrWhiteSpace(p.ImagePath))
-                return p.ImagePath;
+            if (!string.IsNullOrWhiteSpace(p.ImageBase64))
+                return p.ImageBase64.StartsWith("data:image") ? p.ImageBase64 : $"data:image/jpeg;base64,{p.ImageBase64}";
+            
             return "data:image/svg+xml;utf8," + Uri.EscapeDataString(
                 @"<svg width='48' height='48' xmlns='http://www.w3.org/2000/svg'>
-            <rect width='100%' height='100%' fill='#e5e5e5'/>
-            <text x='50%' y='50%' text-anchor='middle' dy='.3em' font-size='10' fill='#888'>Aucune image</text>
-        </svg>");
+                    <rect width='100%' height='100%' fill='#e5e5e5'/>
+                    <text x='50%' y='50%' text-anchor='middle' dy='.3em' font-size='10' fill='#888'>Aucune image</text>
+                </svg>");
         }
 
         protected async Task OnImageSelected(InputFileChangeEventArgs e)
@@ -140,26 +140,16 @@ namespace OnigiriShop.Pages
                 return;
             }
 
-            var fileName = $"product_{Guid.NewGuid()}.jpg";
-            var relPath = $"images/products/{fileName}";
-            var absPath = Path.Combine(WebHostEnv.WebRootPath, "images", "products", fileName);
+            using var image = await Image.LoadAsync(UploadedImage.OpenReadStream(5_000_000)); // 5 Mo max
 
-            var directoryName = Path.GetDirectoryName(absPath);
-
-            if (!string.IsNullOrEmpty(directoryName))
-                Directory.CreateDirectory(directoryName); 
-
-            using (var image = await Image.LoadAsync(UploadedImage.OpenReadStream(5_000_000))) // 5 Mo max
+            image.Mutate(x => x.Resize(new ResizeOptions
             {
-                image.Mutate(x => x.Resize(new ResizeOptions
-                {
-                    Size = new Size(400, 400),
-                    Mode = ResizeMode.Max
-                }));
-                await image.SaveAsJpegAsync(absPath, new JpegEncoder { Quality = 70 });
-            }
-
-            ModalModel.ImagePath = "/" + relPath.Replace("\\", "/");
+                Size = new Size(800, 800),
+                Mode = ResizeMode.Max
+            }));
+            await using var ms = new MemoryStream();
+            await image.SaveAsJpegAsync(ms, new JpegEncoder { Quality = 80 });
+            ModalModel.ImageBase64 = "data:image/jpeg;base64," + Convert.ToBase64String(ms.ToArray());
             StateHasChanged();
         }
     }

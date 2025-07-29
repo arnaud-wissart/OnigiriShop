@@ -14,46 +14,22 @@
                 {
                     @foreach (var product in _products)
                     {
-                        var qty = GetProductCartQty(product.Id);
-
                         <div class="col-6-custom mb-4">
-                            <div class="onigiri-card">
-                                <img src="@product.ImagePath" alt="@product.Name" class="onigiri-img" />
+                            <div class="onigiri-card product-card" @onclick="() => OpenProductModal(product)">
+                                <img src="@GetProductImage(product)" alt="@product.Name" class="onigiri-img" />
                                 <div class="onigiri-info">
                                     <div class="onigiri-title">@product.Name</div>
                                     <div class="onigiri-desc">@product.Description</div>
                                     <div class="d-flex align-items-center justify-content-between mt-2">
                                         <div class="onigiri-price fw-bold fs-5">@($"{product.Price:C2}")</div>
                                         <div style="position:relative;display:inline-block;width:42px;">
-                                            <button class="btn btn-outline-success rounded-circle shadow-sm position-relative @( _animatedProductIds.Contains(product.Id) ? "cart-anim" : "" )"
-                                                    style="width:42px;height:42px;display:flex;align-items:center;justify-content:center;"
-                                                    @onclick="@(async () => await OnAddToCartClicked(product))">
-                                                <i class="@GetCartIconClass(qty) fs-4"></i>
-                                                @if (qty > 0)
-                                                {
-                                                    <!-- Badge à droite : quantité -->
-                                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-                                                          style="cursor:pointer;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:default;">
-                                                        @qty
-                                                        <span class="visually-hidden">produits dans le panier</span>
-                                                    </span>
-                                                    <!-- Badge à gauche : bouton “–”, identique visuellement, mais cliquable -->
-                                                    <span class="position-absolute top-0 start-0 translate-middle badge rounded-pill bg-white border border-danger text-danger"
-                                                          style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none;"
-                                                          title="Retirer un produit"
-                                                          @onclick="@(async (e) => await OnRemoveFromCartClicked(product))"
-                                                    @onclick:stopPropagation>
-                                                        <i class="bi bi-dash" style="font-size:1.08em;font-weight:bold;pointer-events:none;"></i>
-                                                    </span>
 
-                                                }
+                                            <button class="btn btn-outline-success rounded-circle shadow-sm" style="width:42px;height:42px;display:flex;align-items:center;justify-content:center;" @onclick:stopPropagation="true" @onclick="() => OpenProductModal(product)">
+                                                <i class="bi bi-plus fs-4"></i>
                                             </button>
+
                                         </div>
                                     </div>
-
-
-
-
                                 </div>
                             </div>
                         </div>
@@ -64,3 +40,28 @@
         <div class="col-2 d-none d-lg-block"></div>
     </div>
 </div>
+
+@if (ModalProduct != null)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background:rgba(33,33,33,0.25);" @onclick="CloseProductModal">
+        <div class="modal-dialog modal-dialog-centered product-modal-dialog" @onclick:stopPropagation>
+            <div class="modal-content">
+                <div class="product-modal-body">
+                    <img src="@GetProductImage(ModalProduct)" alt="@ModalProduct.Name" class="w-100" />
+                    <div class="p-3">
+                        <h4 class="mb-2">@ModalProduct.Name</h4>
+                        <p>@ModalProduct.Description</p>
+                    </div>
+                </div>
+                <div class="product-modal-footer p-3">
+                    <div class="d-flex align-items-center justify-content-center gap-3 mb-3">
+                        <button class="btn btn-outline-secondary qty-btn" disabled="@(ModalQuantity<=1)" @onclick="DecreaseQty"><i class="bi bi-dash"></i></button>
+                        <span>@ModalQuantity</span>
+                        <button class="btn btn-outline-secondary qty-btn" @onclick="IncreaseQty"><i class="bi bi-plus"></i></button>
+                    </div>
+                    <button class="btn btn-success w-100" @onclick="AddSelectedToCart">Ajouter pour @((ModalProduct.Price * ModalQuantity).ToString("0.00")) €</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}

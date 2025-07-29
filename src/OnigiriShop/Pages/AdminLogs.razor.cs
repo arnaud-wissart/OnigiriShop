@@ -15,7 +15,6 @@ public class AdminLogsBase : CustomComponentBase
     protected string LogContent { get; set; } = string.Empty;
     protected IBrowserFile? DbFile { get; set; }
     protected bool IsBusy { get; set; }
-    protected bool ShowRestoreConfirm { get; set; }
     protected DateTime? LastBackupDate { get; set; }
     protected DateTime? FilterStart { get; set; }
     protected DateTime? FilterEnd { get; set; }
@@ -26,6 +25,8 @@ public class AdminLogsBase : CustomComponentBase
         await base.OnInitializedAsync();
         LogFiles = MaintenanceService.GetLogFiles().ToList();
         SelectedLogFile = LogFiles.FirstOrDefault();
+        FilterEnd = DateTime.Now;
+        FilterStart = DateTime.Now.AddHours(-1);
         await LoadLogAsync();
         LastBackupDate = MaintenanceService.GetLastBackupDate();
     }
@@ -75,17 +76,4 @@ public class AdminLogsBase : CustomComponentBase
     }
 
     protected async Task TriggerDbUpload() => await JS.InvokeVoidAsync("triggerFileInput", "dbUpload");
-
-    protected void ConfirmRestoreBackup() => ShowRestoreConfirm = true;
-
-    protected void CancelRestore() => ShowRestoreConfirm = false;
-
-    protected async Task RestoreBackupConfirmed()
-    {
-        ShowRestoreConfirm = false;
-        IsBusy = true;
-        await MaintenanceService.RestoreLastBackupAsync();
-        LastBackupDate = MaintenanceService.GetLastBackupDate();
-        IsBusy = false;
-    }
 }

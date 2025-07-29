@@ -780,7 +780,18 @@
     cursor: not-allowed;
 }
 
-/* Garantit l'affichage des bordures sur les listes déroulantes */
-.form-select {
-    border: 1px solid #ced4da !important;
+/* ---- Modal produit ---- */
+.product-card {
+    cursor: pointer;
+}
+
+.product-modal-body {
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.product-modal-footer {
+    position: sticky;
+    bottom: 0;
+    background: #fff;
 }

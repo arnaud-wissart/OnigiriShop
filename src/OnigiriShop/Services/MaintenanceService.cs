@@ -81,17 +81,29 @@ public class MaintenanceService(IWebHostEnvironment env, IMigrationRunner runner
 
     public async Task ReplaceDatabaseAsync(Stream stream)
     {
+        var temp = Path.GetTempFileName();
+        await using (var fs = new FileStream(temp, FileMode.Create, FileAccess.Write))
+            await stream.CopyToAsync(fs);
+
+        var schemaPath = Path.Combine(_env.ContentRootPath, "SQL", "init_db.sql");
+        var expectedHash = DatabaseInitializer.ComputeSchemaHash(schemaPath);
+
+        DatabaseInitializer.EnsureDatabaseValid(temp);
+        if (!DatabaseInitializer.IsSchemaUpToDate(temp, expectedHash))
+        {
+            File.Delete(temp);
+            throw new InvalidOperationException("Base incompatible");
+        }
+
         var dbPath = DatabasePaths.GetPath();
         DatabaseInitializer.DeleteDatabase(dbPath);
         var dir = Path.GetDirectoryName(dbPath);
         if (!string.IsNullOrEmpty(dir))
             Directory.CreateDirectory(dir);
-        using (var fs = new FileStream(dbPath, FileMode.Create, FileAccess.Write))
-            await stream.CopyToAsync(fs);
+        File.Move(temp, dbPath, true);
 
         _runner.MigrateUp();
-        var schemaPath = Path.Combine(_env.ContentRootPath, "SQL", "init_db.sql");
-        var expectedHash = DatabaseInitializer.ComputeSchemaHash(schemaPath);
+
         DatabaseInitializer.SetSchemaHash(dbPath, expectedHash);
     }
 

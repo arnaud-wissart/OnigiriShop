@@ -24,7 +24,7 @@ namespace Tests.Unit
                 Description TEXT,
                 Price REAL,
                 IsOnMenu INTEGER,
-                ImagePath TEXT,
+                ImageBase64 TEXT,
                 IsDeleted INTEGER
             );";
             cmd.ExecuteNonQuery();
@@ -45,7 +45,7 @@ namespace Tests.Unit
                 Description = "Riz Japonais",
                 Price = 3.5m,
                 IsOnMenu = true,
-                ImagePath = "onigiri.png",
+                ImageBase64 = "onigiri",
                 IsDeleted = false
             };
 
@@ -66,8 +66,8 @@ namespace Tests.Unit
             // Seed un produit
             using (var cmd = _conn.CreateCommand())
             {
-                cmd.CommandText = @"INSERT INTO Product (Name, Description, Price, IsOnMenu, ImagePath, IsDeleted)
-                                VALUES ('Test', 'Desc', 1.99, 1, 'img.png', 0)";
+                cmd.CommandText = @"INSERT INTO Product (Name, Description, Price, IsOnMenu, ImageBase64, IsDeleted)
+                                    VALUES ('Test', 'Desc', 1.99, 1, 'img.png', 0)";
                 cmd.ExecuteNonQuery();
             }
 
@@ -82,8 +82,8 @@ namespace Tests.Unit
             // Seed un produit
             using (var cmd = _conn.CreateCommand())
             {
-                cmd.CommandText = @"INSERT INTO Product (Name, Description, Price, IsOnMenu, ImagePath, IsDeleted)
-                                VALUES ('Test', 'Desc', 1.99, 1, 'img.png', 0)";
+                cmd.CommandText = @"INSERT INTO Product (Name, Description, Price, IsOnMenu, ImageBase64, IsDeleted)
+                                    VALUES ('Test', 'Desc', 1.99, 1, 'img.png', 0)";
                 cmd.ExecuteNonQuery();
             }
 
@@ -94,7 +94,7 @@ namespace Tests.Unit
                 Description = "Nouvelle desc",
                 Price = 4.5m,
                 IsOnMenu = false,
-                ImagePath = "nouveau.png"
+                ImageBase64 = "nouveau"
             };
 
             var result = await _service.UpdateAsync(updatedProduct);
@@ -112,8 +112,8 @@ namespace Tests.Unit
             // Seed un produit
             using (var cmd = _conn.CreateCommand())
             {
-                cmd.CommandText = @"INSERT INTO Product (Name, Description, Price, IsOnMenu, ImagePath, IsDeleted)
-                                VALUES ('Test', 'Desc', 1.99, 1, 'img.png', 0)";
+                cmd.CommandText = @"INSERT INTO Product (Name, Description, Price, IsOnMenu, ImageBase64, IsDeleted)
+                                    VALUES ('Test', 'Desc', 1.99, 1, 'img.png', 0)";
                 cmd.ExecuteNonQuery();
             }
 
@@ -135,8 +135,8 @@ namespace Tests.Unit
             // Seed deux produits, un supprimé
             using (var cmd = _conn.CreateCommand())
             {
-                cmd.CommandText = @"INSERT INTO Product (Name, Description, Price, IsOnMenu, ImagePath, IsDeleted)
-                                VALUES ('P1', 'A', 1, 1, 'img.png', 0), ('P2', 'B', 2, 1, 'img.png', 1)";
+                cmd.CommandText = @"INSERT INTO Product (Name, Description, Price, IsOnMenu, ImageBase64, IsDeleted)
+                                    VALUES ('P1', 'A', 1, 1, 'img.png', 0), ('P2', 'B', 2, 1, 'img.png', 1)";
                 cmd.ExecuteNonQuery();
             }
 

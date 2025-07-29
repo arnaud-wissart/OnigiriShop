@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS Product (
     Description TEXT,
     Price REAL NOT NULL,
     IsOnMenu INTEGER NOT NULL DEFAULT 0,   -- 1: affiché sur le menu, 0: non affiché
-    ImagePath TEXT,
+    ImageBase64 TEXT,
     IsDeleted INTEGER NOT NULL DEFAULT 0   -- 1: supprimé (soft delete), 0: actif
 );
 

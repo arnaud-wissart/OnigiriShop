@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using OnigiriShop.Data.Models;
 using OnigiriShop.Infrastructure;
 using OnigiriShop.Services;
@@ -20,5 +21,17 @@ public class AdminStatsBase : CustomComponentBase
         await LoadAsync();
     }
 
-    protected async Task LoadAsync() => Result = await StatsService.GetStatsAsync(StartDate, EndDate);
+    protected async Task LoadAsync()
+    {
+        Result = await StatsService.GetStatsAsync(StartDate, EndDate);
+        if (Result != null)
+        {
+            await JS.InvokeVoidAsync("updateStatsChart", new
+            {
+                totalOrders = Result.TotalOrders,
+                uniqueCustomers = Result.UniqueCustomers,
+                totalRevenue = Result.TotalRevenue
+            });
+        }
+    }
 }

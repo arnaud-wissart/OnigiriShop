@@ -111,14 +111,7 @@
                         <div class="mb-3">
                             <label>Image produit</label>
                             <InputFile OnChange="OnImageSelected" accept="image/*" class="form-control" />
-                            @if (!string.IsNullOrWhiteSpace(ModalModel.ImagePath))
-                            {
-                                <img src="@ModalModel.ImagePath" style="width:64px;height:64px;border-radius:10px;object-fit:cover;border:1px solid #eceae6; margin-top:0.5rem;" alt="Image du produit" />
-                            }
-                            else if (UploadedImage != null)
-                            {
-                                <img src="@GetProductImage(ModalModel)" style="width:64px;height:64px;border-radius:10px;object-fit:cover;border:1px solid #eceae6; margin-top:0.5rem;" alt="Aucune image" />
-                            }
+                            <img src="@GetProductImage(ModalModel)" style="width:64px;height:64px;border-radius:10px;object-fit:cover;border:1px solid #eceae6; margin-top:0.5rem;" alt="Image du produit" />
                         </div>
                         @if (IsEdit)
                         {
