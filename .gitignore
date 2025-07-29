@@ -431,4 +431,6 @@ src/OnigiriShop/wwwroot/fullcalendar/
 src/OnigiriShop/wwwroot/images/
 src/OnigiriShop/wwwroot/quill/
 src/OnigiriShop/App_Data
+src/OnigiriShop/wwwroot/flatpickr/
+src/OnigiriShop/wwwroot/chart.js/
 /src/OnigiriShop/onigirishop-467307-6918df385cf5.json

@@ -53,14 +53,6 @@ namespace OnigiriShop.Shared
             await JS.InvokeVoidAsync("bootstrapInterop.hideModal", "#logoutConfirmModal");
             await JS.InvokeVoidAsync("onigiriAuth.logout", "/");
         }
-        protected void GotoAdmin() => Nav.NavigateTo("/admin");
-        protected void GotoUsers() => Nav.NavigateTo("/admin/users");
-        protected void GotoCatalog() => Nav.NavigateTo("/admin/products");
-        protected void GotoDeliveries() => Nav.NavigateTo("/admin/deliveries");
-        protected void GotoStats() => Nav.NavigateTo("/admin/stats");
-        protected void GotoShop() => Nav.NavigateTo("/");
-        protected void GotoEmails() => Nav.NavigateTo("/admin/emails");
-        protected void GotoLogs() => Nav.NavigateTo("/admin/logs");
 
         protected void StartEdit()
         {

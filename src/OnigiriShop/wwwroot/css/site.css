@@ -827,3 +827,57 @@
 .cart-container {
     padding-bottom: 5rem;
 }
+
+/* ---------------- ADMIN FAB MENU ---------------- */
+.admin-fab-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 4020;
+}
+
+.admin-fab {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: none;
+    background: #0d6efd;
+    color: #fff;
+    font-size: 1.7rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.14), 0 1.5px 5px rgba(44,100,200,0.10);
+    transition: background .2s, transform .15s;
+}
+
+    .admin-fab:hover {
+        background: #198754;
+        transform: scale(1.08);
+    }
+
+.admin-fab-menu {
+    position: absolute;
+    bottom: 70px;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.admin-fab-item {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    border: none;
+    background: #fff;
+    color: #0d6efd;
+    font-size: 1.3rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background .18s, color .18s;
+}
+
+    .admin-fab-item:hover {
+        background: #0d6efd;
+        color: #fff;
+    }

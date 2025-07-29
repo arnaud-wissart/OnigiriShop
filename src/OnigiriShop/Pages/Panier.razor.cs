@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.JSInterop;
 using OnigiriShop.Data.Models;
 using OnigiriShop.Infrastructure;
 using OnigiriShop.Services;
@@ -14,6 +15,8 @@ namespace OnigiriShop.Pages
         [Inject] public ProductService ProductService { get; set; } = default!;
         [Inject] public AuthenticationStateProvider AuthProvider { get; set; } = default!;
         [Inject] public NavigationManager Nav { get; set; } = default!;
+
+        protected DotNetObjectReference<PanierBase>? objRef;
 
         protected bool _orderSent;
         protected string? _resultMessage;
@@ -58,6 +61,8 @@ namespace OnigiriShop.Pages
         {
             await base.OnInitializedAsync();
 
+            objRef = DotNetObjectReference.Create(this);
+
             CartState.OnChanged += OnCartChanged;
 
             _items = await CartProvider.GetCurrentCartItemsWithProductsAsync();
@@ -79,6 +84,12 @@ namespace OnigiriShop.Pages
             _items = await CartProvider.GetCurrentCartItemsWithProductsAsync();
             _totalPrice = _items.Sum(x => x.Quantity * (x.Product?.Price ?? 0));
             StateHasChanged();
+        }
+
+        protected override async Task OnAfterRenderAsync(bool firstRender)
+        {
+            if (firstRender)
+                await RefreshDatePickerAsync();
         }
 
         protected async Task IncrementQuantity(CartItemWithProduct item)
@@ -126,6 +137,26 @@ namespace OnigiriShop.Pages
             FilteredDeliveries = string.IsNullOrWhiteSpace(SelectedPlace)
                 ? Deliveries.ToList()
                 : Deliveries.Where(d => d.Place == SelectedPlace).ToList();
+
+            _ = InvokeAsync(RefreshDatePickerAsync);
+        }
+
+        private Task RefreshDatePickerAsync()
+        {
+            var list = FilteredDeliveries.Select(d => new
+            {
+                id = d.Id,
+                date = d.DeliveryAt.ToString("yyyy-MM-dd HH:mm")
+            }).ToList();
+            return JS.InvokeVoidAsync("onigiriDatePicker.init", "deliveryDateInput", objRef!, list).AsTask();
+        }
+
+        [JSInvokable]
+        public void OnDateSelected(int deliveryId)
+        {
+            SelectedDeliveryId = deliveryId;
+            SelectedDelivery = Deliveries.FirstOrDefault(d => d.Id == deliveryId);
+            StateHasChanged();
         }
 
         protected async Task SubmitOrder()
@@ -187,8 +218,11 @@ namespace OnigiriShop.Pages
             StateHasChanged();
         }
 
-        public void Dispose() => CartState.OnChanged -= OnCartChanged;
+        public void Dispose()
+        {
+            CartState.OnChanged -= OnCartChanged;
+            objRef?.Dispose();
+        }
 
-        protected void GoToHome() => Nav.NavigateTo("/");
     }
 }

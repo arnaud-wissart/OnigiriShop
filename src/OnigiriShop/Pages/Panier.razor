@@ -150,27 +150,21 @@
                             <label class="fw-bold mb-2">Sélectionner une livraison</label>
                             <div class="row">
                                 <div class="col-md-4">
-                                    <select class="form-select mb-2"
-                                        @bind="SelectedPlace" required>
-                                        <option value="" disabled selected>-- Choisir un lieu --</option>
-                                        @foreach (var place in DistinctPlaces)
-                                        {
-                                            <option value="@place">@place</option>
-                                        }
-                                    </select>
+                                    @foreach (var place in DistinctPlaces)
+                                    {
+                                        var id = $"place_{place.GetHashCode()}";
+                                        <div class="form-check mb-1">
+                                            <input class="form-check-input" type="radio" name="deliveryPlace"
+                                                   id="@id" value="@place"
+                                                   checked="@(SelectedPlace == place)"
+                                                   @onchange="e => SelectedPlace = e.Value?.ToString() ?? string.Empty" />
+                                            <label class="form-check-label" for="@id">@place</label>
+                                        </div>
+                                    }
                                 </div>
                                 <div class="col-md-8">
-                                    <select class="form-select"
-                                            @bind="SelectedDeliveryId"
-                                            disabled="@string.IsNullOrWhiteSpace(SelectedPlace)">
-                                        <option value="">-- Choisir une date --</option>
-                                        @foreach (var delivery in FilteredDeliveries)
-                                        {
-                                            <option value="@delivery.Id">
-                                                @delivery.DeliveryAt.ToString("dddd dd/MM/yyyy HH:mm")
-                                            </option>
-                                        }
-                                    </select>
+                                    <input id="deliveryDateInput" class="form-control" placeholder="Choisir une date"
+                                           disabled="@string.IsNullOrWhiteSpace(SelectedPlace)" />
                                 </div>
                             </div>
                         </div>

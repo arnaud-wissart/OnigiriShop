@@ -22,5 +22,11 @@
       "library": "Chart.js@4.4.1",
       "destination": "wwwroot/chart.js/"
     }
-  ]
+  ,
+{
+  "provider": "cdnjs",
+  "library": "flatpickr@4.6.13",
+  "destination": "wwwroot/flatpickr/"
+}
+]
 }

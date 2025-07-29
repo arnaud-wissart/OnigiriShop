@@ -10,6 +10,7 @@
     </div>
     <main class="flex-fill pt-4 position-relative">
         <CartBar ShowCart="@ShowCartSticky" />
+        <AdminFabMenu />
         <ErrorModal Show="@ErrorModalService.Show"
                     ShowChanged="ErrorModalService.Hide"
                     Message="@ErrorModalService.Message"

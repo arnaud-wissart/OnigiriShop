@@ -402,3 +402,27 @@ window.updateStatsChart = function (data) {
         options: { responsive: true, plugins: { legend: { display: false } } }
     });
 };
+// ==================== Date Picker (Flatpickr) ====================
+window.onigiriDatePicker = {
+    init: function (inputId, dotNetHelper, deliveries) {
+        if (!window.flatpickr) return;
+        var input = document.getElementById(inputId);
+        if (!input) return;
+        if (input._flatpickr) {
+            input._flatpickr.destroy();
+        }
+        var opts = {
+            enableTime: true,
+            dateFormat: "Y-m-d H:i",
+            locale: flatpickr.l10ns.fr,
+            disableMobile: true,
+            enable: deliveries.map(d => d.date),
+            onChange: function (selectedDates, dateStr) {
+                var del = deliveries.find(x => x.date === dateStr);
+                if (del)
+                    dotNetHelper.invokeMethodAsync('OnDateSelected', del.id);
+            }
+        };
+        flatpickr(input, opts);
+    }
+};
