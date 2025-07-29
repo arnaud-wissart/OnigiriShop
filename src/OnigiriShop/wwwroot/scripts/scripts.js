@@ -340,16 +340,6 @@ window.focusElementByName = function (name) {
     if (el) { el.focus(); if (el.select) el.select(); }
 };
 
-window.adjustCartContentHeight = function () {
-    const content = document.querySelector('.cart-box');
-    if (!content) return;
-    let max = window.innerHeight - 160;
-    if (max < 120) max = 120;
-    content.style.maxHeight = max + "px";
-};
-
-window.addEventListener('resize', () => window.adjustCartContentHeight());
-
 window.downloadFileFromText = (filename, text) => {
     const element = document.createElement('a');
     element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));

@@ -1,43 +1,37 @@
 ﻿@page "/"
 @inherits IndexBase
 
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-1 d-none d-lg-block"></div>
-        <div class="col-12 col-lg-9 pt-3">
-            <div class="products-list" id="products-list">
-                @if (_products == null)
-                {
-                    <div class="text-center"><span>Chargement...</span></div>
-                }
-                else
-                {
-                    @foreach (var product in _products)
-                    {
-                        <div class="col-6-custom mb-4">
-                            <div class="onigiri-card product-card" @onclick="() => OpenProductModal(product)">
-                                <img src="@GetProductImage(product)" alt="@product.Name" class="onigiri-img" />
-                                <div class="onigiri-info">
-                                    <div class="onigiri-title">@product.Name</div>
-                                    <div class="onigiri-desc">@product.Description</div>
-                                    <div class="d-flex align-items-center justify-content-between mt-2">
-                                        <div class="onigiri-price fw-bold fs-5">@($"{product.Price:C2}")</div>
-                                        <div style="position:relative;display:inline-block;width:42px;">
+<div class="container-fluid pt-3">
+    <div class="products-list" id="products-list">
+        @if (_products == null)
+        {
+            <div class="text-center"><span>Chargement...</span></div>
+        }
+        else
+        {
+            @foreach (var product in _products)
+            {
+                <div class="product-col mb-4">
+                    <div class="onigiri-card product-card" @onclick="() => OpenProductModal(product)">
+                        <img src="@GetProductImage(product)" alt="@product.Name" class="onigiri-img" />
+                        <div class="onigiri-info">
+                            <div class="onigiri-title">@product.Name</div>
+                            <div class="onigiri-desc">@product.Description</div>
+                            <div class="d-flex align-items-center justify-content-between mt-2">
+                                <div class="onigiri-price fw-bold fs-5">@($"{product.Price:C2}")</div>
+                                <div style="position:relative;display:inline-block;width:42px;">
 
-                                            <button class="btn btn-outline-success rounded-circle shadow-sm" style="width:42px;height:42px;display:flex;align-items:center;justify-content:center;" @onclick:stopPropagation="true" @onclick="() => OpenProductModal(product)">
-                                                <i class="bi bi-plus fs-4"></i>
-                                            </button>
+                                    <button class="btn btn-outline-success rounded-circle shadow-sm" style="width:42px;height:42px;display:flex;align-items:center;justify-content:center;" @onclick:stopPropagation="true" @onclick="() => OpenProductModal(product)">
+                                        <i class="bi bi-plus fs-4"></i>
+                                    </button>
 
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
                         </div>
-                    }
-                }
-            </div>
-        </div>
-        <div class="col-2 d-none d-lg-block"></div>
+                    </div>
+                </div>
+            }
+        }
     </div>
 </div>
 
@@ -45,7 +39,10 @@
 {
     <div class="modal fade show d-block" tabindex="-1" style="background:rgba(33,33,33,0.25);" @onclick="CloseProductModal">
         <div class="modal-dialog modal-dialog-centered product-modal-dialog" @onclick:stopPropagation>
-            <div class="modal-content">
+            <div class="modal-content position-relative">
+                <button type="button" class="product-modal-close" @onclick="CloseProductModal">
+                    <i class="bi bi-x-lg"></i>
+                </button>
                 <div class="product-modal-body">
                     <img src="@GetProductImage(ModalProduct)" alt="@ModalProduct.Name" class="w-100" />
                     <div class="p-3">

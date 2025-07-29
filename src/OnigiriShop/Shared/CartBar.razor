@@ -1,0 +1,57 @@
+﻿@inherits CartBarBase
+
+@if (_hasItems || !ShowCart)
+{
+    <div class="cart-bar show" @onclick="OnClick">
+        @if (ShowCart)
+        {
+            <div class="cart-bar-info">
+                <span class="cart-bar-count">@_itemsCount @((_itemsCount > 1) ? "produits" : "produit")</span>
+                <span class="mx-2">•</span>
+                <span class="cart-bar-total">@(_totalPrice.ToString("0.00")) €</span>
+                <span class="mx-2">•</span>
+                <span class="cart-bar-action">Voir le panier</span>
+            </div>
+        }
+        else
+        {
+            <div class="cart-bar-message text-center">
+                Vous avez oublié quelque chose&nbsp;?<br />
+                <span class="small text-primary">Pas de souci, la boutique reste ouverte juste pour vous 24/24h et 7/7j&nbsp;😉</span>
+            </div>
+        }
+    </div>
+}
+
+@if (_showModal)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background:rgba(33,33,33,0.3);" @onclick="CloseModal">
+        <div class="modal-dialog modal-dialog-centered" @onclick:stopPropagation>
+            <div class="modal-content p-3">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold">Mon panier</h5>
+                    <button type="button" class="btn-close" @onclick="CloseModal"></button>
+                </div>
+                <div class="modal-body">
+                    <ul class="list-group mb-3">
+                        @foreach (var item in _items)
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>@item.Quantity x @item.Product!.Name</span>
+                                <span class="fw-semibold">@((item.Quantity * item.Product!.Price).ToString("0.00")) €</span>
+                            </li>
+                        }
+                    </ul>
+                    <div class="d-flex justify-content-between border-top pt-2 fw-bold">
+                        <span>Total</span>
+                        <span>@(_totalPrice.ToString("0.00")) €</span>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button class="btn btn-secondary" @onclick="CloseModal">Continuer</button>
+                    <button class="btn btn-success ms-2" @onclick="GoToCart">Finaliser la commande</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}

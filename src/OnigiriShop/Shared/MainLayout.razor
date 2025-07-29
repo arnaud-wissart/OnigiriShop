@@ -2,18 +2,18 @@
 
 <MainHeader />
 
-<div class="japan-overlay d-none d-lg-flex">
-    <div class="japan-vertical">おにぎりとスポンジケーキ</div>
-</div>
-
 <BootstrapToasts />
 
-<main class="container-fluid pt-4">
-        <CartSticky ShowCart="@ShowCartSticky" />
-        <CartFab ShowCart="@ShowCartSticky" />
+<div class="layout-container d-flex">
+    <div class="japan-column d-none d-lg-flex">
+        <div class="japan-vertical">おにぎりとスポンジケーキ</div>
+    </div>
+    <main class="flex-fill pt-4 position-relative">
+        <CartBar ShowCart="@ShowCartSticky" />
         <ErrorModal Show="@ErrorModalService.Show"
                     ShowChanged="ErrorModalService.Hide"
                     Message="@ErrorModalService.Message"
                     Title="@ErrorModalService.Title" />
         @Body
-</main>
+    </main>
+</div>
