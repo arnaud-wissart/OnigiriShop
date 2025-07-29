@@ -20,7 +20,7 @@
     },
     {
       "library": "Chart.js@4.4.1",
-      "destination": "wwwroot/Chart.js/"
+      "destination": "wwwroot/chart.js/"
     }
   ]
 }
