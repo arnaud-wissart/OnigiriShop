@@ -31,7 +31,18 @@ public class MaintenanceServiceTests
         }
         var sqlDir = Path.Combine(tempDir, "SQL");
         Directory.CreateDirectory(sqlDir);
-        await File.WriteAllTextAsync(Path.Combine(sqlDir, "init_db.sql"), "");
+        var schemaPath = Path.Combine(sqlDir, "init_db.sql");
+        await File.WriteAllTextAsync(schemaPath, string.Empty);
+
+        var expectedHash = OnigiriShop.Infrastructure.DatabaseInitializer
+            .ComputeSchemaHash(schemaPath);
+        using (var conn = new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={backupPath};Pooling=False"))
+        {
+            conn.Open();
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = $"PRAGMA user_version = {(int)expectedHash};";
+            cmd.ExecuteNonQuery();
+        }
         Environment.SetEnvironmentVariable("ONIGIRISHOP_DB_PATH", dbPath);
 
         try

@@ -2,10 +2,9 @@
 @using OnigiriShop.Data.Models
 @inherits PanierBase
 
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-1 d-none d-lg-block"></div>
-        <div class="col-12 col-lg-9 pt-3">
+<div class="container-fluid pt-3 cart-container">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-10">
             <div class="card shadow rounded-3 overflow-hidden border mb-4 me-3" style="background:#fff;">
 
                 <h4 class="card-title px-4 pt-4 pb-3 mb-0 border-bottom bg-light fw-bold" style="color:#212529; letter-spacing:0.01em;">
@@ -192,7 +191,6 @@
                 </div>
             </div>
         </div>
-        <div class="col-2 d-none d-lg-block"></div>
     </div>
 </div>
 
@@ -217,6 +215,7 @@
         </div>
     </div>
 }
+
 @if (ShowConfirmationModal)
 {
     <div class="modal fade show d-block" tabindex="-1" style="background:rgba(30,30,36,0.23); z-index: 9999;">
@@ -254,3 +253,4 @@
     </div>
     <div class="modal-backdrop fade show"></div>
 }
+

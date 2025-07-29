@@ -23,6 +23,48 @@
     </div>
 }
 
+@if (ShowRemoveModal)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background:rgba(33,33,33,0.18); z-index:1060;">
+        <div class="modal-dialog modal-dialog-centered" @onclick:stopPropagation>
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmer la suppression</h5>
+                </div>
+                <div class="modal-body">
+                    Êtes-vous sûr(e) de vouloir retirer
+                    <b>@ItemToRemove?.Product?.Name</b>
+                    de votre panier ?
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CancelRemove">Annuler</button>
+                    <button class="btn btn-danger" @onclick="ConfirmRemove">Supprimer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (ShowClearCartModal)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background:rgba(33,33,33,0.18); z-index:1060;">
+        <div class="modal-dialog modal-dialog-centered" @onclick:stopPropagation>
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header">
+                    <h5 class="modal-title">Vider le panier&nbsp;?</h5>
+                </div>
+                <div class="modal-body">
+                    Voulez-vous vraiment supprimer tous les articles de votre panier&nbsp;?
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CancelClearCart">Annuler</button>
+                    <button class="btn btn-danger" @onclick="ConfirmClearCart">Vider</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
 @if (_showModal)
 {
     <div class="modal fade show d-block" tabindex="-1" style="background:rgba(33,33,33,0.3);" @onclick="CloseModal">
@@ -30,15 +72,27 @@
             <div class="modal-content p-3">
                 <div class="modal-header border-0">
                     <h5 class="modal-title fw-bold">Mon panier</h5>
-                    <button type="button" class="btn-close" @onclick="CloseModal"></button>
+                    <div class="d-flex align-items-center gap-2 ms-auto">
+                        <button class="btn btn-sm btn-outline-danger" title="Vider le panier" @onclick="PromptClearCart"><i class="bi bi-trash"></i></button>
+                        <button type="button" class="btn-close" @onclick="CloseModal"></button>
+                    </div>
                 </div>
                 <div class="modal-body">
                     <ul class="list-group mb-3">
                         @foreach (var item in _items)
                         {
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>@item.Quantity x @item.Product!.Name</span>
-                                <span class="fw-semibold">@((item.Quantity * item.Product!.Price).ToString("0.00")) €</span>
+                            <li class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="me-3 flex-grow-1">@item.Product!.Name</span>
+                                    <div class="cart-item-controls">
+                                        <div class="btn-group me-2" role="group">
+                                            <button class="btn btn-outline-secondary btn-sm px-2 py-0" @onclick="() => DecrementQuantity(item)"><i class="bi bi-dash"></i></button>
+                                            <span class="px-2">@item.Quantity</span>
+                                            <button class="btn btn-outline-secondary btn-sm px-2 py-0" @onclick="() => IncrementQuantity(item)"><i class="bi bi-plus"></i></button>
+                                        </div>
+                                        <span class="fw-semibold">@((item.Quantity * item.Product!.Price).ToString("0.00")) €</span>
+                                    </div>
+                                </div>
                             </li>
                         }
                     </ul>
@@ -48,8 +102,7 @@
                     </div>
                 </div>
                 <div class="modal-footer border-0">
-                    <button class="btn btn-secondary" @onclick="CloseModal">Continuer</button>
-                    <button class="btn btn-success ms-2" @onclick="GoToCart">Finaliser la commande</button>
+                    <button class="btn btn-success w-100" @onclick="GoToCart">Finaliser la commande</button>
                 </div>
             </div>
         </div>
