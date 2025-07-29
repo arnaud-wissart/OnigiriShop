@@ -62,5 +62,27 @@ namespace OnigiriShop.Infrastructure
             if (File.Exists(dbPath))
                 File.Delete(dbPath);
         }
+
+        /// <summary>
+        /// Vérifie que le fichier SQLite est valide. Si le fichier existe mais
+        /// n'est pas une base SQLite valide, il est supprimé pour permettre une
+        /// recréation propre au prochain démarrage.
+        /// </summary>
+        public static void EnsureDatabaseValid(string dbPath)
+        {
+            if (!File.Exists(dbPath))
+                return;
+
+            try
+            {
+                using var conn = new SqliteConnection($"Data Source={dbPath};Mode=ReadOnly;Pooling=False");
+                conn.Open();
+            }
+            catch (SqliteException ex) when (ex.SqliteErrorCode == 26)
+            {
+                // SQLITE_NOTADB => le fichier n'est pas une base SQLite valide
+                File.Delete(dbPath);
+            }
+        }
     }
 }
