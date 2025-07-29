@@ -12,7 +12,7 @@
             @foreach (var product in _products)
             {
                 <div class="product-col mb-4">
-                    <div class="onigiri-card product-card" @onclick="() => OpenProductModal(product)">
+                    <div class="onigiri-card product-card">
                         <img src="@GetProductImage(product)" alt="@product.Name" class="onigiri-img" />
                         <div class="onigiri-info">
                             <div class="onigiri-title">@product.Name</div>
@@ -21,9 +21,14 @@
                                 <div class="onigiri-price fw-bold fs-5">@($"{product.Price:C2}")</div>
                                 <div style="position:relative;display:inline-block;width:42px;">
 
-                                    <button class="btn btn-outline-success rounded-circle shadow-sm" style="width:42px;height:42px;display:flex;align-items:center;justify-content:center;" @onclick:stopPropagation="true" @onclick="() => OpenProductModal(product)">
+                                    <button class="btn btn-outline-success rounded-circle shadow-sm" style="width:42px;height:42px;display:flex;align-items:center;justify-content:center;" @onclick:stopPropagation="true" @onclick="() => AddToCart(product)">
                                         <i class="bi bi-plus fs-4"></i>
                                     </button>
+
+                                    @if (GetQuantity(product.Id) > 0)
+                                    {
+                                        <span class="product-badge">@GetQuantity(product.Id)</span>
+                                    }
 
                                 </div>
                             </div>

@@ -3,7 +3,7 @@
 @if (IsAdmin)
 {
     <div class="admin-fab-container">
-        <button class="admin-fab" @onclick="ToggleMenu" data-bs-toggle="tooltip" data-bs-placement="left" title="Menu admin">
+        <button class="admin-fab" @onclick="ToggleMenu" data-bs-toggle="tooltip" data-bs-placement="left" data-bs-custom-class="fab-tooltip" title="Menu admin">
             <i class="bi bi-gear-fill"></i>
         </button>
         @if (ShowMenu)
@@ -11,18 +11,18 @@
             <div class="admin-fab-menu">
                 @if (IsAdminPage)
                 {
-                    <button class="admin-fab-item" @onclick="GotoShop" title="Boutique"><i class="bi bi-shop"></i></button>
+                    <button class="admin-fab-item" @onclick="GotoShop" title="Boutique" data-bs-toggle="tooltip" data-bs-placement="left" data-bs-custom-class="fab-tooltip"><i class="bi bi-shop"></i></button>
                 }
                 else
                 {
-                    <button class="admin-fab-item" @onclick="GotoAdmin" title="Administration"><i class="bi bi-shield-lock-fill"></i></button>
+                    <button class="admin-fab-item" @onclick="GotoAdmin" title="Administration" data-bs-toggle="tooltip" data-bs-placement="left" data-bs-custom-class="fab-tooltip"><i class="bi bi-shield-lock-fill"></i></button>
                 }
-                <button class="admin-fab-item" @onclick="GotoUsers" title="Utilisateurs"><i class="bi bi-people-fill"></i></button>
-                <button class="admin-fab-item" @onclick="GotoCatalog" title="Produits"><i class="bi bi-basket"></i></button>
-                <button class="admin-fab-item" @onclick="GotoEmails" title="Emails"><i class="bi bi-envelope-paper"></i></button>
-                <button class="admin-fab-item" @onclick="GotoDeliveries" title="Livraisons"><i class="bi bi-truck"></i></button>
-                <button class="admin-fab-item" @onclick="GotoStats" title="Stats"><i class="bi bi-bar-chart"></i></button>
-                <button class="admin-fab-item" @onclick="GotoLogs" title="Logs"><i class="bi bi-file-earmark-text"></i></button>
+                <button class="admin-fab-item" @onclick="GotoUsers" title="Utilisateurs" data-bs-toggle="tooltip" data-bs-placement="left" data-bs-custom-class="fab-tooltip"><i class="bi bi-people-fill"></i></button>
+                <button class="admin-fab-item" @onclick="GotoCatalog" title="Produits" data-bs-toggle="tooltip" data-bs-placement="left" data-bs-custom-class="fab-tooltip"><i class="bi bi-basket"></i></button>
+                <button class="admin-fab-item" @onclick="GotoEmails" title="Emails" data-bs-toggle="tooltip" data-bs-placement="left" data-bs-custom-class="fab-tooltip"><i class="bi bi-envelope-paper"></i></button>
+                <button class="admin-fab-item" @onclick="GotoDeliveries" title="Livraisons" data-bs-toggle="tooltip" data-bs-placement="left" data-bs-custom-class="fab-tooltip"><i class="bi bi-truck"></i></button>
+                <button class="admin-fab-item" @onclick="GotoStats" title="Stats" data-bs-toggle="tooltip" data-bs-placement="left" data-bs-custom-class="fab-tooltip"><i class="bi bi-bar-chart"></i></button>
+                <button class="admin-fab-item" @onclick="GotoLogs" title="Logs" data-bs-toggle="tooltip" data-bs-placement="left" data-bs-custom-class="fab-tooltip"><i class="bi bi-file-earmark-text"></i></button>
             </div>
         }
     </div>

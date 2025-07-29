@@ -31,6 +31,16 @@ namespace OnigiriShop.Pages
             ModalQuantity = 1;
         }
 
+        protected int GetQuantity(int productId)
+            => CartState.Items.FirstOrDefault(i => i.ProductId == productId)?.Quantity ?? 0;
+
+        protected async Task AddToCart(Product product)
+        {
+            await CartProvider.AddItemAsync(product.Id, 1);
+            await CartProvider.RefreshCartStateAsync(CartState);
+            CartState.NotifyChanged();
+        }
+
         protected string GetProductImage(Product? p)
         {
             if (p == null || string.IsNullOrWhiteSpace(p.ImageBase64))

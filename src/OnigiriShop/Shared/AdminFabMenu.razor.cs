@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using OnigiriShop.Infrastructure;
+using System;
 
 namespace OnigiriShop.Shared;
 
@@ -38,5 +39,8 @@ public class AdminFabMenuBase : CustomComponentBase, IDisposable
     protected void GotoLogs() => Nav.NavigateTo("/admin/logs");
     protected void GotoShop() => Nav.NavigateTo("/");
 
-    public void Dispose() => AuthProvider.AuthenticationStateChanged -= AuthStateChanged;
+    public void Dispose()
+    {
+        AuthProvider.AuthenticationStateChanged -= AuthStateChanged;
+    }
 }
