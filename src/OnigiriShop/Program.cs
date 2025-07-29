@@ -92,6 +92,7 @@ using (var scope = app.Services.CreateScope())
             Log.Warning("Aucun backup valide n'a été trouvé à {Endpoint}", backupCfg.Endpoint);
     }
 
+    DatabaseInitializer.EnsureDatabaseValid(dbPath);
     runner.MigrateUp();
 
     if (!DatabaseInitializer.IsSchemaUpToDate(dbPath, expectedHash))

@@ -74,7 +74,7 @@ public class GitHubBackupService : IGitHubBackupService
         {
             var contents = await _client.Repository.Content.GetAllContentsByRef(_config.Owner, _config.Repo, _config.FilePath, _config.Branch);
             var content = contents[0];
-            var bytes = Convert.FromBase64String(content.EncodedContent);
+            var bytes = Convert.FromBase64String(content.Content);
             var dir = Path.GetDirectoryName(destinationPath);
             if (!string.IsNullOrEmpty(dir))
                 Directory.CreateDirectory(dir);
