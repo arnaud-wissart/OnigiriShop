@@ -12,6 +12,17 @@
                 <option value="@file" selected="@(file==SelectedLogFile)">@file</option>
             }
         </select>
+        <div class="row g-2 mb-3" style="max-width:560px;">
+            <div class="col">
+                <input type="datetime-local" class="form-control" @bind="FilterStart" />
+            </div>
+            <div class="col">
+                <input type="datetime-local" class="form-control" @bind="FilterEnd" />
+            </div>
+            <div class="col-auto">
+                <button class="btn btn-outline-secondary" @onclick="ApplyFilterAsync">Filtrer</button>
+            </div>
+        </div>
         <pre class="border p-3" style="max-height:500px; overflow:auto; white-space:pre-wrap;">@LogContent</pre>
     </div>
 </div>
@@ -23,9 +34,9 @@
             <button class="btn btn-outline-primary" @onclick="DownloadDatabaseAsync">
                 <i class="bi bi-download me-1"></i>Télécharger
             </button>
-            <InputFile OnChange="OnDbSelected" class="form-control" style="width:auto;" />
-            <button class="btn btn-danger" @onclick="ReplaceDatabaseAsync" disabled="@((DbFile == null) || IsBusy)">
-                <i class="bi bi-upload me-1"></i>Remplacer
+            <InputFile id="dbUpload" OnChange="OnDbSelected" style="display:none;" />
+            <button class="btn btn-danger" @onclick="TriggerDbUpload" disabled="@IsBusy">
+                <i class="bi bi-upload me-1"></i>Charger...
                 @if (IsBusy)
                 {
                     <span class="spinner-border spinner-border-sm ms-2"></span>

@@ -220,6 +220,7 @@ window.onigiriColorModalOpenInput = function () {
  * @param {"ponctuelle"|"recurrente"} type 
  */
 window.openColorModal = function (type) {
+    if (window.closeAllTooltips) window.closeAllTooltips();
     if (document.getElementById('onigiriColorModal')) return;
 
     const modal = document.createElement('div');
@@ -238,6 +239,7 @@ window.openColorModal = function (type) {
         </div>
     `;
     document.body.appendChild(modal);
+    if (window.activateTooltips) window.activateTooltips();
 
     document.getElementById('colorModalCloseBtn').onclick = function () {
         document.body.removeChild(modal);
@@ -247,6 +249,7 @@ window.openColorModal = function (type) {
         window.onigiriLegendColors[type] = val;
         document.body.removeChild(modal);
         window.updateDeliveryColors();
+        if (window.activateTooltips) window.activateTooltips();
     };
 
     // Focus sur input + ouverture auto du picker (Chrome/Edge/Opera)
@@ -363,6 +366,11 @@ window.downloadFileFromBytes = (filename, base64) => {
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);
+};
+
+window.triggerFileInput = id => {
+    const el = document.getElementById(id);
+    if (el) el.click();
 };
 
 // ==================== HTML Editor (Quill) ====================

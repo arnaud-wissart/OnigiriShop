@@ -31,6 +31,7 @@ namespace OnigiriShop.Pages
         {
             FilterStatus = "En attente";
             FilterDeliveryDate = null;
+            CurrentPage = 1;
             StateHasChanged();
         }
         protected override async Task OnAfterRenderAsync(bool firstRender) => await JS.InvokeVoidAsync("activateTooltips");

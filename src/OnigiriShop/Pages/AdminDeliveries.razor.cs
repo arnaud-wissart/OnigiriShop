@@ -37,8 +37,9 @@ namespace OnigiriShop.Pages
             CouleurRecurrente = UserPreferences.CouleurRecurrente ??= "#0dcaf0";
         }
 
-        public void ShowColorModalFor(LegendType type)
+        public async Task ShowColorModalFor(LegendType type)
         {
+            await JS.InvokeVoidAsync("closeAllTooltips");
             TypeEnEdition = type;
             if (type == LegendType.Ponctuelle)
                 SelectedColor = CouleurPonctuelle;

@@ -17,6 +17,9 @@ public class AdminLogsBase : CustomComponentBase
     protected bool IsBusy { get; set; }
     protected bool ShowRestoreConfirm { get; set; }
     protected DateTime? LastBackupDate { get; set; }
+    protected DateTime? FilterStart { get; set; }
+    protected DateTime? FilterEnd { get; set; }
+    protected int MaxLines { get; set; } = 1000;
 
     protected override async Task OnInitializedAsync()
     {
@@ -36,19 +39,31 @@ public class AdminLogsBase : CustomComponentBase
     private async Task LoadLogAsync()
     {
         if (!string.IsNullOrEmpty(SelectedLogFile))
-            LogContent = await MaintenanceService.ReadLogAsync(SelectedLogFile);
+            LogContent = await MaintenanceService.ReadLogAsync(
+                SelectedLogFile,
+                FilterStart,
+                FilterEnd,
+                MaxLines);
         else
             LogContent = string.Empty;
         StateHasChanged();
     }
 
-    protected void OnDbSelected(InputFileChangeEventArgs e) => DbFile = e.FileCount > 0 ? e.File : null;
+    protected async Task OnDbSelected(InputFileChangeEventArgs e)
+    {
+        DbFile = e.FileCount > 0 ? e.File : null;
+        if (DbFile != null)
+            await ReplaceDatabaseAsync();
+    }
+
+    protected async Task ApplyFilterAsync() => await LoadLogAsync();
 
     protected async Task ReplaceDatabaseAsync()
     {
         if (DbFile == null) return;
         IsBusy = true;
         await MaintenanceService.ReplaceDatabaseAsync(DbFile.OpenReadStream());
+        DbFile = null;
         IsBusy = false;
     }
 
@@ -58,6 +73,8 @@ public class AdminLogsBase : CustomComponentBase
         var base64 = Convert.ToBase64String(bytes);
         await JS.InvokeVoidAsync("downloadFileFromBytes", "OnigiriShop.db", base64);
     }
+
+    protected async Task TriggerDbUpload() => await JS.InvokeVoidAsync("triggerFileInput", "dbUpload");
 
     protected void ConfirmRestoreBackup() => ShowRestoreConfirm = true;
 

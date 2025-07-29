@@ -12,11 +12,15 @@ public class MaintenanceService(IWebHostEnvironment env, IMigrationRunner runner
     public IEnumerable<string?> GetLogFiles()
     {
         return Directory.GetFiles(_env.ContentRootPath, "*.log")
-            .Select(Path.GetFileName)
-            .OrderBy(f => f);
+            .OrderByDescending(File.GetLastWriteTime)
+            .Select(Path.GetFileName);
     }
 
-    public async Task<string> ReadLogAsync(string fileName, int maxLines = 200)
+    public async Task<string> ReadLogAsync(
+        string fileName,
+        DateTime? start = null,
+        DateTime? end = null,
+        int maxLines = 1000)
     {
         var path = Path.Combine(_env.ContentRootPath, fileName);
         if (!File.Exists(path))
@@ -34,6 +38,18 @@ public class MaintenanceService(IWebHostEnvironment env, IMigrationRunner runner
             string? line;
             while ((line = await reader.ReadLineAsync()) != null)
                 lines.Add(line);
+        }
+
+        if (start.HasValue || end.HasValue)
+        {
+            lines = lines.Where(l =>
+            {
+                if (l.Length < 19) return false;
+                if (!DateTime.TryParse(l[..19], out var ts)) return false;
+                if (start.HasValue && ts < start.Value) return false;
+                if (end.HasValue && ts > end.Value) return false;
+                return true;
+            }).ToList();
         }
 
         if (maxLines > 0 && lines.Count > maxLines)
