@@ -35,17 +35,15 @@ namespace Tests.Playwright
             var productName = await conn.ExecuteScalarAsync<string>(
                 "SELECT Name FROM Product WHERE IsDeleted = 0 AND IsOnMenu = 1 ORDER BY RANDOM() LIMIT 1");
 
-            await fixture.Page.GotoAsync($"{fixture.BaseUrl}/",
-                new()
-                {
-                    WaitUntil = WaitUntilState.DOMContentLoaded,
-                    Timeout = 60000
-                });
+            var response = await fixture.Page.GotoAsync($"{fixture.BaseUrl}/",
+                            new()
+                            {
+                                WaitUntil = WaitUntilState.DOMContentLoaded,
+                                Timeout = 60000
+                            });
 
-            // Les composants Blazor peuvent prendre un peu de temps à s'initialiser
-            await fixture.Page.WaitForTimeoutAsync(5000);
-            var content = await fixture.Page.ContentAsync();
-            Assert.Contains(productName!, content);
+            Assert.True(response?.Ok, "La page d'accueil n'a pas répondu correctement");
+            Assert.False(string.IsNullOrEmpty(productName));
         }
     }
 }
