@@ -24,6 +24,11 @@ VALUES
 ('Créteil Echat', '2025-05-20 14:00:00', 0, NULL, NULL, NULL, '', 0, CURRENT_TIMESTAMP),
 ('République', '2025-06-10 13:00:00', 0, NULL, NULL, NULL, '', 0, CURRENT_TIMESTAMP),
 ('Créteil Echat', '2025-06-20 14:00:00', 0, NULL, NULL, NULL, '', 0, CURRENT_TIMESTAMP);
+INSERT INTO Delivery
+(Place, DeliveryAt, IsRecurring, RecurrenceFrequency, RecurrenceInterval, RecurrenceRule, Comment, IsDeleted, CreatedAt)
+VALUES
+('République', '2025-06-01 13:00:00', 0, NULL, NULL, NULL, '', 0, CURRENT_TIMESTAMP),
+('République', '2025-06-11 13:00:00', 0, NULL, NULL, NULL, '', 0, CURRENT_TIMESTAMP);
 -- Ici : IsRecurring=1, RecurrenceFrequency=2 (semaine), RecurrenceInterval=1
 
 -- Utilisateur admin (Arnaud Wissart)
