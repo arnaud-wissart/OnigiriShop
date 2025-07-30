@@ -12,7 +12,7 @@
             @foreach (var product in _products)
             {
                 <div class="product-col mb-4">
-                    <div class="onigiri-card product-card">
+                    <div class="onigiri-card product-card" @onclick="() => OpenProductModal(product)">
                         <img src="@GetProductImage(product)" alt="@product.Name" class="onigiri-img" />
                         <div class="onigiri-info">
                             <div class="onigiri-title">@product.Name</div>
