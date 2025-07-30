@@ -23,13 +23,7 @@ namespace OnigiriShop.Pages
             CartState.NotifyChanged();
         }
 
-        private void OnCartChanged() => InvokeAsync(RefreshCartAsync);
-
-        private async Task RefreshCartAsync()
-        {
-            await CartProvider.RefreshCartStateAsync(CartState);
-            StateHasChanged();
-        }
+        protected void OnCartChanged() => InvokeAsync(StateHasChanged);
 
         protected void OpenProductModal(Product product)
         {
