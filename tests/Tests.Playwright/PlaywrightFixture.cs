@@ -25,7 +25,7 @@ namespace Tests.Playwright
         public async Task InitializeAsync()
         {
             var port = GetFreePort();
-            BaseUrl = $"http://localhost:{port}";
+            BaseUrl = $"http://127.0.0.1:{port}";
 
             // Prépare une base dédiée pour les tests et exécute les migrations
             var dbPath = Path.Combine(Path.GetTempPath(), $"onigiri_{Guid.NewGuid()}.db");
@@ -43,10 +43,10 @@ namespace Tests.Playwright
                 AppContext.BaseDirectory, "..", "..", "..", "..", "..",
                 "src", "OnigiriShop", "OnigiriShop.csproj"));
             var projectDir = Path.GetDirectoryName(projectPath)!;
-            var buildOutput = Path.Combine(projectDir, "bin", "Release", "net8.0", "OnigiriShop.dll");
+            var buildOutput = Path.Combine(projectDir, "bin", "Debug", "net8.0", "OnigiriShop.dll");
             if (!File.Exists(buildOutput))
             {
-                var buildInfo = new ProcessStartInfo("dotnet", $"build \"{projectPath}\" -c Release")
+                var buildInfo = new ProcessStartInfo("dotnet", $"build \"{projectPath}\" -c Debug")
                 {
                     WorkingDirectory = projectDir,
                     RedirectStandardOutput = true,
@@ -62,7 +62,7 @@ namespace Tests.Playwright
                 if (buildProcess.ExitCode != 0)
                     throw new InvalidOperationException("La construction du projet a échoué.");
             }
-            var args = $"run --no-build --configuration Release --project \"{projectPath}\" --urls {BaseUrl}";
+            var args = $"run --no-build --configuration Debug --project \"{projectPath}\" --urls http://0.0.0.0:{port}";
             var startInfo = new ProcessStartInfo("dotnet", args)
             {
                 WorkingDirectory = projectDir,
@@ -91,7 +91,7 @@ namespace Tests.Playwright
                     {
                         started = true;
                         break;
-                    }                        
+                    }
                 }
                 catch
                 {
