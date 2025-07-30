@@ -416,6 +416,7 @@ window.onigiriDatePicker = {
             dateFormat: "Y-m-d H:i",
             locale: flatpickr.l10ns.fr,
             disableMobile: true,
+            allowInput: false,
             enable: deliveries.map(d => d.date),
             onChange: function (selectedDates, dateStr) {
                 var del = deliveries.find(x => x.date === dateStr);

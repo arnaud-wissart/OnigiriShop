@@ -12,6 +12,7 @@ public class AdminStatsBase : CustomComponentBase
     protected DateTime? StartDate { get; set; }
     protected DateTime? EndDate { get; set; }
     protected StatsResult? Result { get; set; }
+    private bool _updateChart;
 
     protected override async Task OnInitializedAsync()
     {
@@ -24,8 +25,14 @@ public class AdminStatsBase : CustomComponentBase
     protected async Task LoadAsync()
     {
         Result = await StatsService.GetStatsAsync(StartDate, EndDate);
-        if (Result != null)
+        _updateChart = true;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_updateChart && Result != null)
         {
+            _updateChart = false;
             await JS.InvokeVoidAsync("updateStatsChart", new
             {
                 totalOrders = Result.TotalOrders,

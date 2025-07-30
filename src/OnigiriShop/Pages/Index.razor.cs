@@ -27,8 +27,8 @@ namespace OnigiriShop.Pages
 
         protected void OpenProductModal(Product product)
         {
-            ModalProduct = product;
-            ModalQuantity = 1;
+            var qty = GetQuantity(product.Id);
+            ModalQuantity = qty > 0 ? qty : 1;
         }
 
         protected int GetQuantity(int productId)

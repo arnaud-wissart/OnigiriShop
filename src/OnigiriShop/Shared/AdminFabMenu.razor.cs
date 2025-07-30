@@ -36,14 +36,20 @@ public class AdminFabMenuBase : CustomComponentBase, IDisposable
         await JS.InvokeVoidAsync("activateTooltips");
     }
 
-    protected void GotoAdmin() => Nav.NavigateTo("/admin");
-    protected void GotoUsers() => Nav.NavigateTo("/admin/users");
-    protected void GotoCatalog() => Nav.NavigateTo("/admin/products");
-    protected void GotoDeliveries() => Nav.NavigateTo("/admin/deliveries");
-    protected void GotoStats() => Nav.NavigateTo("/admin/stats");
-    protected void GotoEmails() => Nav.NavigateTo("/admin/emails");
-    protected void GotoLogs() => Nav.NavigateTo("/admin/logs");
-    protected void GotoShop() => Nav.NavigateTo("/");
+    private void NavigateTo(string url)
+    {
+        ShowMenu = false;
+        Nav.NavigateTo(url);
+    }
+
+    protected void GotoAdmin() => NavigateTo("/admin");
+    protected void GotoUsers() => NavigateTo("/admin/users");
+    protected void GotoCatalog() => NavigateTo("/admin/products");
+    protected void GotoDeliveries() => NavigateTo("/admin/deliveries");
+    protected void GotoStats() => NavigateTo("/admin/stats");
+    protected void GotoEmails() => NavigateTo("/admin/emails");
+    protected void GotoLogs() => NavigateTo("/admin/logs");
+    protected void GotoShop() => NavigateTo("/");
 
     public void Dispose() => AuthProvider.AuthenticationStateChanged -= AuthStateChanged;
 }
