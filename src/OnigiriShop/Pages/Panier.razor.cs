@@ -213,6 +213,7 @@ namespace OnigiriShop.Pages
                 SelectedDelivery!);
 
             await CartProvider.ClearCartAsync();
+            await CartProvider.RefreshCartStateAsync(CartState);
             CartState.NotifyChanged();
             _resultMessage = "Commande validée ! Merci pour votre achat.";
             StateHasChanged();

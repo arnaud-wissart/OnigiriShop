@@ -73,7 +73,13 @@
                 <div class="modal-header border-0">
                     <h5 class="modal-title fw-bold">Mon panier</h5>
                     <div class="d-flex align-items-center gap-2 ms-auto">
-                        <button class="btn btn-sm btn-outline-danger" title="Vider le panier" @onclick="PromptClearCart"><i class="bi bi-trash"></i></button>
+                        <button class="btn btn-sm btn-outline-danger"
+                                data-bs-toggle="tooltip"
+                                data-bs-placement="left"
+                                title="Vider le panier"
+                                @onclick="PromptClearCart">
+                            <i class="bi bi-trash"></i>
+                        </button>
                         <button type="button" class="btn-close" @onclick="CloseModal"></button>
                     </div>
                 </div>
@@ -90,7 +96,7 @@
                                             <span class="px-2">@item.Quantity</span>
                                             <button class="btn btn-outline-secondary btn-sm px-2 py-0" @onclick="() => IncrementQuantity(item)"><i class="bi bi-plus"></i></button>
                                         </div>
-                                        <span class="fw-semibold">@((item.Quantity * item.Product!.Price).ToString("0.00")) €</span>
+                                        <span class="fw-semibold cart-item-price">@((item.Quantity * item.Product!.Price).ToString("0.00")) €</span>
                                     </div>
                                 </div>
                             </li>

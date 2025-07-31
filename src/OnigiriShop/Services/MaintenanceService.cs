@@ -89,11 +89,6 @@ public class MaintenanceService(IWebHostEnvironment env, IMigrationRunner runner
         var expectedHash = DatabaseInitializer.ComputeSchemaHash(schemaPath);
 
         DatabaseInitializer.EnsureDatabaseValid(temp);
-        if (!DatabaseInitializer.IsSchemaUpToDate(temp, expectedHash))
-        {
-            File.Delete(temp);
-            throw new InvalidOperationException("Base incompatible");
-        }
 
         var dbPath = DatabasePaths.GetPath();
         DatabaseInitializer.DeleteDatabase(dbPath);

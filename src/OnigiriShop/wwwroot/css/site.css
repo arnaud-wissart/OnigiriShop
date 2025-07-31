@@ -842,6 +842,11 @@
     gap: 0.25rem;
 }
 
+.cart-item-price {
+    min-width: 65px;
+    text-align: right;
+}
+
 .products-list,
 .cart-container {
     padding-bottom: 5rem;

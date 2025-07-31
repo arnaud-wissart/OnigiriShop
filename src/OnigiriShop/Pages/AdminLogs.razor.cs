@@ -63,7 +63,9 @@ public class AdminLogsBase : CustomComponentBase
     {
         if (DbFile == null) return;
         IsBusy = true;
-        await MaintenanceService.ReplaceDatabaseAsync(DbFile.OpenReadStream());
+        // Le fichier SQLite peut dépasser la limite par défaut (512 Ko).
+        // On autorise donc un upload plus important pour éviter toute troncature.
+        await MaintenanceService.ReplaceDatabaseAsync(DbFile.OpenReadStream(50_000_000));
         DbFile = null;
         IsBusy = false;
     }

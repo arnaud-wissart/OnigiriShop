@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
 using OnigiriShop.Infrastructure;
 using OnigiriShop.Data.Models;
+using Microsoft.JSInterop;
 
 namespace OnigiriShop.Shared;
 
@@ -24,6 +25,8 @@ public class CartBarBase : FrontCustomComponentBase, IDisposable
         CartState.OnChanged += OnCartChanged;
         await RefreshAsync();
     }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender) => await JS.InvokeVoidAsync("activateTooltips");
 
     private async void OnCartChanged()
     {
@@ -102,6 +105,7 @@ public class CartBarBase : FrontCustomComponentBase, IDisposable
     protected async Task ConfirmClearCart()
     {
         await CartProvider.ClearCartAsync();
+        await CartProvider.RefreshCartStateAsync(CartState);
         CartState.NotifyChanged();
         await RefreshAsync();
         StateHasChanged();
