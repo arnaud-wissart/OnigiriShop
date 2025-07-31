@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Options;
+using OnigiriShop.Data.Models;
 using OnigiriShop.Infrastructure;
 
 namespace OnigiriShop.Services.Extensions;
