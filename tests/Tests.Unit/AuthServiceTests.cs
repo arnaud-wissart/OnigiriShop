@@ -3,6 +3,7 @@ using Microsoft.JSInterop;
 using Moq;
 using OnigiriShop.Data;
 using OnigiriShop.Data.Interfaces;
+using OnigiriShop.Data.Models;
 using OnigiriShop.Services;
 using System.Security.Claims;
 
@@ -18,7 +19,7 @@ namespace Tests.Unit
 
             var cartService = new Mock<CartService>(MockBehavior.Loose, (ISqliteConnectionFactory)null!);
             var anonCart = new Mock<AnonymousCartService>(MockBehavior.Loose, (IJSRuntime)null!);
-            var prodService = new Mock<ProductService>(MockBehavior.Loose, (ISqliteConnectionFactory)null!);
+            var prodService = new Mock<IProductService>();
             var authProvider = new Mock<AuthenticationStateProvider>();
             var cartMergeService = new Mock<CartMergeService>(cartService.Object, anonCart.Object, authProvider.Object);
             var cartProvider = new Mock<CartProvider>(cartService.Object, anonCart.Object, prodService.Object, authProvider.Object, cartMergeService.Object);
@@ -114,7 +115,7 @@ namespace Tests.Unit
 
             var cartService = new Mock<CartService>(MockBehavior.Loose, (ISqliteConnectionFactory)null!);
             var anonCart = new Mock<AnonymousCartService>(MockBehavior.Loose, (IJSRuntime)null!);
-            var prodService = new Mock<ProductService>(MockBehavior.Loose, (ISqliteConnectionFactory)null!);
+            var prodService = new Mock<IProductService>();
             var authProvider = new Mock<AuthenticationStateProvider>();
             var mergeService = new Mock<CartMergeService>(cartService.Object, anonCart.Object, authProvider.Object);
             var cartProvider = new Mock<CartProvider>(cartService.Object, anonCart.Object, prodService.Object, authProvider.Object, mergeService.Object); var service = new AuthService(mockProvider.Object, cartProvider.Object);

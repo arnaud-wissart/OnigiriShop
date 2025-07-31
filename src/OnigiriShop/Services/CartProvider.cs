@@ -6,7 +6,7 @@ namespace OnigiriShop.Services
     public class CartProvider(
         CartService cartService,
         AnonymousCartService anonymousCartService,
-        ProductService productService,
+        IProductService productService,
         AuthenticationStateProvider authProvider,
         CartMergeService cartMergeService)
     {

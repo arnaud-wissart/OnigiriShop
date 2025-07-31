@@ -12,7 +12,7 @@ namespace OnigiriShop.Pages
         [Inject] public EmailService EmailService { get; set; } = default!;
         [Inject] public OrderService OrderService { get; set; } = default!;
         [Inject] public DeliveryService DeliveryService { get; set; } = default!;
-        [Inject] public ProductService ProductService { get; set; } = default!;
+        [Inject] public IProductService ProductService { get; set; } = default!;
         [Inject] public AuthenticationStateProvider AuthProvider { get; set; } = default!;
         [Inject] public NavigationManager Nav { get; set; } = default!;
 

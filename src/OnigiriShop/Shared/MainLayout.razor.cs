@@ -13,7 +13,7 @@ namespace OnigiriShop.Shared
         [Inject] public AuthenticationStateProvider AuthProvider { get; set; } = default!;
         [Inject] public CartService CartService { get; set; } = default!;
         [Inject] public ErrorModalService ErrorModalService { get; set; } = default!;
-        [Inject] public ProductService ProductService { get; set; } = default!;
+        [Inject] public IProductService ProductService { get; set; } = default!;
         [Inject] public NavigationManager Nav { get; set; } = default!;
         [Inject] public IJSRuntime JS { get; set; } = default!;
 

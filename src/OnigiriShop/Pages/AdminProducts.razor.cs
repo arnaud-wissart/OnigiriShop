@@ -12,7 +12,7 @@ namespace OnigiriShop.Pages
 {
     public class AdminProductsBase : CustomComponentBase
     {
-        [Inject] public ProductService ProductService { get; set; } = default!;
+        [Inject] public IProductService ProductService { get; set; } = default!;
         protected List<Product> Products { get; set; } = [];
         protected List<Product> FilteredProducts => Products;
         protected Product ModalModel { get; set; } = new();

@@ -7,7 +7,7 @@ namespace Tests.Unit
     public class ProductServiceTests : IDisposable
     {
         private readonly SqliteConnection _conn;
-        private readonly ProductService _service;
+        private readonly IProductService _service;
 
         public ProductServiceTests()
         {

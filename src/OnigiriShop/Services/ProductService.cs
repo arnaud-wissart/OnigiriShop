@@ -4,7 +4,7 @@ using OnigiriShop.Data.Models;
 
 namespace OnigiriShop.Services
 {
-    public class ProductService(ISqliteConnectionFactory connectionFactory)
+    public class ProductService(ISqliteConnectionFactory connectionFactory) : IProductService
     {
         public async Task<List<Product>> GetAllAsync(bool includeDeleted = false)
         {
