@@ -96,7 +96,11 @@ using (var scope = app.Services.CreateScope())
     runner.MigrateUp();
 
     if (!DatabaseInitializer.IsSchemaUpToDate(dbPath, expectedHash))
+    {
         DatabaseInitializer.SetSchemaHash(dbPath, expectedHash);
+        var version = DatabaseInitializer.GetSchemaVersion(dbPath);
+        Log.Information("Schema initialise avec la version {Version}", version);
+    }
 }
 
 app.UseStaticFiles();

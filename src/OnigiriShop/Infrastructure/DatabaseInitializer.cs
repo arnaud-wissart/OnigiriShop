@@ -1,4 +1,5 @@
 ﻿using Microsoft.Data.Sqlite;
+using Serilog;
 using System.Text;
 
 namespace OnigiriShop.Infrastructure
@@ -46,6 +47,20 @@ namespace OnigiriShop.Infrastructure
             }
         }
 
+        public static uint GetSchemaVersion(string dbPath)
+        {
+            if (!File.Exists(dbPath))
+                return 0;
+
+            using var conn = new SqliteConnection($"Data Source={dbPath};Pooling=False");
+            conn.Open();
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = "PRAGMA user_version;";
+            var resultObj = cmd.ExecuteScalar();
+            var result = resultObj is long value ? value : 0L;
+            return (uint)result;
+        }
+
         public static void SetSchemaHash(string dbPath, uint hash)
         {
             using var conn = new SqliteConnection($"Data Source={dbPath};Pooling=False");
@@ -53,6 +68,10 @@ namespace OnigiriShop.Infrastructure
             using var cmd = conn.CreateCommand();
             cmd.CommandText = $"PRAGMA user_version = {hash};";
             cmd.ExecuteNonQuery();
+            cmd.CommandText = "PRAGMA user_version;";
+            var resultObj = cmd.ExecuteScalar();
+            var result = resultObj is long value ? value : 0L;
+            Log.Information("Version de schéma mise à jour : {Version}", result);
         }
 
         public static void DeleteDatabase(string dbPath)

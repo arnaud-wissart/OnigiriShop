@@ -34,6 +34,8 @@ public class GitHubBackupService : IGitHubBackupService
     public async Task UploadBackupAsync(CancellationToken ct = default)
     {
         var dbPath = DatabasePaths.GetPath();
+        var version = DatabaseInitializer.GetSchemaVersion(dbPath);
+        _logger.LogInformation("Sauvegarde GitHub - version de schéma {Version}", version);
         var tempPath = Path.GetTempFileName();
         try
         {
