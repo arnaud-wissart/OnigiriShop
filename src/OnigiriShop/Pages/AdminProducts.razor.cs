@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 using OnigiriShop.Data.Models;
 using OnigiriShop.Infrastructure;
-using OnigiriShop.Services;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Processing;
@@ -13,6 +12,7 @@ namespace OnigiriShop.Pages
     public class AdminProductsBase : CustomComponentBase
     {
         [Inject] public IProductService ProductService { get; set; } = default!;
+        [Inject] public ICategoryService CategoryService { get; set; } = default!;
         protected List<Product> Products { get; set; } = [];
         protected List<Product> FilteredProducts => Products;
         protected Product ModalModel { get; set; } = new();
@@ -23,12 +23,14 @@ namespace OnigiriShop.Pages
         protected string? ModalTitle { get; set; }
         protected string? ModalError { get; set; }
         protected bool IsBusy { get; set; }
+        protected List<Category> Categories { get; set; } = [];
 
         protected override async Task OnInitializedAsync()
         {
             await base.OnInitializedAsync();
 
             await LoadProducts();
+            Categories = await CategoryService.GetAllAsync();
         }
 
         protected async Task LoadProducts()
@@ -41,7 +43,10 @@ namespace OnigiriShop.Pages
         {
             IsEdit = false;
             ModalTitle = "Nouveau produit";
-            ModalModel = new Product();
+            ModalModel = new Product
+            {
+                CategoryId = Categories.FirstOrDefault()?.Id ?? 1
+            };
             ModalError = null;
             ShowModal = true;
         }
@@ -56,6 +61,7 @@ namespace OnigiriShop.Pages
                 Name = p.Name,
                 Description = p.Description,
                 Price = p.Price,
+                CategoryId = p.CategoryId,
                 IsOnMenu = p.IsOnMenu,
                 ImageBase64 = p.ImageBase64,
                 IsDeleted = p.IsDeleted
@@ -68,7 +74,7 @@ namespace OnigiriShop.Pages
         protected void HideModal()
         {
             ShowModal = false;
-            ModalModel = new Product();
+            ModalModel = new Product { CategoryId = Categories.FirstOrDefault()?.Id ?? 1 };
         }
 
         protected async Task HandleModalValid()
@@ -151,6 +157,65 @@ namespace OnigiriShop.Pages
             await image.SaveAsJpegAsync(ms, new JpegEncoder { Quality = 80 });
             ModalModel.ImageBase64 = "data:image/jpeg;base64," + Convert.ToBase64String(ms.ToArray());
             StateHasChanged();
+        }
+
+        // ----- Gestion des catégories -----
+        protected Category CategoryModalModel { get; set; } = new();
+        protected Category? DeleteCategoryModel { get; set; }
+        protected bool ShowCategoryModal { get; set; }
+        protected bool ShowCategoryDeleteConfirm { get; set; }
+        protected bool CategoryIsEdit { get; set; }
+        protected string? CategoryModalTitle { get; set; }
+        protected bool CategoryIsBusy { get; set; }
+
+        protected void ShowAddCategory()
+        {
+            CategoryIsEdit = false;
+            CategoryModalTitle = "Nouvelle catégorie";
+            CategoryModalModel = new Category();
+            ShowCategoryModal = true;
+        }
+
+        protected void EditCategory(Category c)
+        {
+            CategoryIsEdit = true;
+            CategoryModalTitle = "Modifier la catégorie";
+            CategoryModalModel = new Category { Id = c.Id, Name = c.Name };
+            ShowCategoryModal = true;
+        }
+
+        protected void HideCategoryModal()
+        {
+            ShowCategoryModal = false;
+            CategoryModalModel = new Category();
+        }
+
+        protected async Task SaveCategoryAsync()
+        {
+            CategoryIsBusy = true;
+            if (CategoryIsEdit)
+                await CategoryService.UpdateAsync(CategoryModalModel);
+            else
+                await CategoryService.CreateAsync(CategoryModalModel);
+            CategoryIsBusy = false;
+            ShowCategoryModal = false;
+            Categories = await CategoryService.GetAllAsync();
+        }
+
+        protected void ConfirmDeleteCategory(Category c)
+        {
+            DeleteCategoryModel = c;
+            ShowCategoryDeleteConfirm = true;
+        }
+
+        protected async Task DeleteCategoryConfirmed()
+        {
+            if (DeleteCategoryModel != null)
+            {
+                await CategoryService.DeleteAsync(DeleteCategoryModel.Id);
+                ShowCategoryDeleteConfirm = false;
+                Categories = await CategoryService.GetAllAsync();
+            }
         }
     }
 }

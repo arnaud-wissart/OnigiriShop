@@ -828,7 +828,7 @@
 }
 
 .cart-item-controls {
-    min-width: 120px;
+    min-width: 150px;
     display: flex;
     align-items: center;
     justify-content: flex-end;
@@ -896,4 +896,15 @@
 
 .fab-tooltip {
     z-index: 4050;
+}
+
+/* Couche grise affichée derrière le menu admin */
+.admin-fab-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(33, 33, 33, 0.35);
+    z-index: 4015;
 }

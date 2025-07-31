@@ -32,8 +32,8 @@ namespace OnigiriShop.Services
         public async Task<int> CreateAsync(Product p)
         {
             using var conn = connectionFactory.CreateConnection();
-            var sql = @"INSERT INTO Product (Name, Description, Price, IsOnMenu, ImageBase64, IsDeleted)
-                        VALUES (@Name, @Description, @Price, @IsOnMenu, @ImageBase64, 0);
+            var sql = @"INSERT INTO Product (Name, Description, Price, CategoryId, IsOnMenu, ImageBase64, IsDeleted)
+                        VALUES (@Name, @Description, @Price, @CategoryId, @IsOnMenu, @ImageBase64, 0);
                         SELECT last_insert_rowid();";
             return await conn.ExecuteScalarAsync<int>(sql, p);
         }
@@ -43,6 +43,7 @@ namespace OnigiriShop.Services
             using var conn = connectionFactory.CreateConnection();
             var sql = @"UPDATE Product
                         SET Name=@Name, Description=@Description, Price=@Price,
+                            CategoryId=@CategoryId,
                             IsOnMenu=@IsOnMenu, ImageBase64=@ImageBase64
                         WHERE Id=@Id AND IsDeleted=0";
             return await conn.ExecuteAsync(sql, p) > 0;

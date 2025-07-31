@@ -26,6 +26,7 @@ public static class BusinessServiceCollectionExtensions
         services.AddScoped<AnonymousCartService>();
         services.AddScoped<CartService>();
         services.AddScoped<IProductService, ProductService>();
+        services.AddScoped<ICategoryService, CategoryService>();
         services.AddScoped<DeliveryCalendarService>();
         services.AddScoped<OrderExportService>();
         services.AddScoped<DeliveryService>();

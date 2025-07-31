@@ -23,15 +23,22 @@ CREATE TABLE IF NOT EXISTS MagicLinkToken (
     FOREIGN KEY(UserId) REFERENCES User(Id)
 );
 
+CREATE TABLE IF NOT EXISTS Category (
+    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+    Name TEXT NOT NULL
+);
+
 -- Table Produits
 CREATE TABLE IF NOT EXISTS Product (
     Id INTEGER PRIMARY KEY AUTOINCREMENT,
     Name TEXT NOT NULL,
     Description TEXT,
     Price REAL NOT NULL,
-    IsOnMenu INTEGER NOT NULL DEFAULT 0,   -- 1: affiché sur le menu, 0: non affiché
+    CategoryId INTEGER NOT NULL DEFAULT 1,
+    IsOnMenu INTEGER NOT NULL DEFAULT 0,    -- 1: affiché sur le menu, 0: non affiché
     ImageBase64 TEXT,
-    IsDeleted INTEGER NOT NULL DEFAULT 0   -- 1: supprimé (soft delete), 0: actif
+    IsDeleted INTEGER NOT NULL DEFAULT 0,   -- 1: supprimé (soft delete), 0: actif
+    FOREIGN KEY(CategoryId) REFERENCES Category(Id)
 );
 
 -- Table Catalogues/Menus

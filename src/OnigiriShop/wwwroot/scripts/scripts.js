@@ -389,7 +389,9 @@ window.updateStatsChart = function (data) {
     if (!window.Chart) return;
     const ctx = document.getElementById('statsChart');
     if (!ctx) return;
-    if (window.statsChart) window.statsChart.destroy();
+    if (window.statsChart && typeof window.statsChart.destroy === 'function') {
+        window.statsChart.destroy();
+    }
     window.statsChart = new Chart(ctx, {
         type: 'bar',
         data: {

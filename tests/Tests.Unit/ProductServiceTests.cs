@@ -23,6 +23,7 @@ namespace Tests.Unit
                 Name TEXT,
                 Description TEXT,
                 Price REAL,
+                CategoryId INTEGER DEFAULT 1,
                 IsOnMenu INTEGER,
                 ImageBase64 TEXT,
                 IsDeleted INTEGER
@@ -66,8 +67,8 @@ namespace Tests.Unit
             // Seed un produit
             using (var cmd = _conn.CreateCommand())
             {
-                cmd.CommandText = @"INSERT INTO Product (Name, Description, Price, IsOnMenu, ImageBase64, IsDeleted)
-                                    VALUES ('Test', 'Desc', 1.99, 1, 'img.png', 0)";
+                cmd.CommandText = @"INSERT INTO Product (Name, Description, Price, CategoryId, IsOnMenu, ImageBase64, IsDeleted)
+                                    VALUES ('Test', 'Desc', 1.99, 1, 1, 'img.png', 0)";
                 cmd.ExecuteNonQuery();
             }
 
@@ -82,8 +83,8 @@ namespace Tests.Unit
             // Seed un produit
             using (var cmd = _conn.CreateCommand())
             {
-                cmd.CommandText = @"INSERT INTO Product (Name, Description, Price, IsOnMenu, ImageBase64, IsDeleted)
-                                    VALUES ('Test', 'Desc', 1.99, 1, 'img.png', 0)";
+                cmd.CommandText = @"INSERT INTO Product (Name, Description, Price, CategoryId, IsOnMenu, ImageBase64, IsDeleted)
+                                    VALUES ('Test', 'Desc', 1.99, 1, 1, 'img.png', 0)";
                 cmd.ExecuteNonQuery();
             }
 
@@ -112,8 +113,8 @@ namespace Tests.Unit
             // Seed un produit
             using (var cmd = _conn.CreateCommand())
             {
-                cmd.CommandText = @"INSERT INTO Product (Name, Description, Price, IsOnMenu, ImageBase64, IsDeleted)
-                                    VALUES ('Test', 'Desc', 1.99, 1, 'img.png', 0)";
+                cmd.CommandText = @"INSERT INTO Product (Name, Description, Price, CategoryId, IsOnMenu, ImageBase64, IsDeleted)
+                                    VALUES ('Test', 'Desc', 1.99, 1, 1, 'img.png', 0)";
                 cmd.ExecuteNonQuery();
             }
 
@@ -135,8 +136,8 @@ namespace Tests.Unit
             // Seed deux produits, un supprimé
             using (var cmd = _conn.CreateCommand())
             {
-                cmd.CommandText = @"INSERT INTO Product (Name, Description, Price, IsOnMenu, ImageBase64, IsDeleted)
-                                    VALUES ('P1', 'A', 1, 1, 'img.png', 0), ('P2', 'B', 2, 1, 'img.png', 1)";
+                cmd.CommandText = @"INSERT INTO Product (Name, Description, Price, CategoryId, IsOnMenu, ImageBase64, IsDeleted)
+                                    VALUES ('P1', 'A', 1, 1, 1, 'img.png', 0), ('P2', 'B', 2, 1, 1, 'img.png', 1)";
                 cmd.ExecuteNonQuery();
             }
 

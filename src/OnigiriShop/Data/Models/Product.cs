@@ -16,6 +16,8 @@ namespace OnigiriShop.Data.Models
         [Range(0, 1000, ErrorMessage = "Prix incorrect.")]
         public decimal Price { get; set; }
 
+        public int CategoryId { get; set; }
+
         public bool IsOnMenu { get; set; }
 
         public string? ImageBase64 { get; set; }

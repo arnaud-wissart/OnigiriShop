@@ -17,6 +17,7 @@
                         <th style="white-space:nowrap;">Nom</th>
                         <th style="white-space:nowrap;">Description</th>
                         <th style="white-space:nowrap;">Prix (€)</th>
+                        <th style="white-space:nowrap;">Catégorie</th>
                         <th style="white-space:nowrap;">Menu</th>
                         <th style="white-space:nowrap;">Image</th>
                         <th class="text-end" style="width:110px;">Actions</th>
@@ -29,6 +30,7 @@
                             <td>@product.Name</td>
                             <td class="text-truncate" style="max-width: 280px;">@product.Description</td>
                             <td>@product.Price.ToString("0.00")</td>
+                            <td>@Categories.FirstOrDefault(c => c.Id == product.CategoryId)?.Name</td>
                             <td>
                                 @if (product.IsOnMenu)
                                 {
@@ -66,6 +68,41 @@
     </div>
 </div>
 
+<div class="card shadow rounded-3 overflow-hidden border mb-4" style="background:#fff;">
+    <div class="card-body p-0">
+        <h4 class="card-title p-3 mb-0 border-bottom bg-light fw-bold d-flex justify-content-between align-items-center" style="color:#212529; letter-spacing:0.01em;">
+            <span>Catégories</span>
+            <button class="btn btn-sm btn-success" @onclick="ShowAddCategory">
+                <i class="bi bi-plus-circle me-2"></i>Nouvelle catégorie
+            </button>
+        </h4>
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th class="text-end" style="width:110px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var cat in Categories)
+                {
+                    <tr>
+                        <td>@cat.Name</td>
+                        <td class="text-end">
+                            <button class="btn btn-sm btn-outline-secondary me-2" @onclick="() => EditCategory(cat)">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" @onclick="() => ConfirmDeleteCategory(cat)">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
 <button class="btn btn-success btn-fab d-flex align-items-center px-3 py-2 shadow"
         style="position:fixed; top:112px; right:24px; z-index:1030; border-radius:30px; font-size:1rem;"
         @onclick="ShowAddModal">
@@ -98,6 +135,15 @@
                         <div class="mb-3">
                             <label>Description</label>
                             <InputText class="form-control" @bind-Value="ModalModel.Description" />
+                        </div>
+                        <div class="mb-3">
+                            <label>Catégorie</label>
+                            <select class="form-select" @bind="ModalModel.CategoryId">
+                                @foreach (var cat in Categories)
+                                {
+                                    <option value="@cat.Id">@cat.Name</option>
+                                }
+                            </select>
                         </div>
                         <div class="mb-3">
                             <label>Prix (€)</label>
@@ -150,6 +196,56 @@
                 <div class="modal-footer">
                     <button class="btn btn-secondary" @onclick="CancelDelete">Annuler</button>
                     <button class="btn btn-danger" @onclick="DeleteProductConfirmed">Supprimer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (ShowCategoryModal)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background:rgba(33,33,33,0.18);">
+        <div class="modal-dialog" @onclick:stopPropagation>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@CategoryModalTitle</h5>
+                    <button type="button" class="btn-close" @onclick="HideCategoryModal"></button>
+                </div>
+                <div class="modal-body">
+                    <EditForm Model="CategoryModalModel" OnValidSubmit="SaveCategoryAsync">
+                        <DataAnnotationsValidator />
+                        <div class="mb-3">
+                            <label>Nom</label>
+                            <InputText class="form-control" @bind-Value="CategoryModalModel.Name" required />
+                        </div>
+                        <button class="btn btn-success w-100" type="submit" disabled="@CategoryIsBusy">
+                            @(CategoryIsEdit ? "Mettre à jour" : "Créer")
+                            @if (CategoryIsBusy)
+                            {
+                                <span class="spinner-border spinner-border-sm ms-2"></span>
+                            }
+                        </button>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (ShowCategoryDeleteConfirm)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background:rgba(33,33,33,0.18);">
+        <div class="modal-dialog modal-dialog-centered" @onclick:stopPropagation>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmation suppression</h5>
+                </div>
+                <div class="modal-body">
+                    Supprimer la catégorie <strong>@DeleteCategoryModel?.Name</strong> ?
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="() => ShowCategoryDeleteConfirm = false">Annuler</button>
+                    <button class="btn btn-danger" @onclick="DeleteCategoryConfirmed">Supprimer</button>
                 </div>
             </div>
         </div>

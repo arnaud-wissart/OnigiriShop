@@ -103,6 +103,8 @@ public class CartBarBase : FrontCustomComponentBase, IDisposable
     {
         await CartProvider.ClearCartAsync();
         CartState.NotifyChanged();
+        await RefreshAsync();
+        StateHasChanged();
         ShowClearCartModal = false;
         CloseModal();
     }

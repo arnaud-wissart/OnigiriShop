@@ -2,6 +2,10 @@
 
 @if (IsAdmin)
 {
+    @if (ShowMenu)
+    {
+        <div class="admin-fab-overlay" @onclick="ToggleMenu"></div>
+    }
     <div class="admin-fab-container">
         <button class="admin-fab" @onclick="ToggleMenu" data-bs-toggle="tooltip" data-bs-placement="left" data-bs-custom-class="fab-tooltip" title="Menu admin">
             <i class="bi bi-gear-fill"></i>

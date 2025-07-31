@@ -8,9 +8,11 @@ namespace OnigiriShop.Pages
     public class IndexBase : FrontCustomComponentBase, IDisposable
     {
         [Inject] public IProductService ProductService { get; set; } = default!;
+        [Inject] public ICategoryService CategoryService { get; set; } = default!;
         [Inject] public NavigationManager Nav { get; set; } = default!;
 
         protected List<Product>? _products;
+        protected List<Category> Categories { get; set; } = [];
         protected Product? ModalProduct;
         protected int ModalQuantity = 1;
 
@@ -18,6 +20,7 @@ namespace OnigiriShop.Pages
         {
             await base.OnInitializedAsync();
             _products = await ProductService.GetMenuProductsAsync();
+            Categories = await CategoryService.GetAllAsync();
             CartState.OnChanged += OnCartChanged;
             await CartProvider.RefreshCartStateAsync(CartState);
             CartState.NotifyChanged();
@@ -27,6 +30,7 @@ namespace OnigiriShop.Pages
 
         protected void OpenProductModal(Product product)
         {
+            ModalProduct = product;
             var qty = GetQuantity(product.Id);
             ModalQuantity = qty > 0 ? qty : 1;
         }
