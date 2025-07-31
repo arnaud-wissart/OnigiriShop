@@ -13,7 +13,7 @@
             {
                 var catProducts = _products.Where(p => p.CategoryId == cat.Id).ToList();
                 if (catProducts.Count == 0) { continue; }
-                <h4 class="mt-4 mb-2 fw-bold">@cat.Name</h4>
+                <h4 class="category-title mb-2 mb-2">@cat.Name</h4>
                 <div class="row">
                 @foreach (var product in catProducts)
                 {

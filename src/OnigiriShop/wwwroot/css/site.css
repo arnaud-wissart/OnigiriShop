@@ -127,8 +127,15 @@
 /* ---------------- PRODUITS ---------------- */
 .products-list {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
     gap: 2rem;
+}
+
+.category-title {
+    font-size: 1.75rem;
+    font-weight: 600;
+    font-family: 'Poppins', 'Noto Sans JP', 'Segoe UI', sans-serif;
+    color: #2a2b2e;
 }
 
 .btn-group.flex-wrap {
