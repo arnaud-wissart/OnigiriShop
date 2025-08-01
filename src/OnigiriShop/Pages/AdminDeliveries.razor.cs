@@ -214,6 +214,14 @@ namespace OnigiriShop.Pages
 
             ModalModel.DeliveryAt = ModalDate.Value.Date + ModalTime.Value.ToTimeSpan();
 
+            if (ModalModel.DeliveryAt < DateTime.Now)
+            {
+                ModalError = "La date de livraison doit être dans le futur.";
+                IsBusy = false;
+                StateHasChanged();
+                return;
+            }
+
             if (ModalModel.IsRecurring)
             {
                 if (!ModalModel.RecurrenceFrequency.HasValue)

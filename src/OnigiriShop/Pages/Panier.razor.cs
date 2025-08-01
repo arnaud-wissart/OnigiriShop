@@ -236,10 +236,57 @@ namespace OnigiriShop.Pages
                 .OrderBy(o => o.DeliveryAt)
                 .ToList();
 
-            var lines = string.Join("", upcoming.Select(o => $"<li>#{o.Id} - {o.UserDisplayName} - {o.DeliveryAt:dd/MM/yyyy HH:mm}</li>"));
-            var htmlAdmin = $"<p>Nouvelle commande #{order.Id} pour le {SelectedDelivery!.DeliveryAt:dd/MM/yyyy HH:mm}.</p><p>Commandes à venir :</p><ul>{lines}</ul>";
+            var upcomingDetails = new List<AdminOrderDetail>();
+            foreach (var summary in upcoming)
+            {
+                var items = await OrderService.GetOrderItemsAsync(summary.Id);
+                upcomingDetails.Add(AdminOrderDetail.FromSummary(summary, items));
+            }
+
+            var lines = string.Join("", upcomingDetails.Select(o => $"<li>#{o.Id} - {o.UserDisplayName} - {o.DeliveryAt:dd/MM/yyyy HH:mm}</li>"));
+
+            var totals = upcomingDetails
+                .GroupBy(o => o.DeliveryAt.Date)
+                .OrderBy(g => g.Key)
+                .Select(g => new
+                {
+                    Date = g.Key,
+                    Products = g.SelectMany(o => o.Items)
+                        .GroupBy(i => i.ProductName)
+                        .Select(p => new { Name = p.Key, Qty = p.Sum(x => x.Quantity) })
+                        .OrderBy(p => p.Name)
+                        .ToList()
+                }).ToList();
+
+            var totalsHtml = string.Join("", totals.Select(t =>
+                $"<p><b>{t.Date:dd/MM/yyyy}</b><br/>" +
+                string.Join("<br/>", t.Products.Select(p => $"{p.Name} : {p.Qty}")) +
+                "</p>"));
+
+            var totalsText = string.Join("\n\n", totals.Select(t =>
+                $"{t.Date:dd/MM/yyyy}\n" +
+                string.Join("\n", t.Products.Select(p => $"{p.Name} : {p.Qty}"))));
+
+            var overdue = upcomingDetails
+                .Where(o => o.DeliveryAt.Date <= DateTime.Today)
+                .ToList();
+
+            var htmlAdmin = $"<p>Nouvelle commande #{order.Id} pour le {SelectedDelivery!.DeliveryAt:dd/MM/yyyy HH:mm}.</p>" +
+                            $"<p>Commandes à venir :</p><ul>{lines}</ul>" +
+                            "<p><b>Totaux à préparer :</b></p>" + totalsHtml;
             var textAdmin = $"Nouvelle commande #{order.Id} pour le {SelectedDelivery!.DeliveryAt:dd/MM/yyyy HH:mm}.\n" +
-                             string.Join("\n", upcoming.Select(o => $"#{o.Id} - {o.UserDisplayName} - {o.DeliveryAt:dd/MM/yyyy HH:mm}"));
+                             string.Join("\n", upcomingDetails.Select(o => $"#{o.Id} - {o.UserDisplayName} - {o.DeliveryAt:dd/MM/yyyy HH:mm}")) +
+                             "\n\nTotaux à préparer :\n" + totalsText;
+
+            if (overdue.Count != 0)
+            {
+                var overdueHtml = string.Join("<br/>", overdue.Select(o => $"#{o.Id} - {o.UserDisplayName} - {o.DeliveryAt:dd/MM/yyyy HH:mm}"));
+                htmlAdmin += $"<p style=\"color:red;font-weight:bold;\">Commandes en attente pour aujourd'hui ou déjà passées :</p><p style=\"color:red;\">{overdueHtml}</p>";
+
+                var overdueText = string.Join("\n", overdue.Select(o => $"#{o.Id} - {o.UserDisplayName} - {o.DeliveryAt:dd/MM/yyyy HH:mm}"));
+                textAdmin += $"\n\nCommandes en attente pour aujourd'hui ou déjà passées :\n{overdueText}";
+            }
+
             await EmailService.SendAdminNotificationAsync("Nouvelle commande", htmlAdmin, textAdmin);
 
             await CartProvider.ClearCartAsync();

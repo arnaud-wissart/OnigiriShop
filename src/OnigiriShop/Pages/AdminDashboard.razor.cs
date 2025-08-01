@@ -25,7 +25,7 @@ namespace OnigiriShop.Pages
             await base.OnInitializedAsync();
 
             Orders = await OrderService.GetAllAdminOrdersAsync();
-            HasOverdueOrders = Orders.Any(o => o.Status == "En attente" && o.DeliveryAt.Date < DateTime.Today);
+            HasOverdueOrders = Orders.Any(o => o.Status == "En attente" && o.DeliveryAt.Date <= DateTime.Today);
         }
         protected void ShowOverdueOrders()
         {

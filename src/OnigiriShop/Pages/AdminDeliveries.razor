@@ -125,7 +125,8 @@
                         <div class="mb-3 row">
                             <div class="col-6">
                                 <label>Date</label>
-                                <InputDate @bind-Value="ModalDate" class="form-control" />
+                                <InputDate @bind-Value="ModalDate" class="form-control"
+                                           min="@DateTime.Today.ToString("yyyy-MM-dd")" />
                             </div>
                             <div class="col-6">
                                 <label>Heure</label>

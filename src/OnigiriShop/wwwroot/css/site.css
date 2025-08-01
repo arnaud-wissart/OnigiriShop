@@ -147,7 +147,7 @@
     max-width: calc(50% - 1rem);
 }
 
-@media (min-width: 992px) {
+@media (min-width: 1024px) {
     .product-col {
         flex: 0 0 calc((100% - 4rem) / 3);
         max-width: calc((100% - 4rem) / 3);
