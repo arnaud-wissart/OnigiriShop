@@ -35,6 +35,8 @@ namespace OnigiriShop.Pages
         protected decimal _totalPrice = 0;
 
         private string _selectedPlace = "";
+        private const string SelectedPlaceKey = "selectedPlace";
+        private const string SelectedDeliveryKey = "selectedDelivery";
         protected string SelectedPlace
         {
             get => _selectedPlace;
@@ -45,6 +47,8 @@ namespace OnigiriShop.Pages
                     _selectedPlace = value;
                     FilterDeliveries();
                     SelectedDeliveryId = null;
+                    _ = JS.InvokeVoidAsync("localStorage.setItem", SelectedPlaceKey, value);
+                    _ = JS.InvokeVoidAsync("localStorage.removeItem", SelectedDeliveryKey);
                     StateHasChanged();
                 }
             }
@@ -75,8 +79,20 @@ namespace OnigiriShop.Pages
                 .OrderBy(p => p)
                 .ToList();
 
-            SelectedPlace = "";
+            var savedPlace = await JS.InvokeAsync<string>("localStorage.getItem", SelectedPlaceKey);
+            if (!string.IsNullOrWhiteSpace(savedPlace) && DistinctPlaces.Contains(savedPlace))
+                SelectedPlace = savedPlace;
+            else
+                SelectedPlace = string.Empty;
+
             FilterDeliveries();
+
+            var savedDelivery = await JS.InvokeAsync<string>("localStorage.getItem", SelectedDeliveryKey);
+            if (int.TryParse(savedDelivery, out var delId) && Deliveries.Any(d => d.Id == delId))
+            {
+                SelectedDeliveryId = delId;
+                SelectedDelivery = Deliveries.FirstOrDefault(d => d.Id == delId);
+            }
         }
         private void OnCartChanged() => InvokeAsync(RefreshCartAsync);
         protected async Task RefreshCartAsync()
@@ -156,6 +172,7 @@ namespace OnigiriShop.Pages
         {
             SelectedDeliveryId = deliveryId;
             SelectedDelivery = Deliveries.FirstOrDefault(d => d.Id == deliveryId);
+            _ = JS.InvokeVoidAsync("localStorage.setItem", SelectedDeliveryKey, deliveryId.ToString());
             StateHasChanged();
         }
 
@@ -214,6 +231,17 @@ namespace OnigiriShop.Pages
                 order,
                 SelectedDelivery!);
 
+            var upcoming = (await OrderService.GetAllAdminOrdersAsync())
+                .Where(o => o.Status == "En attente" && o.DeliveryAt <= DateTime.Now.AddDays(7))
+                .OrderBy(o => o.DeliveryAt)
+                .ToList();
+
+            var lines = string.Join("", upcoming.Select(o => $"<li>#{o.Id} - {o.UserDisplayName} - {o.DeliveryAt:dd/MM/yyyy HH:mm}</li>"));
+            var htmlAdmin = $"<p>Nouvelle commande #{order.Id} pour le {SelectedDelivery!.DeliveryAt:dd/MM/yyyy HH:mm}.</p><p>Commandes à venir :</p><ul>{lines}</ul>";
+            var textAdmin = $"Nouvelle commande #{order.Id} pour le {SelectedDelivery!.DeliveryAt:dd/MM/yyyy HH:mm}.\n" +
+                             string.Join("\n", upcoming.Select(o => $"#{o.Id} - {o.UserDisplayName} - {o.DeliveryAt:dd/MM/yyyy HH:mm}"));
+            await EmailService.SendAdminNotificationAsync("Nouvelle commande", htmlAdmin, textAdmin);
+
             await CartProvider.ClearCartAsync();
             await CartProvider.RefreshCartStateAsync(CartState);
             CartState.NotifyChanged();
@@ -222,6 +250,8 @@ namespace OnigiriShop.Pages
             SelectedDeliveryId = null;
             SelectedDelivery = null;
             SelectedPlace = "";
+            await JS.InvokeVoidAsync("localStorage.removeItem", SelectedPlaceKey);
+            await JS.InvokeVoidAsync("localStorage.removeItem", SelectedDeliveryKey);
             _resultMessage = "Commande validée ! Merci pour votre achat.";
             StateHasChanged();
         }

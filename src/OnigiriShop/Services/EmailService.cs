@@ -86,8 +86,8 @@ namespace OnigiriShop.Services
             }
             else
             {
-                html = $@"<p>{intro}</p><p>Ton compte a été créé. Clique ci-dessous pour définir ton mot de passe&nbsp;:</p><p><a href=""{invitationLink}"">{invitationLink}</a></p><p><small>Ce lien expire dans 1 heure.</small></p><hr><p style=""color:#888;font-size:0.9em;"">{signature}</p>";
-                text = $"{intro}\nTon compte a été créé.\n{invitationLink}\nCe lien expire dans 1 heure.\n\n{signature}";
+                html = $@"<p>{intro}</p><p>Ton compte a été créé.&nbsp;<a href=""{invitationLink}"">Clique ici pour définir ton mot de passe</a>.</p><p><small>Ce lien expire dans 1 heure.</small></p><hr><p style=""color:#888;font-size:0.9em;"">{signature}</p>";
+                text = $"{intro}\nUtilisez le lien suivant pour définir votre mot de passe : {invitationLink}\nCe lien expire dans 1 heure.\n\n{signature}";
             }
 
             await SendEmailAsync(toEmail, toName, subject, html, text, expEmail, expName);
@@ -117,8 +117,8 @@ namespace OnigiriShop.Services
             }
             else
             {
-                html = $@"<p>{intro}</p><p>Cliquez ici pour choisir un nouveau mot de passe&nbsp;:<br><a href=""{resetLink}"">{resetLink}</a></p><p><small>Ce lien est valable 1 heure.</small></p><hr><p style=""color:#888;font-size:0.9em;"">{signature}</p>";
-                text = $"{intro}\n{resetLink}\nCe lien est valable 1 heure.\n\n{signature}";
+                html = $@"<p>{intro}</p><p><a href=""{resetLink}"">Cliquez ici pour choisir un nouveau mot de passe</a>.</p><p><small>Ce lien est valable 1 heure.</small></p><hr><p style=""color:#888;font-size:0.9em;"">{signature}</p>";
+                text = $"{intro}\nCopiez-collez ce lien dans votre navigateur pour choisir un nouveau mot de passe : {resetLink}\nCe lien est valable 1 heure.\n\n{signature}";
             }
 
             await SendEmailAsync(toEmail, toName, subject, html, text, expEmail, expName);
@@ -128,10 +128,14 @@ namespace OnigiriShop.Services
         {
             var expEmail = await settingService.GetValueAsync("ExpeditorEmail") ?? "no-reply@onigirishop.com";
             var expName = await settingService.GetValueAsync("ExpeditorName") ?? "OnigiriShop";
-            var subject = await settingService.GetValueAsync("OrderSubject") ?? $"Commande n°{order.Id}";
+            var subject = await settingService.GetValueAsync("OrderSubject");
+            if (!string.IsNullOrEmpty(subject))
+                subject = string.Format(subject, order.Id);
+            else
+                subject = $"Commande n°{order.Id}";
             var signature = await settingService.GetValueAsync("Signature") ?? "L’équipe OnigiriShop";
 
-            var orderLines = order.Items != null && order.Items.Any()
+            var orderLines = order.Items != null && order.Items.Count != 0
                 ? string.Join("", order.Items.Select(i =>
                     $"<li>{i.Quantity} x {i.ProductName} - {(i.UnitPrice * i.Quantity):0.00} €</li>"))
                 : "<li>Pas de détail trouvé.</li>";

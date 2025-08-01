@@ -14,7 +14,11 @@ namespace OnigiriShop.Services
             using var conn = connectionFactory.CreateConnection();
 
             var orders = (await conn.QueryAsync<Order>(
-                "SELECT * FROM 'Order' WHERE UserId = @userId ORDER BY OrderedAt DESC",
+                @"SELECT o.*, d.Place AS DeliveryPlace, d.DeliveryAt
+                  FROM [Order] o
+                  INNER JOIN Delivery d ON o.DeliveryId = d.Id
+                  WHERE o.UserId = @userId
+                  ORDER BY o.OrderedAt DESC",
                 new { userId }
             )).ToList();
 

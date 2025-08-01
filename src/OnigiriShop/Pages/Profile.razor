@@ -91,6 +91,7 @@
                                     <thead>
                                         <tr>
                                             <th>Date</th>
+                                            <th>Livraison</th>
                                             <th>Montant</th>
                                             <th>Status</th>
                                             <th>Détail</th>
@@ -101,6 +102,7 @@
                                         {
                                             <tr>
                                                 <td>@order.OrderedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                                                <td>@order.DeliveryAt.ToString("dd/MM/yyyy HH:mm")</td>
                                                 <td>@order.TotalAmount.ToString("C")</td>
                                                 <td>
                                                     <i class="bi @(GetOrderStatusIcon(order.Status))"></i>

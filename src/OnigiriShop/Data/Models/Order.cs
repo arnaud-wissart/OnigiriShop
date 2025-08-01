@@ -11,6 +11,8 @@
         public string Comment { get; set; } = string.Empty;
         public string UserDisplayName { get; set; } = string.Empty;
         public string UserEmail { get; set; } = string.Empty;
+        public string DeliveryPlace { get; set; } = string.Empty;
+        public DateTime DeliveryAt { get; set; }
         public List<OrderItem> Items { get; set; } = [];
     }
 
