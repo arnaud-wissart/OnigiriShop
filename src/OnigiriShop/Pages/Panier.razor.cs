@@ -200,11 +200,13 @@ namespace OnigiriShop.Pages
                 {
                     ProductId = i.ProductId,
                     Quantity = i.Quantity,
-                    UnitPrice = i.Product?.Price ?? 0
+                    UnitPrice = i.Product?.Price ?? 0,
+                    ProductName = i.Product?.Name ?? string.Empty
                 }).ToList()
             };
 
-            await OrderService.CreateOrderAsync(order, order.Items);
+            var orderId = await OrderService.CreateOrderAsync(order, order.Items);
+            order.Id = orderId;
             _orderSent = true;
             await EmailService.SendOrderConfirmationAsync(
                 await AuthService.GetCurrentUserEmailAsync(),
