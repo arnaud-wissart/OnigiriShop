@@ -22,27 +22,20 @@ public class DatabaseBackupBackgroundService(
     private static readonly TimeSpan DeduplicationDelay = TimeSpan.FromSeconds(1);
     private DateTime _lastHandledChange = DateTime.MinValue;
     private FileSystemWatcher? _watcher;
-    private FileSystemWatcher? _walWatcher;
+    private Timer? _debounceTimer;
+    private readonly object _debounceLock = new();
+    private string? _dbPath;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var dbPath = DatabasePaths.GetPath();
-        var dir = Path.GetDirectoryName(dbPath) ?? ".";
-        _watcher = new FileSystemWatcher(dir, Path.GetFileName(dbPath))
+        _dbPath = DatabasePaths.GetPath();
+        var dir = Path.GetDirectoryName(_dbPath) ?? ".";
+        _watcher = new FileSystemWatcher(dir, Path.GetFileName(_dbPath))
         {
             NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.Size
         };
-        _watcher.Changed += async (_, _) => await HandleChangeAsync(dbPath);
+        _watcher.Changed += OnFileChanged;
         _watcher.EnableRaisingEvents = true;
-
-        // Surveille aussi le fichier WAL si la base utilise ce mode journal
-        var walName = Path.GetFileName(dbPath) + "-wal";
-        _walWatcher = new FileSystemWatcher(dir, walName)
-        {
-            NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.Size
-        };
-        _walWatcher.Changed += async (_, _) => await HandleChangeAsync(dbPath);
-        _walWatcher.EnableRaisingEvents = true;
 
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -87,6 +80,18 @@ public class DatabaseBackupBackgroundService(
         }
     }
 
+    private void OnFileChanged(object? sender, FileSystemEventArgs e)
+    {
+        if (_dbPath is null)
+            return;
+        lock (_debounceLock)
+        {
+            _debounceTimer?.Change(Timeout.Infinite, Timeout.Infinite);
+            _debounceTimer?.Dispose();
+            _debounceTimer = new Timer(async _ => await HandleChangeAsync(_dbPath), null, DeduplicationDelay, Timeout.InfiniteTimeSpan);
+        }
+    }
+
     public async Task HandleChangeAsync(string dbPath, CancellationToken ct = default)
     {
         var bakPath = dbPath + ".bak";
@@ -101,21 +106,19 @@ public class DatabaseBackupBackgroundService(
             {
                 try
                 {
-                    using (var source = new SqliteConnection($"Data Source={dbPath};Mode=ReadOnly;Pooling=False;Cache=Shared"))
-                    using (var dest = new SqliteConnection($"Data Source={bakPath};Pooling=False"))
-                    {
-                        source.Open();
-                        using var cmd = source.CreateCommand();
-                        cmd.CommandText = "PRAGMA busy_timeout=5000;";
-                        cmd.ExecuteNonQuery();
+                    using var source = new SqliteConnection($"Data Source={dbPath};Mode=ReadOnly;Pooling=False;Cache=Shared");
+                    using var dest = new SqliteConnection($"Data Source={bakPath};Pooling=False");
+                    source.Open();
+                    using var cmd = source.CreateCommand();
+                    cmd.CommandText = "PRAGMA busy_timeout=5000;";
+                    cmd.ExecuteNonQuery();
 
-                        dest.Open();
-                        using var destCmd = dest.CreateCommand();
-                        destCmd.CommandText = "PRAGMA busy_timeout=5000;";
-                        destCmd.ExecuteNonQuery();
+                    dest.Open();
+                    using var destCmd = dest.CreateCommand();
+                    destCmd.CommandText = "PRAGMA busy_timeout=5000;";
+                    destCmd.ExecuteNonQuery();
 
-                        source.BackupDatabase(dest);
-                    }
+                    source.BackupDatabase(dest);
                     break;
                 }
                 catch (SqliteException ex) when ((ex.SqliteErrorCode == 5 || ex.SqliteErrorCode == 6) && attempt < RetryAttempts)
@@ -164,6 +167,6 @@ public class DatabaseBackupBackgroundService(
     {
         base.Dispose();
         _watcher?.Dispose();
-        _walWatcher?.Dispose();
+        _debounceTimer?.Dispose();
     }
 }
