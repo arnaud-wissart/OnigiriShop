@@ -11,10 +11,12 @@ using FluentMigrator.Runner;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Force la culture française par défaut
 var culture = new CultureInfo("fr-FR");
 CultureInfo.DefaultThreadCurrentCulture = culture;
 CultureInfo.DefaultThreadCurrentUICulture = culture;
 
+// Configuration du logger Serilog
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Debug()
     .WriteTo.Console()
@@ -67,63 +69,8 @@ builder.Services.AddServerSideBlazor();
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
-{
-    var githubCfg = scope.ServiceProvider.GetRequiredService<IOptions<GitHubBackupConfig>>().Value;
-    var backupCfg = scope.ServiceProvider.GetRequiredService<IOptions<BackupConfig>>().Value;
-    var httpBackup = scope.ServiceProvider.GetRequiredService<HttpDatabaseBackupService>();
-    IGitHubBackupService? github = null;
-    if (!string.IsNullOrWhiteSpace(githubCfg.Token))
-        github = scope.ServiceProvider.GetRequiredService<IGitHubBackupService>();
-    var runner = scope.ServiceProvider.GetRequiredService<IMigrationRunner>();
-
-    var restored = false;
-    var localExists = File.Exists(dbPath);
-    uint localVersion = localExists ? DatabaseInitializer.GetSchemaVersion(dbPath) : 0;
-
-    var remoteTemp = string.Empty;
-    var remoteExists = false;
-    uint remoteVersion = 0;
-
-    if (github is not null)
-    {
-        remoteTemp = Path.GetTempFileName();
-        remoteExists = github.DownloadBackupAsync(remoteTemp).GetAwaiter().GetResult();
-        if (remoteExists && SqliteHelper.IsSqliteDatabase(remoteTemp))
-            remoteVersion = DatabaseInitializer.GetSchemaVersion(remoteTemp);
-        else
-            remoteExists = false;
-    }
-
-    if (remoteExists && (!localExists || remoteVersion > localVersion))
-    {
-        DatabaseInitializer.DeleteDatabase(dbPath);
-        var dir = Path.GetDirectoryName(dbPath);
-        if (!string.IsNullOrEmpty(dir))
-            Directory.CreateDirectory(dir);
-        File.Move(remoteTemp, dbPath, true);
-        restored = true;
-    }
-    else if (!restored && !string.IsNullOrWhiteSpace(backupCfg.Endpoint))
-    {
-        restored = httpBackup.RestoreAsync(backupCfg.Endpoint, dbPath).GetAwaiter().GetResult();
-        if (!restored)
-            Log.Warning("Aucun backup valide n'a été trouvé à {Endpoint}", backupCfg.Endpoint);
-    }
-
-    if (File.Exists(remoteTemp))
-        File.Delete(remoteTemp);
-
-    DatabaseInitializer.EnsureDatabaseValid(dbPath);
-    runner.MigrateUp();
-
-    if (!DatabaseInitializer.IsSchemaUpToDate(dbPath, expectedHash))
-    {
-        DatabaseInitializer.SetSchemaHash(dbPath, expectedHash);
-        var version = DatabaseInitializer.GetSchemaVersion(dbPath);
-        Log.Information("Schema initialise avec la version {Version}", version);
-    }
-}
+// Restauration éventuelle puis migration de la base
+app.Services.RestoreAndMigrateDatabase(dbPath, expectedHash);
 
 app.UseStaticFiles();
 app.UseRouting();
