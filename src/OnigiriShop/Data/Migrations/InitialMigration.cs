@@ -19,7 +19,7 @@ namespace OnigiriShop.Data.Migrations
 
         public override void Down()
         {
-            Execute.Sql(@"DROP TABLE IF EXISTS EmailVariation;
+            Execute.Sql(@"
 DROP TABLE IF EXISTS CartItem;
 DROP TABLE IF EXISTS Cart;
 DROP TABLE IF EXISTS Notification;

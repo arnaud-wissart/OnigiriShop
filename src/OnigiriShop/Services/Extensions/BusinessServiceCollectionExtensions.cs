@@ -14,7 +14,7 @@ public static class BusinessServiceCollectionExtensions
         services.AddSingleton<ErrorModalService>();
         services.AddScoped<AuthService>();
         services.AddScoped<OrderService>();
-        services.AddScoped<EmailVariationService>();
+        services.AddScoped<SettingService>();
         services.AddScoped<EmailTemplateService>();
         services.AddScoped<EmailService>();
         services.AddScoped<UserAccountService>();

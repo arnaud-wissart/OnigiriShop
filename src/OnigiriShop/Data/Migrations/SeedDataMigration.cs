@@ -20,7 +20,6 @@ namespace OnigiriShop.Data.Migrations
             Execute.Sql("DELETE FROM Notification;");
             Execute.Sql("DELETE FROM Cart;");
             Execute.Sql("DELETE FROM CartItem;");
-            Execute.Sql("DELETE FROM EmailVariation;");
         }
     }
 }

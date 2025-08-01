@@ -118,161 +118,65 @@
     </div>
 }
 
-<!-- Variations section -->
+<!-- Paramètres section -->
 <div class="card shadow rounded-3 overflow-hidden border mb-4" style="background:#fff;">
     <div class="card-body p-0">
         <h4 class="card-title p-3 mb-0 border-bottom bg-light fw-bold" style="color:#212529; letter-spacing:0.01em;">
-            Gestion des variations d&rsquo;emails
+            Paramètres des e-mails
         </h4>
         <div class="p-3">
-            <div class="accordion" id="emailVariationAccordion">
-                @foreach (var cat in VariationCategories)
-                {
-                    <div class="accordion-item shadow-sm mb-3 border">
-                        <h2 class="accordion-header" id="heading-@cat">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                                    data-bs-target="#collapse-@cat"
-                                    aria-expanded="false" aria-controls="collapse-@cat">
-                                @VariationCategoryLabels[cat]
-                            </button>
-                        </h2>
-                        <div id="collapse-@cat" class="accordion-collapse collapse" aria-labelledby="heading-@cat"
-                             data-bs-parent="#emailVariationAccordion">
-                            <div class="accordion-body">
-                                <table class="table table-sm align-middle">
-                                    <thead>
-                                        <tr>
-                                            @if (cat == "Expeditor")
-                                            {
-                                                <th style="min-width:160px;">Adresse e-mail</th>
-                                                <th style="min-width:140px;">Nom affiché</th>
-                                            }
-                                            else
-                                            {
-                                                <th>Valeur</th>
-                                            }
-                                            <th style="width:110px;" class="text-end">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach (var v in VariationAllVariations.Where(x => x.Type == cat))
-                                        {
-                                            <tr>
-                                                @if (cat == "Expeditor")
-                                                {
-                                                    <td>@v.Value</td>
-                                                    <td>@v.Extra</td>
-                                                }
-                                                else
-                                                {
-                                                    <td>@v.Value</td>
-                                                }
-                                                <td class="text-end">
-                                                    <button class="btn btn-sm btn-outline-secondary me-2" @onclick="() => VariationEditVariation(v)">
-                                                        <i class="bi bi-pencil"></i>
-                                                    </button>
-                                                    <button class="btn btn-sm btn-outline-danger" @onclick="() => VariationConfirmDelete(v)">
-                                                        <i class="bi bi-trash"></i>
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        }
-                                        <tr>
-                                            <td colspan="@(cat=="Expeditor" ? "3" : "2")">
-                                                <button class="btn btn-success btn-sm mt-1" @onclick="() => VariationShowAddModal(cat)">
-                                                    <i class="bi bi-plus-circle me-1"></i> Ajouter
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
+            <EditForm Model="SettingsModel" OnValidSubmit="SaveSettingsAsync">
+                <DataAnnotationsValidator />
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label>Adresse expéditeur</label>
+                        <InputText class="form-control" @bind-Value="SettingsModel.ExpeditorEmail" />
                     </div>
+                    <div class="col-md-6">
+                        <label>Nom expéditeur</label>
+                        <InputText class="form-control" @bind-Value="SettingsModel.ExpeditorName" />
+                    </div>
+                    <div class="col-md-6">
+                        <label>Sujet invitation</label>
+                        <InputText class="form-control" @bind-Value="SettingsModel.InvitationSubject" />
+                    </div>
+                    <div class="col-md-6">
+                        <label>Intro invitation</label>
+                        <InputText class="form-control" @bind-Value="SettingsModel.InvitationIntro" />
+                    </div>
+                    <div class="col-md-6">
+                        <label>Sujet reset mot de passe</label>
+                        <InputText class="form-control" @bind-Value="SettingsModel.PasswordResetSubject" />
+                    </div>
+                    <div class="col-md-6">
+                        <label>Intro reset mot de passe</label>
+                        <InputText class="form-control" @bind-Value="SettingsModel.PasswordResetIntro" />
+                    </div>
+                    <div class="col-md-6">
+                        <label>Sujet confirmation commande</label>
+                        <InputText class="form-control" @bind-Value="SettingsModel.OrderSubject" />
+                    </div>
+                    <div class="col-md-6">
+                        <label>Signature</label>
+                        <InputText class="form-control" @bind-Value="SettingsModel.Signature" />
+                    </div>
+                    <div class="col-md-6">
+                        <label>Email admin</label>
+                        <InputText class="form-control" @bind-Value="SettingsModel.AdminEmail" />
+                    </div>
+                </div>
+                <button class="btn btn-success mt-3" type="submit" disabled="@SettingsBusy">
+                    Enregistrer
+                    @if (SettingsBusy)
+                    {
+                        <span class="spinner-border spinner-border-sm ms-2"></span>
+                    }
+                </button>
+                @if (!string.IsNullOrEmpty(SettingsMessage))
+                {
+                    <div class="alert alert-success mt-3">@SettingsMessage</div>
                 }
-            </div>
+            </EditForm>
         </div>
     </div>
 </div>
-
-@if (VariationShowModal)
-{
-    <div class="modal fade show d-block" tabindex="-1" style="background:rgba(33,33,33,0.13);">
-        <div class="modal-dialog" @onclick:stopPropagation>
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">@VariationModalTitle</h5>
-                    <button type="button" class="btn-close" @onclick="VariationHideModal"></button>
-                </div>
-                <div class="modal-body">
-                    @if (!string.IsNullOrWhiteSpace(VariationModalError))
-                    {
-                        <div class="alert alert-danger">@VariationModalError</div>
-                    }
-                    <EditForm Model="VariationModalModel" OnValidSubmit="VariationHandleModalValid">
-                        <DataAnnotationsValidator />
-                        @if (VariationModalModel.Type == "Expeditor")
-                        {
-                            <div class="mb-3">
-                                <label>Adresse e-mail</label>
-                                <InputText class="form-control" @bind-Value="VariationModalModel.Value" />
-                                <ValidationMessage For="@(() => VariationModalModel.Value)" />
-                            </div>
-                            <div class="mb-3">
-                                <label>Nom affiché</label>
-                                <InputText class="form-control" @bind-Value="VariationModalModel.Extra" />
-                                <ValidationMessage For="@(() => VariationModalModel.Extra)" />
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="mb-3">
-                                <label>Valeur</label>
-                                <InputText class="form-control" @bind-Value="VariationModalModel.Value" />
-                                <ValidationMessage For="@(() => VariationModalModel.Value)" />
-                            </div>
-                        }
-                        <button class="btn btn-success w-100" type="submit" disabled="@VariationIsBusy">
-                            @((VariationIsEdit ? "Mettre à jour" : "Créer"))
-                            @if (VariationIsBusy)
-                            {
-                                <span class="spinner-border spinner-border-sm ms-2"></span>
-                            }
-                        </button>
-                        @if (VariationIsEdit)
-                        {
-                            <button class="btn btn-danger w-100 mt-2" type="button" @onclick="VariationConfirmDeleteModal">
-                                <i class="bi bi-trash"></i> Supprimer cette variation
-                            </button>
-                        }
-                    </EditForm>
-                </div>
-            </div>
-        </div>
-    </div>
-}
-
-@if (VariationShowDeleteConfirm)
-{
-    <div class="modal fade show d-block" tabindex="-1" style="background:rgba(33,33,33,0.13);">
-        <div class="modal-dialog modal-dialog-centered" @onclick:stopPropagation>
-            <div class="modal-content border-0 shadow-lg">
-                <div class="modal-header">
-                    <h5 class="modal-title">Confirmation suppression</h5>
-                </div>
-                <div class="modal-body">
-                    <p>
-                        Confirmer la suppression de cette variation&nbsp;
-                        <b>
-                            @(VariationDeleteModel?.Type == "Expeditor" ? VariationDeleteModel?.Value + " (" + VariationDeleteModel?.Extra + ")" : VariationDeleteModel?.Value)
-                        </b> ?
-                    </p>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" @onclick="VariationCancelDelete">Annuler</button>
-                    <button class="btn btn-danger" @onclick="VariationDeleteConfirmed">Supprimer</button>
-                </div>
-            </div>
-        </div>
-    </div>
-}

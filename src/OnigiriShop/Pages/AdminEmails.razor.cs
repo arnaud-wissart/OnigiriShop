@@ -8,8 +8,7 @@ namespace OnigiriShop.Pages
     public class AdminEmailsBase : CustomComponentBase
     {
         [Inject] public EmailTemplateService EmailTemplateService { get; set; } = default!;
-        [Inject] public EmailVariationService EmailVariationService { get; set; } = default!;
-
+        [Inject] public SettingService SettingService { get; set; } = default!;
         protected List<EmailTemplate> TemplateTemplates { get; set; } = [];
         protected EmailTemplate TemplateModalModel { get; set; } = new();
         protected EmailTemplate? TemplateDeleteModel { get; set; }
@@ -19,36 +18,15 @@ namespace OnigiriShop.Pages
         protected bool TemplateIsBusy { get; set; }
         protected string? TemplateModalError { get; set; }
         protected string TemplateModalTitle => TemplateIsEdit ? "Modifier un template" : "Ajouter un template";
-        protected List<EmailVariation> VariationAllVariations { get; set; } = [];
-        protected List<string> VariationCategories { get; set; } =
-        [
-            "Expeditor", "InvitationSubject", "InvitationIntro", "PasswordResetSubject",
-            "PasswordResetIntro", "OrderSubject", "Signature"
-        ];
-        protected Dictionary<string, string> VariationCategoryLabels = new()
-        {
-            ["Expeditor"] = "Expéditeurs (adresse + nom affiché)",
-            ["InvitationSubject"] = "Sujets d'invitation",
-            ["InvitationIntro"] = "Intros d'invitation",
-            ["PasswordResetSubject"] = "Sujets de réinitialisation de mot de passe",
-            ["PasswordResetIntro"] = "Intros de reset de mot de passe",
-            ["OrderSubject"] = "Sujets de confirmation de commande",
-            ["Signature"] = "Signatures"
-        };
-        protected EmailVariation VariationModalModel { get; set; } = new();
-        protected EmailVariation? VariationDeleteModel { get; set; }
-        protected string VariationModalTitle => VariationIsEdit ? "Modifier une variation" : "Ajouter une variation";
-        protected string? VariationModalError { get; set; }
-        protected bool VariationShowModal { get; set; }
-        protected bool VariationIsEdit { get; set; }
-        protected bool VariationShowDeleteConfirm { get; set; }
-        protected bool VariationIsBusy { get; set; }
+        protected EmailSettingsModel SettingsModel { get; set; } = new();
+        protected bool SettingsBusy { get; set; }
+        protected string? SettingsMessage { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
             await base.OnInitializedAsync();
             await ReloadTemplatesAsync();
-            await ReloadVariationsAsync();
+            await LoadSettingsAsync();
         }
 
         protected async Task ReloadTemplatesAsync()
@@ -144,99 +122,35 @@ namespace OnigiriShop.Pages
             await ReloadTemplatesAsync();
         }
 
-        protected async Task ReloadVariationsAsync()
+        protected async Task LoadSettingsAsync()
         {
-            VariationAllVariations = await EmailVariationService.GetAllAsync();
+            SettingsModel.ExpeditorEmail = await SettingService.GetValueAsync("ExpeditorEmail") ?? string.Empty;
+            SettingsModel.ExpeditorName = await SettingService.GetValueAsync("ExpeditorName") ?? string.Empty;
+            SettingsModel.InvitationSubject = await SettingService.GetValueAsync("InvitationSubject") ?? string.Empty;
+            SettingsModel.InvitationIntro = await SettingService.GetValueAsync("InvitationIntro") ?? string.Empty;
+            SettingsModel.PasswordResetSubject = await SettingService.GetValueAsync("PasswordResetSubject") ?? string.Empty;
+            SettingsModel.PasswordResetIntro = await SettingService.GetValueAsync("PasswordResetIntro") ?? string.Empty;
+            SettingsModel.OrderSubject = await SettingService.GetValueAsync("OrderSubject") ?? string.Empty;
+            SettingsModel.Signature = await SettingService.GetValueAsync("Signature") ?? string.Empty;
+            SettingsModel.AdminEmail = await SettingService.GetValueAsync("AdminEmail") ?? string.Empty;
+            SettingsMessage = null;
             StateHasChanged();
         }
 
-        protected void VariationShowAddModal(string type)
+        protected async Task SaveSettingsAsync()
         {
-            VariationModalModel = new EmailVariation { Type = type };
-            VariationIsEdit = false;
-            VariationShowModal = true;
-            VariationModalError = null;
-        }
-
-        protected void VariationEditVariation(EmailVariation v)
-        {
-            VariationModalModel = new EmailVariation
-            {
-                Id = v.Id,
-                Type = v.Type,
-                Name = v.Name,
-                Value = v.Value,
-                Extra = v.Extra
-            };
-            VariationIsEdit = true;
-            VariationShowModal = true;
-            VariationModalError = null;
-        }
-
-        protected void VariationHideModal()
-        {
-            VariationShowModal = false;
-            VariationModalModel = new EmailVariation();
-            VariationModalError = null;
-        }
-
-        protected async Task VariationHandleModalValid()
-        {
-            VariationIsBusy = true;
-            VariationModalError = null;
-
-            if (string.IsNullOrWhiteSpace(VariationModalModel.Value))
-            {
-                VariationModalError = "La valeur ne peut pas être vide.";
-                VariationIsBusy = false;
-                StateHasChanged();
-                return;
-            }
-            if (VariationModalModel.Type == "Expeditor" && string.IsNullOrWhiteSpace(VariationModalModel.Extra))
-            {
-                VariationModalError = "Le nom affiché est obligatoire pour un expéditeur.";
-                VariationIsBusy = false;
-                StateHasChanged();
-                return;
-            }
-
-            if (VariationIsEdit)
-                await EmailVariationService.UpdateAsync(VariationModalModel);
-            else
-                await EmailVariationService.CreateAsync(VariationModalModel);
-
-            VariationIsBusy = false;
-            VariationHideModal();
-            await ReloadVariationsAsync();
-        }
-
-        protected void VariationConfirmDelete(EmailVariation v)
-        {
-            VariationDeleteModel = v;
-            VariationShowDeleteConfirm = true;
-        }
-
-        protected void VariationConfirmDeleteModal()
-        {
-            VariationDeleteModel = VariationModalModel;
-            VariationShowDeleteConfirm = true;
-        }
-
-        protected void VariationCancelDelete()
-        {
-            VariationShowDeleteConfirm = false;
-            VariationDeleteModel = null;
-        }
-
-        protected async Task VariationDeleteConfirmed()
-        {
-            if (VariationDeleteModel != null)
-                await EmailVariationService.DeleteAsync(VariationDeleteModel.Id);
-
-            VariationShowDeleteConfirm = false;
-            VariationDeleteModel = null;
-            VariationHideModal();
-            await ReloadVariationsAsync();
+            SettingsBusy = true;
+            await SettingService.SetValueAsync("ExpeditorEmail", SettingsModel.ExpeditorEmail);
+            await SettingService.SetValueAsync("ExpeditorName", SettingsModel.ExpeditorName);
+            await SettingService.SetValueAsync("InvitationSubject", SettingsModel.InvitationSubject);
+            await SettingService.SetValueAsync("InvitationIntro", SettingsModel.InvitationIntro);
+            await SettingService.SetValueAsync("PasswordResetSubject", SettingsModel.PasswordResetSubject);
+            await SettingService.SetValueAsync("PasswordResetIntro", SettingsModel.PasswordResetIntro);
+            await SettingService.SetValueAsync("OrderSubject", SettingsModel.OrderSubject);
+            await SettingService.SetValueAsync("Signature", SettingsModel.Signature);
+            await SettingService.SetValueAsync("AdminEmail", SettingsModel.AdminEmail);
+            SettingsBusy = false;
+            SettingsMessage = "Paramètres enregistrés";
         }
     }
 }

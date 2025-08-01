@@ -5,7 +5,7 @@ using Serilog;
 
 namespace OnigiriShop.Services
 {
-    public class EmailService(IMailjetClient client, EmailVariationService variationService, ErrorModalService errorModalService, EmailTemplateService templateService)
+    public class EmailService(IMailjetClient client, SettingService settingService, ErrorModalService errorModalService, EmailTemplateService templateService)
     {
         public async Task SendEmailAsync(
             string toEmail,
@@ -64,10 +64,11 @@ namespace OnigiriShop.Services
 
         public async Task SendUserInvitationAsync(string toEmail, string toName, string invitationLink)
         {
-            var (expEmail, expName) = await variationService.GetRandomExpeditorAsync();
-            var subject = await variationService.GetRandomValueByTypeAsync("InvitationSubject") ?? "Bienvenue sur OnigiriShop";
-            var intro = await variationService.GetRandomValueByTypeAsync("InvitationIntro") ?? "Bienvenue !";
-            var signature = await variationService.GetRandomValueByTypeAsync("Signature") ?? "L’équipe OnigiriShop";
+            var expEmail = await settingService.GetValueAsync("ExpeditorEmail") ?? "no-reply@onigirishop.com";
+            var expName = await settingService.GetValueAsync("ExpeditorName") ?? "OnigiriShop";
+            var subject = await settingService.GetValueAsync("InvitationSubject") ?? "Bienvenue sur OnigiriShop";
+            var intro = await settingService.GetValueAsync("InvitationIntro") ?? "Bienvenue !";
+            var signature = await settingService.GetValueAsync("Signature") ?? "L’équipe OnigiriShop";
 
             var template = await templateService.GetByNameAsync("UserInvitation");
             string html;
@@ -94,10 +95,11 @@ namespace OnigiriShop.Services
 
         public async Task SendPasswordResetAsync(string toEmail, string toName, string resetLink)
         {
-            var (expEmail, expName) = await variationService.GetRandomExpeditorAsync();
-            var subject = await variationService.GetRandomValueByTypeAsync("PasswordResetSubject") ?? "Réinitialisation de votre mot de passe";
-            var intro = await variationService.GetRandomValueByTypeAsync("PasswordResetIntro") ?? "Vous avez demandé à réinitialiser votre mot de passe.";
-            var signature = await variationService.GetRandomValueByTypeAsync("Signature") ?? "L’équipe OnigiriShop";
+            var expEmail = await settingService.GetValueAsync("ExpeditorEmail") ?? "no-reply@onigirishop.com";
+            var expName = await settingService.GetValueAsync("ExpeditorName") ?? "OnigiriShop";
+            var subject = await settingService.GetValueAsync("PasswordResetSubject") ?? "Réinitialisation de votre mot de passe";
+            var intro = await settingService.GetValueAsync("PasswordResetIntro") ?? "Vous avez demandé à réinitialiser votre mot de passe.";
+            var signature = await settingService.GetValueAsync("Signature") ?? "L’équipe OnigiriShop";
 
             var template = await templateService.GetByNameAsync("PasswordReset");
             string html;
@@ -124,9 +126,10 @@ namespace OnigiriShop.Services
 
         public async Task SendOrderConfirmationAsync(string toEmail, string toName, Order order, Delivery delivery)
         {
-            var (expEmail, expName) = await variationService.GetRandomExpeditorAsync();
-            var subject = await variationService.GetRandomValueByTypeAsync("OrderSubject") ?? $"Commande n°{order.Id}";
-            var signature = await variationService.GetRandomValueByTypeAsync("Signature") ?? "L’équipe OnigiriShop";
+            var expEmail = await settingService.GetValueAsync("ExpeditorEmail") ?? "no-reply@onigirishop.com";
+            var expName = await settingService.GetValueAsync("ExpeditorName") ?? "OnigiriShop";
+            var subject = await settingService.GetValueAsync("OrderSubject") ?? $"Commande n°{order.Id}";
+            var signature = await settingService.GetValueAsync("Signature") ?? "L’équipe OnigiriShop";
 
             var orderLines = order.Items != null && order.Items.Any()
                 ? string.Join("", order.Items.Select(i =>
@@ -175,8 +178,9 @@ namespace OnigiriShop.Services
 
         public async Task SendAdminNotificationAsync(string subject, string htmlContent, string textContent)
         {
-            var (expEmail, expName) = await variationService.GetRandomExpeditorAsync();
-            var adminEmail = "admin@onigirishop.com";
+            var expEmail = await settingService.GetValueAsync("ExpeditorEmail") ?? "no-reply@onigirishop.com";
+            var expName = await settingService.GetValueAsync("ExpeditorName") ?? "OnigiriShop";
+            var adminEmail = await settingService.GetValueAsync("AdminEmail") ?? "admin@onigirishop.com";
             await SendEmailAsync(adminEmail, "Admin", subject, htmlContent, textContent, expEmail, expName);
         }
     }
