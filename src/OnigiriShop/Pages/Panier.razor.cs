@@ -215,6 +215,11 @@ namespace OnigiriShop.Pages
             await CartProvider.ClearCartAsync();
             await CartProvider.RefreshCartStateAsync(CartState);
             CartState.NotifyChanged();
+            _items.Clear();
+            _totalPrice = 0;
+            SelectedDeliveryId = null;
+            SelectedDelivery = null;
+            SelectedPlace = "";
             _resultMessage = "Commande validée ! Merci pour votre achat.";
             StateHasChanged();
         }

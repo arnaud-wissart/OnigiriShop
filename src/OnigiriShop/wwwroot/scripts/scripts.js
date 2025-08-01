@@ -414,8 +414,14 @@ window.onigiriDatePicker = {
             input._flatpickr.destroy();
         }
         function disableTimeInputs(instance) {
-            const timeInputs = instance.calendarContainer.querySelectorAll(".flatpickr-time input");
-            timeInputs.forEach(i => i.setAttribute("disabled", "disabled"));
+            const timeContainer = instance.calendarContainer.querySelector(".flatpickr-time");
+            if (!timeContainer) return;
+            let inputs = timeContainer.querySelectorAll("input");
+            inputs.forEach(i => {
+                i.setAttribute("disabled", "disabled");
+                i.setAttribute("tabindex", "-1");
+            });
+            timeContainer.style.pointerEvents = "none";
         }
 
         const opts = {
@@ -441,8 +447,10 @@ window.onigiriDatePicker = {
                         dateStr = del.date;
                     }
                 }
-                if (del)
+                if (del) {
+                    instance.input.value = del.date;
                     dotNetHelper.invokeMethodAsync('OnDateSelected', del.id);
+                }                    
             }
         };
         flatpickr(input, opts);
