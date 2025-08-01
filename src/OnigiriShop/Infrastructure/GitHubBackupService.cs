@@ -1,6 +1,7 @@
 ﻿using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Options;
 using Octokit;
+using System.Text;
 
 namespace OnigiriShop.Infrastructure;
 
@@ -74,12 +75,26 @@ public class GitHubBackupService : IGitHubBackupService
     {
         try
         {
-            var contents = await _client.Repository.Content.GetAllContentsByRef(_config.Owner, _config.Repo, _config.FilePath, _config.Branch);
-            var content = contents[0];
-            var bytes = Convert.FromBase64String(content.Content);
+            var contents = await _client.Repository.Content
+    .           GetAllContentsByRef(_config.Owner, _config.Repo, _config.FilePath, _config.Branch);
+
+            var downloadUrl = contents[0].DownloadUrl;
+
+            using var http = new HttpClient();
+
+            // 1. Télécharger les bytes du fichier (c'est du texte base64 encodé)
+            var base64Bytes = await http.GetByteArrayAsync(downloadUrl, ct);
+
+            // 2. Convertir les bytes en string (car c'est du texte encodé en base64)
+            var base64String = Encoding.UTF8.GetString(base64Bytes);
+
+            // 3. Décoder la chaîne base64 pour obtenir les vraies données binaires
+            var bytes = Convert.FromBase64String(base64String);
+
             var dir = Path.GetDirectoryName(destinationPath);
             if (!string.IsNullOrEmpty(dir))
                 Directory.CreateDirectory(dir);
+
             await File.WriteAllBytesAsync(destinationPath, bytes, ct);
             return true;
         }

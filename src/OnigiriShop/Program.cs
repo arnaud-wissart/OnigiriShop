@@ -78,19 +78,41 @@ using (var scope = app.Services.CreateScope())
     var runner = scope.ServiceProvider.GetRequiredService<IMigrationRunner>();
 
     var restored = false;
+    var localExists = File.Exists(dbPath);
+    uint localVersion = localExists ? DatabaseInitializer.GetSchemaVersion(dbPath) : 0;
+
+    var remoteTemp = string.Empty;
+    var remoteExists = false;
+    uint remoteVersion = 0;
+
     if (github is not null)
     {
-        restored = github.DownloadBackupAsync(dbPath).GetAwaiter().GetResult();
-        if (!restored)
-            Log.Warning("Aucune sauvegarde GitHub valide trouvée");
+        remoteTemp = Path.GetTempFileName();
+        remoteExists = github.DownloadBackupAsync(remoteTemp).GetAwaiter().GetResult();
+        if (remoteExists && SqliteHelper.IsSqliteDatabase(remoteTemp))
+            remoteVersion = DatabaseInitializer.GetSchemaVersion(remoteTemp);
+        else
+            remoteExists = false;
     }
 
-    if (!restored && !string.IsNullOrWhiteSpace(backupCfg.Endpoint))
+    if (remoteExists && (!localExists || remoteVersion > localVersion))
+    {
+        DatabaseInitializer.DeleteDatabase(dbPath);
+        var dir = Path.GetDirectoryName(dbPath);
+        if (!string.IsNullOrEmpty(dir))
+            Directory.CreateDirectory(dir);
+        File.Move(remoteTemp, dbPath, true);
+        restored = true;
+    }
+    else if (!restored && !string.IsNullOrWhiteSpace(backupCfg.Endpoint))
     {
         restored = httpBackup.RestoreAsync(backupCfg.Endpoint, dbPath).GetAwaiter().GetResult();
         if (!restored)
             Log.Warning("Aucun backup valide n'a été trouvé à {Endpoint}", backupCfg.Endpoint);
     }
+
+    if (File.Exists(remoteTemp))
+        File.Delete(remoteTemp);
 
     DatabaseInitializer.EnsureDatabaseValid(dbPath);
     runner.MigrateUp();
