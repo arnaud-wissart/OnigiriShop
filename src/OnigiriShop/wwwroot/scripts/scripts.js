@@ -408,20 +408,39 @@ window.updateStatsChart = function (data) {
 window.onigiriDatePicker = {
     init: function (inputId, dotNetHelper, deliveries) {
         if (!window.flatpickr) return;
-        var input = document.getElementById(inputId);
+        let input = document.getElementById(inputId);
         if (!input) return;
         if (input._flatpickr) {
             input._flatpickr.destroy();
         }
-        var opts = {
+        function disableTimeInputs(instance) {
+            const timeInputs = instance.calendarContainer.querySelectorAll(".flatpickr-time input");
+            timeInputs.forEach(i => i.setAttribute("disabled", "disabled"));
+        }
+
+        const opts = {
             enableTime: true,
             dateFormat: "Y-m-d H:i",
             locale: flatpickr.l10ns.fr,
             disableMobile: true,
             allowInput: false,
             enable: deliveries.map(d => d.date),
-            onChange: function (selectedDates, dateStr) {
-                var del = deliveries.find(x => x.date === dateStr);
+            onReady: function (selectedDates, dateStr, instance) {
+                disableTimeInputs(instance);
+            },
+            onOpen: function (selectedDates, dateStr, instance) {
+                disableTimeInputs(instance);
+            },
+            onChange: function (selectedDates, dateStr, instance) {
+                let del = deliveries.find(x => x.date === dateStr);
+                if (!del) {
+                    const datePart = dateStr.split(" ")[0];
+                    del = deliveries.find(x => x.date.startsWith(datePart));
+                    if (del) {
+                        instance.setDate(del.date, false, "Y-m-d H:i");
+                        dateStr = del.date;
+                    }
+                }
                 if (del)
                     dotNetHelper.invokeMethodAsync('OnDateSelected', del.id);
             }

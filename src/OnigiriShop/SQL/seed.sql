@@ -19,7 +19,8 @@ INSERT INTO Delivery
 (Place, DeliveryAt, IsRecurring, RecurrenceFrequency, RecurrenceInterval, RecurrenceRule, Comment, IsDeleted, CreatedAt)
 VALUES
 ('République', '2025-07-15 13:00:00', 1, 2, 1, NULL, 'Chaque mardi 13h', 0, CURRENT_TIMESTAMP),
-('République', '2025-07-17 13:00:00', 1, 2, 1, NULL, 'Chaque jeudi 13h', 0, CURRENT_TIMESTAMP);
+('République', '2025-07-17 13:00:00', 1, 2, 1, NULL, 'Chaque jeudi 13h', 0, CURRENT_TIMESTAMP),
+('Liberté', '2025-07-16 18:00:00', 1, 2, 1, NULL, 'Chaque mercredi 18h', 0, CURRENT_TIMESTAMP);
 -- Livraisons supplémentaires pour l'historique
 INSERT INTO Delivery
 (Place, DeliveryAt, IsRecurring, RecurrenceFrequency, RecurrenceInterval, RecurrenceRule, Comment, IsDeleted, CreatedAt)
