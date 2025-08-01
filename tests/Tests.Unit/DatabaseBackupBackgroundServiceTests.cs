@@ -30,7 +30,10 @@ public class DatabaseBackupBackgroundServiceTests : IDisposable
     public async Task HandleChangeAsync_Cree_Un_Fichier_Bak()
     {
         var options = Microsoft.Extensions.Options.Options.Create(new BackupConfig());
-        var driveOptions = Microsoft.Extensions.Options.Options.Create(new GitHubBackupConfig());
+        var driveOptions = Microsoft.Extensions.Options.Options.Create(new GitHubBackupConfig
+        {
+            Token = "x"
+        });
         var githubSvc = new FakeGitHubBackupService();
         var service = new DatabaseBackupBackgroundService(
             new NullLogger<DatabaseBackupBackgroundService>(),
@@ -70,6 +73,26 @@ public class DatabaseBackupBackgroundServiceTests : IDisposable
         await service.HandleChangeAsync(_dbPath);
         Assert.True(File.Exists(options.Value.Endpoint));
         Assert.True(githubSvc.Uploaded);
+    }
+
+    [Fact]
+    public async Task HandleChangeAsync_Evite_Les_Doublons()
+    {
+        var options = Microsoft.Extensions.Options.Options.Create(new BackupConfig());
+        var driveOptions = Microsoft.Extensions.Options.Options.Create(new GitHubBackupConfig
+        {
+            Token = "x"
+        });
+        var githubSvc = new FakeGitHubBackupService();
+        var service = new DatabaseBackupBackgroundService(
+            new NullLogger<DatabaseBackupBackgroundService>(),
+            new HttpDatabaseBackupService(new HttpClient()),
+            githubSvc,
+            options,
+            driveOptions);
+        await service.HandleChangeAsync(_dbPath);
+        await service.HandleChangeAsync(_dbPath);
+        Assert.Equal(1, githubSvc.UploadCallCount);
     }
 
     public void Dispose()

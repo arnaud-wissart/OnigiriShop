@@ -19,7 +19,8 @@ public class DatabaseBackupBackgroundService(
     private readonly SemaphoreSlim _semaphore = new(1, 1);
     private const int RetryAttempts = 3;
     private static readonly TimeSpan RetryDelay = TimeSpan.FromMilliseconds(300);
-
+    private static readonly TimeSpan DeduplicationDelay = TimeSpan.FromSeconds(1);
+    private DateTime _lastHandledChange = DateTime.MinValue;
     private FileSystemWatcher? _watcher;
     private FileSystemWatcher? _walWatcher;
 
@@ -92,6 +93,10 @@ public class DatabaseBackupBackgroundService(
         await _semaphore.WaitAsync(ct);
         try
         {
+            var now = DateTime.UtcNow;
+            if (now - _lastHandledChange < DeduplicationDelay)
+                return;
+
             for (var attempt = 1; attempt <= RetryAttempts; attempt++)
             {
                 try
@@ -143,6 +148,7 @@ public class DatabaseBackupBackgroundService(
                     logger.LogError(ex, "Erreur lors de l'envoi sur GitHub");
                 }
             }
+            _lastHandledChange = now;
         }
         catch (Exception ex)
         {
