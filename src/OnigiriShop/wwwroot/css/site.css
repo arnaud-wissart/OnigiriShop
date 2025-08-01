@@ -147,14 +147,14 @@
     max-width: calc(50% - 1rem);
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 1500px) {
     .product-col {
         flex: 0 0 calc((100% - 4rem) / 3);
         max-width: calc((100% - 4rem) / 3);
     }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 860px) {
     .product-col {
         flex: 0 0 100%;
         max-width: 100%;
