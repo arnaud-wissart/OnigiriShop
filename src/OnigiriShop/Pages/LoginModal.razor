@@ -6,7 +6,7 @@
         <div class="modal-dialog modal-dialog-centered" @onclick:stopPropagation>
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"><i class="bi bi-person-fill-lock me-2"></i>Connexion</h5>
+                    <h5 class="modal-title"><i class="bi bi-person-fill-lock me-2"></i>@(IsRequestMode ? "Demande d'accès" : "Connexion")</h5>
                     <button type="button" class="btn-close" aria-label="Fermer" @onclick="Hide"></button>
                 </div>
                 <div class="modal-body">
@@ -14,25 +14,63 @@
                     {
                         <div class="alert alert-danger">@ErrorMessage</div>
                     }
-                    <EditForm Model="LoginModel" OnValidSubmit="HandleLogin">
-                        <DataAnnotationsValidator />
-                        <ValidationSummary />
-                        <div class="mb-3">
-                            <label>Email</label>
-                            <InputText class="form-control" @bind-Value="LoginModel.Email" autocomplete="username" />
-                        </div>
-                        <div class="mb-3">
-                            <label>Mot de passe</label>
-                            <InputText class="form-control" @bind-Value="LoginModel.Password" autocomplete="current-password" type="password" />
-                        </div>
-                        <button class="btn btn-success w-100" type="submit" disabled="@IsBusy">
-                            Connexion
-                            @if (IsBusy)
+                    @if (IsRequestMode)
+                    {
+                        @if (RequestSent)
+                        {
+                            <div class="alert alert-success">Demande envoyée. Nous vous recontacterons rapidement.</div>
+                        }
+                        else
+                        {
+                            @if (!string.IsNullOrWhiteSpace(NoAccountInfo))
                             {
-                                <span class="spinner-border spinner-border-sm ms-2"></span>
+                                <div class="mb-3">@((MarkupString)RenderedNoAccountInfo)</div>
                             }
-                        </button>
-                    </EditForm>
+                            <EditForm Model="AccessRequestModel" OnValidSubmit="HandleAccessRequest">
+                                <DataAnnotationsValidator />
+                                <ValidationSummary />
+                                <div class="mb-3">
+                                    <label>Email</label>
+                                    <InputText class="form-control" @bind-Value="AccessRequestModel.Email" />
+                                </div>
+                                <div class="mb-3">
+                                    <label>Message</label>
+                                    <InputTextArea class="form-control" @bind-Value="AccessRequestModel.Message" Rows="4" />
+                                </div>
+                                <button class="btn btn-success w-100" type="submit" disabled="@IsBusy">
+                                    Demander un accès à la boutique
+                                    @if (IsBusy)
+                                    {
+                                        <span class="spinner-border spinner-border-sm ms-2"></span>
+                                    }
+                                </button>
+                            </EditForm>
+                        }
+                        <button class="btn btn-link w-100 mt-2" @onclick="ShowLogin">Se connecter</button>
+                    }
+                    else
+                    {
+                        <EditForm Model="LoginModel" OnValidSubmit="HandleLogin">
+                            <DataAnnotationsValidator />
+                            <ValidationSummary />
+                            <div class="mb-3">
+                                <label>Email</label>
+                                <InputText class="form-control" @bind-Value="LoginModel.Email" autocomplete="username" />
+                            </div>
+                            <div class="mb-3">
+                                <label>Mot de passe</label>
+                                <InputText class="form-control" @bind-Value="LoginModel.Password" autocomplete="current-password" type="password" />
+                            </div>
+                            <button class="btn btn-success w-100" type="submit" disabled="@IsBusy">
+                                Connexion
+                                @if (IsBusy)
+                                {
+                                    <span class="spinner-border spinner-border-sm ms-2"></span>
+                                }
+                            </button>
+                        </EditForm>
+                        <button class="btn btn-link w-100 mt-2" @onclick="ShowRequestAccess">Je n'ai pas de compte</button>
+                    }
                 </div>
             </div>
         </div>

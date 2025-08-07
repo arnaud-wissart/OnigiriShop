@@ -11,5 +11,6 @@
         public string OrderSubject { get; set; } = string.Empty;
         public string Signature { get; set; } = string.Empty;
         public string AdminEmail { get; set; } = string.Empty;
+        public string NoAccountInfo { get; set; } = string.Empty;
     }
 }

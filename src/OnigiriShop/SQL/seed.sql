@@ -171,7 +171,7 @@ INSERT INTO Setting (Key, Value) VALUES ('PasswordResetIntro', 'Vous (ou quelqu�
 INSERT INTO Setting (Key, Value) VALUES ('OrderSubject', 'Merci pour votre commande n°{0} – OnigiriShop 🍙');
 INSERT INTO Setting (Key, Value) VALUES ('Signature', 'L’équipe OnigiriShop 🍙');
 INSERT INTO Setting (Key, Value) VALUES ('AdminEmail', 'admin@onigirishop.com');
-
+INSERT INTO Setting (Key, Value) VALUES ('NoAccountInfo', '<p>Nous n''assurons pas de livraisons à la demande ; nos envois sont organisés ponctuellement.</p><p>Actuellement, nous livrons :</p>{ListeDesLivraisons}<p>Si vous êtes toujours intéressé(e), merci de nous écrire un court message de présentation en indiquant éventuellement votre WhatsApp ou votre Instagram.</p>');
 
 -- Templates d'e-mails par défaut
 INSERT INTO EmailTemplate (Name, HtmlContent, TextContent) VALUES

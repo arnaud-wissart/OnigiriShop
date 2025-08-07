@@ -24,6 +24,32 @@ window.onigiriAuth = {
     },
 
     /**
+     * Envoie une demande d'accès à l'admin.
+     * @param {string} email
+     * @param {string} message
+     * @returns {Promise<{success: boolean, error?: string}>}
+     */
+    requestAccess: async function (email, message) {
+        try {
+            const response = await fetch("/api/auth/request-access", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "same-origin",
+                body: JSON.stringify({ email, message })
+            });
+            if (response.ok) return { success: true };
+            if (response.status === 400) {
+                const data = await response.json().catch(() => null);
+                return { success: false, error: data?.error || "Données invalides." };
+            }
+            return { success: false, error: `Erreur serveur (${response.status})` };
+        } catch (err) {
+            return { success: false, error: "Erreur : " + err };
+        }
+    },
+
+
+    /**
      * Déconnecte l'utilisateur et redirige si succès.
      * @param {string} redirectUrl 
      */
@@ -393,11 +419,13 @@ window.updateOrdersChart = function (data) {
         if (window.ordersChart && typeof window.ordersChart.destroy === 'function') {
             window.ordersChart.destroy();
         }
+        const max = Math.max(...data.orders);
+        const colors = data.orders.map(o => o === max ? '#198754' : '#0d6efd');
         window.ordersChart = new Chart(ctx, {
             type: 'bar',
             data: {
                 labels: months,
-                datasets: [{ data: data.orders, backgroundColor: '#0d6efd' }]
+                datasets: [{ data: data.orders, backgroundColor: colors }]            
             },
             options: {
                 responsive: true,
@@ -420,11 +448,13 @@ window.updateRevenueChart = function (data) {
         if (window.revenueChart && typeof window.revenueChart.destroy === 'function') {
             window.revenueChart.destroy();
         }
+        const max = Math.max(...data.revenue);
+        const colors = data.revenue.map(r => r === max ? '#198754' : '#fd7e14');
         window.revenueChart = new Chart(ctx, {
             type: 'bar',
             data: {
                 labels: months,
-                datasets: [{ data: data.revenue, backgroundColor: '#fd7e14' }]
+                datasets: [{ data: data.revenue, backgroundColor: colors }]
             },
             options: {
                 responsive: true,

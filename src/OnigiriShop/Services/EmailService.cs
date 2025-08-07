@@ -14,7 +14,8 @@ namespace OnigiriShop.Services
             string htmlContent,
             string? textContent = null,
             string? expEmail = null,
-            string? expName = null)
+            string? expName = null,
+            bool highPriority = false)
         {
             try
             {
@@ -27,6 +28,14 @@ namespace OnigiriShop.Services
                     .WithSubject(subject)
                     .WithHtmlPart(htmlContent)
                     .WithTo(new SendContact(toEmail, toName));
+
+                if (highPriority)
+                {
+                    email = email
+                        .WithHeader("Importance", "High")
+                        .WithHeader("X-Priority", "1")
+                        .WithHeader("X-MSMail-Priority", "High");
+                }
 
                 if (!string.IsNullOrWhiteSpace(textContent))
                     email = email.WithTextPart(textContent);
@@ -180,12 +189,12 @@ namespace OnigiriShop.Services
             await SendEmailAsync(toEmail, toName, subject, html, text, expEmail, expName);
         }
 
-        public async Task SendAdminNotificationAsync(string subject, string htmlContent, string textContent)
+        public async Task SendAdminNotificationAsync(string subject, string htmlContent, string textContent, bool highPriority = false)
         {
             var expEmail = await settingService.GetValueAsync("ExpeditorEmail") ?? "no-reply@onigirishop.com";
             var expName = await settingService.GetValueAsync("ExpeditorName") ?? "OnigiriShop";
             var adminEmail = await settingService.GetValueAsync("AdminEmail") ?? "admin@onigirishop.com";
-            await SendEmailAsync(adminEmail, "Admin", subject, htmlContent, textContent, expEmail, expName);
+            await SendEmailAsync(adminEmail, "Admin", subject, htmlContent, textContent, expEmail, expName, highPriority);
         }
     }
 }

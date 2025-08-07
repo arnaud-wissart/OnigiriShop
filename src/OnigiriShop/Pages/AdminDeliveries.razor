@@ -11,6 +11,16 @@
         <h4 class="card-title p-3 mb-0 border-bottom bg-light fw-bold" style="color:#212529; letter-spacing:0.01em;">
             Livraisons programmées
         </h4>
+        @if (!string.IsNullOrWhiteSpace(PageError))
+        {
+            <div class="alert alert-danger m-3">@PageError</div>
+        }
+        <div class="p-3 border-bottom">
+            <div class="form-check">
+                <input type="checkbox" class="form-check-input" @bind="HidePastDeliveries" />
+                <label class="form-check-label">Masquer les livraisons dont la date est passée</label>
+            </div>
+        </div>
         <div class="table-responsive">
             <table class="table table-hover align-middle table-striped mb-0">
                 <thead>
@@ -115,26 +125,30 @@
                     {
                         <div class="alert alert-danger">@ModalError</div>
                     }
+                    @if (IsDeliveryUsed)
+                    {
+                        <div class="alert alert-warning">Cette livraison a déjà été utilisée dans une commande. Seul le commentaire peut être modifié.</div>
+                    }
                     <EditForm Model="ModalModel" OnValidSubmit="HandleModalValid">
                         <DataAnnotationsValidator />
                         <div class="mb-3">
                             <label>Lieu</label>
-                            <InputText class="form-control" @bind-Value="ModalModel.Place" />
+                            <InputText class="form-control" @bind-Value="ModalModel.Place" disabled="@IsDeliveryUsed" />
                             <ValidationMessage For="@(() => ModalModel.Place)" />
                         </div>
                         <div class="mb-3 row">
                             <div class="col-6">
                                 <label>Date</label>
-                                <InputDate @bind-Value="ModalDate" class="form-control"
+                                <InputDate @bind-Value="ModalDate" class="form-control" disabled="@IsDeliveryUsed"
                                            min="@DateTime.Today.ToString("yyyy-MM-dd")" />
                             </div>
                             <div class="col-6">
                                 <label>Heure</label>
-                                <input type="time" @bind="ModalTime" class="form-control" />
+                                <input type="time" @bind="ModalTime" class="form-control" disabled="@IsDeliveryUsed" />
                             </div>
                         </div>
                         <div class="mb-3 form-check">
-                            <InputCheckbox class="form-check-input" @bind-Value="ModalModel.IsRecurring" />
+                            <InputCheckbox class="form-check-input" @bind-Value="ModalModel.IsRecurring" disabled="@IsDeliveryUsed" />
                             <label class="form-check-label">Livraison récurrente</label>
                         </div>
                         @if (ModalModel.IsRecurring)
@@ -142,11 +156,11 @@
                             <div class="mb-3 row align-items-end">
                                 <div class="col-6">
                                     <label>Tous les</label>
-                                    <InputNumber class="form-control" @bind-Value="ModalModel.RecurrenceInterval" min="1" />
+                                    <InputNumber class="form-control" @bind-Value="ModalModel.RecurrenceInterval" min="1" disabled="@IsDeliveryUsed" />
                                 </div>
                                 <div class="col-6">
                                     <label>Fréquence</label>
-                                    <InputSelect class="form-select" @bind-Value="ModalModel.RecurrenceFrequency">
+                                    <InputSelect class="form-select" @bind-Value="ModalModel.RecurrenceFrequency" disabled="@IsDeliveryUsed">
                                         <option value="@RecurrenceFrequency.Day">Jour</option>
                                         <option value="@RecurrenceFrequency.Week">Semaine</option>
                                         <option value="@RecurrenceFrequency.Month">Mois</option>

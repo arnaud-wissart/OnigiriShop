@@ -11,13 +11,10 @@ namespace OnigiriShop.Pages
         [Inject] public SettingService SettingService { get; set; } = default!;
         protected List<EmailTemplate> TemplateTemplates { get; set; } = [];
         protected EmailTemplate TemplateModalModel { get; set; } = new();
-        protected EmailTemplate? TemplateDeleteModel { get; set; }
         protected bool TemplateShowModal { get; set; }
-        protected bool TemplateIsEdit { get; set; }
-        protected bool TemplateShowDeleteConfirm { get; set; }
         protected bool TemplateIsBusy { get; set; }
         protected string? TemplateModalError { get; set; }
-        protected string TemplateModalTitle => TemplateIsEdit ? "Modifier un template" : "Ajouter un template";
+        protected string TemplateModalTitle => "Modifier un template";
         protected EmailSettingsModel SettingsModel { get; set; } = new();
         protected bool SettingsBusy { get; set; }
         protected string? SettingsMessage { get; set; }
@@ -35,14 +32,6 @@ namespace OnigiriShop.Pages
             StateHasChanged();
         }
 
-        protected void TemplateShowAddModal()
-        {
-            TemplateModalModel = new EmailTemplate();
-            TemplateIsEdit = false;
-            TemplateShowModal = true;
-            TemplateModalError = null;
-        }
-
         protected void TemplateEditTemplate(EmailTemplate t)
         {
             TemplateModalModel = new EmailTemplate
@@ -52,7 +41,6 @@ namespace OnigiriShop.Pages
                 HtmlContent = t.HtmlContent,
                 TextContent = t.TextContent
             };
-            TemplateIsEdit = true;
             TemplateShowModal = true;
             TemplateModalError = null;
         }
@@ -83,41 +71,9 @@ namespace OnigiriShop.Pages
                 return;
             }
 
-            if (TemplateIsEdit)
-                await EmailTemplateService.UpdateAsync(TemplateModalModel);
-            else
-                await EmailTemplateService.CreateAsync(TemplateModalModel);
+            await EmailTemplateService.CreateAsync(TemplateModalModel);
 
             TemplateIsBusy = false;
-            TemplateHideModal();
-            await ReloadTemplatesAsync();
-        }
-
-        protected void TemplateConfirmDelete(EmailTemplate t)
-        {
-            TemplateDeleteModel = t;
-            TemplateShowDeleteConfirm = true;
-        }
-
-        protected void TemplateConfirmDeleteModal()
-        {
-            TemplateDeleteModel = TemplateModalModel;
-            TemplateShowDeleteConfirm = true;
-        }
-
-        protected void TemplateCancelDelete()
-        {
-            TemplateDeleteModel = null;
-            TemplateShowDeleteConfirm = false;
-        }
-
-        protected async Task TemplateDeleteConfirmed()
-        {
-            if (TemplateDeleteModel != null)
-                await EmailTemplateService.DeleteAsync(TemplateDeleteModel.Id);
-
-            TemplateShowDeleteConfirm = false;
-            TemplateDeleteModel = null;
             TemplateHideModal();
             await ReloadTemplatesAsync();
         }
@@ -133,6 +89,7 @@ namespace OnigiriShop.Pages
             SettingsModel.OrderSubject = await SettingService.GetValueAsync("OrderSubject") ?? string.Empty;
             SettingsModel.Signature = await SettingService.GetValueAsync("Signature") ?? string.Empty;
             SettingsModel.AdminEmail = await SettingService.GetValueAsync("AdminEmail") ?? string.Empty;
+            SettingsModel.NoAccountInfo = await SettingService.GetValueAsync("NoAccountInfo") ?? string.Empty;
             SettingsMessage = null;
             StateHasChanged();
         }
@@ -149,6 +106,7 @@ namespace OnigiriShop.Pages
             await SettingService.SetValueAsync("OrderSubject", SettingsModel.OrderSubject);
             await SettingService.SetValueAsync("Signature", SettingsModel.Signature);
             await SettingService.SetValueAsync("AdminEmail", SettingsModel.AdminEmail);
+            await SettingService.SetValueAsync("NoAccountInfo", SettingsModel.NoAccountInfo);
             SettingsBusy = false;
             SettingsMessage = "Paramètres enregistrés";
         }

@@ -24,22 +24,12 @@
                         <tr>
                             <td>@t.Name</td>
                             <td class="text-end">
-                                <button class="btn btn-sm btn-outline-secondary me-2" @onclick="() => TemplateEditTemplate(t)">
+                                <button class="btn btn-sm btn-outline-secondary" @onclick="() => TemplateEditTemplate(t)">
                                     <i class="bi bi-pencil"></i>
-                                </button>
-                                <button class="btn btn-sm btn-outline-danger" @onclick="() => TemplateConfirmDelete(t)">
-                                    <i class="bi bi-trash"></i>
                                 </button>
                             </td>
                         </tr>
                     }
-                    <tr>
-                        <td colspan="2">
-                            <button class="btn btn-success btn-sm mt-1" @onclick="TemplateShowAddModal">
-                                <i class="bi bi-plus-circle me-1"></i> Ajouter
-                            </button>
-                        </td>
-                    </tr>
                 </tbody>
             </table>
         </div>
@@ -79,39 +69,13 @@
                             <InputTextArea class="form-control" @bind-Value="TemplateModalModel.TextContent" Rows="4" />
                         </div>
                         <button class="btn btn-success w-100" type="submit" disabled="@TemplateIsBusy">
-                            @((TemplateIsEdit ? "Mettre à jour" : "Créer"))
+                            Mettre à jour
                             @if (TemplateIsBusy)
                             {
                                 <span class="spinner-border spinner-border-sm ms-2"></span>
                             }
                         </button>
-                        @if (TemplateIsEdit)
-                        {
-                            <button class="btn btn-danger w-100 mt-2" type="button" @onclick="TemplateConfirmDeleteModal">
-                                <i class="bi bi-trash"></i> Supprimer ce template
-                            </button>
-                        }
                     </EditForm>
-                </div>
-            </div>
-        </div>
-    </div>
-}
-
-@if (TemplateShowDeleteConfirm)
-{
-    <div class="modal fade show d-block" tabindex="-1" style="background:rgba(33,33,33,0.13);">
-        <div class="modal-dialog modal-dialog-centered" @onclick:stopPropagation>
-            <div class="modal-content border-0 shadow-lg">
-                <div class="modal-header">
-                    <h5 class="modal-title">Confirmation suppression</h5>
-                </div>
-                <div class="modal-body">
-                    <p>Confirmer la suppression du template <b>@TemplateDeleteModel?.Name</b>&nbsp;?</p>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" @onclick="TemplateCancelDelete">Annuler</button>
-                    <button class="btn btn-danger" @onclick="TemplateDeleteConfirmed">Supprimer</button>
                 </div>
             </div>
         </div>
@@ -163,6 +127,11 @@
                     <div class="col-md-6">
                         <label>Email admin</label>
                         <InputText class="form-control" @bind-Value="SettingsModel.AdminEmail" />
+                    </div>
+                    <div class="col-12">
+                        <label>Texte demande accès</label>
+                        <InputTextArea class="form-control" @bind-Value="SettingsModel.NoAccountInfo" Rows="4" />
+                        <small class="text-muted">Utilisez {ListeDesLivraisons} pour insérer la liste des lieux de livraison actuels.</small>
                     </div>
                 </div>
                 <button class="btn btn-success mt-3" type="submit" disabled="@SettingsBusy">

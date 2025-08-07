@@ -100,15 +100,22 @@ namespace OnigiriShop.Pages
         public TimeOnly? ModalTime { get; set; }
         public string? ModalError { get; set; }
         public string? SearchTerm { get; set; }
+        public bool HidePastDeliveries { get; set; } = true;
+        public bool IsDeliveryUsed { get; set; }
+        public string? PageError { get; set; }
         public int WeekStartDay => CalendarConfig?.Value?.FirstDayOfWeek ?? 1;
 
         public List<Delivery> FilteredDeliveries =>
-            string.IsNullOrWhiteSpace(SearchTerm)
-            ? Deliveries
-            : Deliveries.Where(d =>
-                (!string.IsNullOrEmpty(d.Place) && d.Place.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase)) ||
-                d.DeliveryAt.ToString("dd/MM/yyyy HH:mm").Contains(SearchTerm, StringComparison.OrdinalIgnoreCase)
-            ).ToList();
+            Deliveries
+                .Where(d => !HidePastDeliveries || !IsPast(d))
+                .Where(d => string.IsNullOrWhiteSpace(SearchTerm) ||
+                    (!string.IsNullOrEmpty(d.Place) && d.Place.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase)) ||
+                    d.DeliveryAt.ToString("dd/MM/yyyy HH:mm").Contains(SearchTerm, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+        private static bool IsPast(Delivery d) =>
+            (!d.IsRecurring && d.DeliveryAt < DateTime.Now) ||
+            (d.IsRecurring && d.RecurrenceEndDate.HasValue && d.RecurrenceEndDate.Value < DateTime.Now);
 
         protected DotNetObjectReference<AdminDeliveriesBase>? objRef;
         private bool calendarInitialized = false;
@@ -161,11 +168,13 @@ namespace OnigiriShop.Pages
             ModalTime = TimeOnly.FromDateTime(ModalModel.DeliveryAt);
             IsEdit = false;
             IsCalendarModal = false;
+            IsDeliveryUsed = false;
+            PageError = null;
             ShowModal = true;
             ModalError = null;
         }
 
-        public void EditDelivery(Delivery delivery, bool fromCalendar = false)
+        public async Task EditDelivery(Delivery delivery, bool fromCalendar = false)
         {
             ModalModel = new Delivery
             {
@@ -181,6 +190,8 @@ namespace OnigiriShop.Pages
             ModalTime = TimeOnly.FromDateTime(ModalModel.DeliveryAt);
             IsEdit = true;
             IsCalendarModal = fromCalendar;
+            IsDeliveryUsed = await DeliveryService.HasOrdersAsync(delivery.Id);
+            PageError = null;
             ShowModal = true;
             ModalError = null;
         }
@@ -195,6 +206,16 @@ namespace OnigiriShop.Pages
         {
             IsBusy = true;
             ModalError = null;
+
+            if (IsEdit && IsDeliveryUsed)
+            {
+                await DeliveryService.UpdateCommentAsync(ModalModel.Id, ModalModel.Comment);
+                IsBusy = false;
+                HideModal();
+                await ReloadDeliveriesAsync();
+                await JS.InvokeVoidAsync("onigiriCalendar.updateEvents");
+                return;
+            }
 
             if (!ModalDate.HasValue || !ModalTime.HasValue)
             {
@@ -271,8 +292,16 @@ namespace OnigiriShop.Pages
             await JS.InvokeVoidAsync("onigiriCalendar.updateEvents");
         }
 
-        public void ConfirmDeleteDelivery(Delivery delivery)
+        public async Task ConfirmDeleteDelivery(Delivery delivery)
         {
+            if (await DeliveryService.HasOrdersAsync(delivery.Id))
+            {
+                PageError = "Impossible de supprimer une livraison ayant un historique.";
+                ShowDeleteConfirm = false;
+                DeleteModel = null;
+                StateHasChanged();
+                return;
+            }
             DeleteModel = delivery;
             ShowDeleteConfirm = true;
         }
@@ -287,8 +316,13 @@ namespace OnigiriShop.Pages
         {
             if (DeleteModel != null)
             {
-                await DeliveryService.SoftDeleteAsync(DeleteModel.Id);
-                await ReloadDeliveriesAsync();
+                if (await DeliveryService.HasOrdersAsync(DeleteModel.Id))
+                    PageError = "Impossible de supprimer une livraison ayant un historique.";
+                else
+                {
+                    await DeliveryService.SoftDeleteAsync(DeleteModel.Id);
+                    await ReloadDeliveriesAsync();
+                }
             }
             CancelDelete();
             ShowModal = false;
@@ -297,7 +331,7 @@ namespace OnigiriShop.Pages
         }
 
         [JSInvokable]
-        public Task OnCalendarEventClick(string eventId)
+        public async Task OnCalendarEventClick(string eventId)
         {
             var idPart = eventId.Split('_')[0];
             if (int.TryParse(idPart, out int deliveryId))
@@ -305,11 +339,10 @@ namespace OnigiriShop.Pages
                 var delivery = Deliveries.FirstOrDefault(d => d.Id == deliveryId);
                 if (delivery != null)
                 {
-                    EditDelivery(delivery, fromCalendar: true);
+                    await EditDelivery(delivery, fromCalendar: true);
                     StateHasChanged();
                 }
             }
-            return Task.CompletedTask;
         }
 
         [JSInvokable]

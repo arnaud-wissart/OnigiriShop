@@ -63,7 +63,10 @@ namespace OnigiriShop.Services
         {
             var (isAuthenticated, userId) = await GetCurrentUserIdAsync();
             if (isAuthenticated && userId.HasValue)
+            {
                 await cartService.ClearCartAsync(userId.Value);
+                await anonymousCartService.ClearAsync();
+            }
             else
                 await anonymousCartService.ClearAsync();
         }

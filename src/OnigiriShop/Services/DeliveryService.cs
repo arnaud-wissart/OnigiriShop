@@ -105,6 +105,21 @@ namespace OnigiriShop.Services
             return await conn.ExecuteAsync(sql, d) > 0;
         }
 
+        public async Task<bool> UpdateCommentAsync(int id, string? comment)
+        {
+            using var conn = connectionFactory.CreateConnection();
+            var sql = @"UPDATE Delivery SET Comment=@comment WHERE Id=@id AND IsDeleted=0";
+            return await conn.ExecuteAsync(sql, new { id, comment }) > 0;
+        }
+
+        public async Task<bool> HasOrdersAsync(int deliveryId)
+        {
+            using var conn = connectionFactory.CreateConnection();
+            var sql = "SELECT COUNT(1) FROM [Order] WHERE DeliveryId = @deliveryId";
+            var count = await conn.ExecuteScalarAsync<int>(sql, new { deliveryId });
+            return count > 0;
+        }
+
         public async Task<bool> SoftDeleteAsync(int id)
         {
             using var conn = connectionFactory.CreateConnection();
