@@ -64,10 +64,6 @@
                                 @((MarkupString?)TemplateModalModel.HtmlContent)
                             </div>
                         </div>
-                        <div class="mb-3">
-                            <label>Contenu texte</label>
-                            <InputTextArea class="form-control" @bind-Value="TemplateModalModel.TextContent" Rows="4" />
-                        </div>
                         <button class="btn btn-success w-100" type="submit" disabled="@TemplateIsBusy">
                             Mettre à jour
                             @if (TemplateIsBusy)
@@ -130,7 +126,10 @@
                     </div>
                     <div class="col-12">
                         <label>Texte demande accès</label>
-                        <InputTextArea class="form-control" @bind-Value="SettingsModel.NoAccountInfo" Rows="4" />
+                        <HtmlEditor @bind-Value="SettingsModel.NoAccountInfo" />
+@*                         <div class="border p-2 mt-2" style="min-height:150px">
+                            @((MarkupString?)SettingsModel.NoAccountInfo)
+                        </div> *@
                         <small class="text-muted">Utilisez {ListeDesLivraisons} pour insérer la liste des lieux de livraison actuels.</small>
                     </div>
                 </div>

@@ -95,8 +95,8 @@ namespace OnigiriShop.Services
             }
             else
             {
-                html = $@"<p>{intro}</p><p>Ton compte a été créé.&nbsp;<a href=""{invitationLink}"">Clique ici pour définir ton mot de passe</a>.</p><p><small>Ce lien expire dans 1 heure.</small></p><hr><p style=""color:#888;font-size:0.9em;"">{signature}</p>";
-                text = $"{intro}\nUtilisez le lien suivant pour définir votre mot de passe : {invitationLink}\nCe lien expire dans 1 heure.\n\n{signature}";
+                html = $@"<p>{intro}</p><p>Votre compte a été créé.&nbsp;<a href=""{invitationLink}"">Cliquez ici pour définir votre mot de passe</a>.</p><p><small>Ce lien expire dans 24 heures.</small></p><hr><p style=""color:#888;font-size:0.9em;"">{signature}</p>";
+                text = $"{intro}\nVeuillez cliquer sur le lien suivant pour définir votre mot de passe : {invitationLink}\nCe lien expire dans 24 heures.\n\n{signature}";
             }
 
             await SendEmailAsync(toEmail, toName, subject, html, text, expEmail, expName);

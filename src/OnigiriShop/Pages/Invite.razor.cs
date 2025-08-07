@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
+using OnigiriShop.Data;
 using OnigiriShop.Infrastructure;
 using OnigiriShop.Services;
 using System.ComponentModel.DataAnnotations;
@@ -11,6 +12,7 @@ namespace OnigiriShop.Pages
         [Inject] public UserService UserService { get; set; } = default!;
         [Inject] public UserAccountService UserAccountService { get; set; } = default!;
         [Inject] public NavigationManager Nav { get; set; } = default!;
+        [Inject] public SessionAuthenticationStateProvider SessionAuthProvider { get; set; } = default!;
         [Parameter] public string Token { get; set; } = string.Empty;
         protected InviteModel Model { get; set; } = new();
         protected bool Loaded { get; set; }
@@ -47,14 +49,14 @@ namespace OnigiriShop.Pages
             }
 
             var userId = await UserAccountService.ValidateInviteTokenAsync(token);
-            var user = userId > 0 ? (await UserService.GetAllUsersAsync(null)).FirstOrDefault(u => u.Id == userId) : null;
+            var user = userId > 0 ? await UserService.GetByIdAsync(userId) : null;
             if (userId == 0)
             {
                 var expiredUserId = await UserAccountService.FindUserIdByTokenAsync(token);
                 if (expiredUserId > 0)
                 {
                     CanRequestNewInvite = true;
-                    var expiredUser = (await UserService.GetAllUsersAsync(null)).FirstOrDefault(u => u.Id == expiredUserId);
+                    var expiredUser = await UserService.GetByIdAsync(expiredUserId);
                     UserEmailForRequest = expiredUser?.Email!;
                     UserIdForRequest = expiredUserId;
                 }
@@ -66,9 +68,9 @@ namespace OnigiriShop.Pages
 
             if (user != null && user.IsActive)
             {
-                AlreadyActivated = true;
-                Loaded = true;
-                StateHasChanged();
+                await UserAccountService.MarkTokenUsedAsync(token);
+                await SessionAuthProvider.SignInAsync(user);
+                Nav.NavigateTo("/", forceLoad: true);
                 return;
             }
 
@@ -91,7 +93,6 @@ namespace OnigiriShop.Pages
             {
                 await HandleAsync(async () =>
                 {
-                    await UserAccountService.ResendInvitationAsync(UserIdForRequest, Nav.BaseUri);
                     await JS.InvokeVoidAsync("alert", "Un nouveau lien d'activation a été envoyé à votre adresse email.");
                 }, "Erreur lors de l'envoi de l'invitation");
             }

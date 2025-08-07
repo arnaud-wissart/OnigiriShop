@@ -2,6 +2,6 @@
 {
     public class MagicLinkConfig
     {
-        public int ExpiryMinutes { get; set; } = 60;
+        public int ExpiryMinutes { get; set; } = 1440;
     }
 }

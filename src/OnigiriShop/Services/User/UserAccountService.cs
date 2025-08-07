@@ -148,8 +148,17 @@ SELECT last_insert_rowid();";
         var tokenHash = HashToken(token);
 
         var userId = await conn.ExecuteScalarAsync<int?>(@"SELECT UserId FROM MagicLinkToken
-WHERE Token = @Token AND UsedAt IS NULL AND Expiry >= @Now", new { Token = tokenHash, Now = DateTime.UtcNow });
+  WHERE Token = @Token AND UsedAt IS NULL AND Expiry >= @Now", new { Token = tokenHash, Now = DateTime.UtcNow });
         return userId ?? 0;
+    }
+
+    public async Task MarkTokenUsedAsync(string token)
+    {
+        using var conn = connectionFactory.CreateConnection();
+        var tokenHash = HashToken(token);
+        await conn.ExecuteAsync(
+            "UPDATE MagicLinkToken SET UsedAt = @Now WHERE Token = @Token AND UsedAt IS NULL",
+            new { Token = tokenHash, Now = DateTime.UtcNow });
     }
 
     public async Task<User?> AuthenticateAsync(string email, string password)

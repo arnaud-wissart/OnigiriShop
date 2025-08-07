@@ -920,3 +920,9 @@
     background: rgba(33, 33, 33, 0.35);
     z-index: 4015;
 }
+
+/* Éditeur HTML */
+.ql-container
+{
+    height:auto !important;
+}
