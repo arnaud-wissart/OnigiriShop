@@ -31,8 +31,12 @@ namespace OnigiriShop.Pages
             var uri = Nav.ToAbsoluteUri(Nav.Uri);
             var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
             var token = query["token"];
+            var hasToken = !string.IsNullOrWhiteSpace(token);
 
-            if (string.IsNullOrWhiteSpace(token))
+            if (hasToken && await AuthService.IsAuthenticatedAsync())
+                await AuthService.LogoutAsync();
+
+            if (!hasToken)
             {
                 if (await AuthService.IsAuthenticatedAsync())
                 {
@@ -45,11 +49,10 @@ namespace OnigiriShop.Pages
                 return;
             }
 
-            var userId = await UserAccountService.ValidateInviteTokenAsync(token);
-            var user = userId > 0 ? await UserService.GetByIdAsync(userId) : null;
+            var userId = await UserAccountService.ValidateInviteTokenAsync(token!);
             if (userId == 0)
             {
-                var expiredUserId = await UserAccountService.FindUserIdByTokenAsync(token);
+                var expiredUserId = await UserAccountService.FindUserIdByTokenAsync(token!);
                 if (expiredUserId > 0)
                 {
                     CanRequestNewInvite = true;
@@ -63,21 +66,7 @@ namespace OnigiriShop.Pages
                 return;
             }
 
-            if (user != null && user.IsActive)
-            {
-                await Http.PostAsJsonAsync("/api/auth/magic-link", new { token });
-                Nav.NavigateTo("/profile", forceLoad: true);
-                return;
-            }
-
-            if (await AuthService.IsAuthenticatedAsync())
-            {
-                await AuthService.LogoutAsync();
-                Nav.NavigateTo($"/invite?token={Uri.EscapeDataString(token)}", forceLoad: true);
-                return;
-            }
-
-            Model.Token = token;
+            Model.Token = token!;
             UserId = userId;
             Loaded = true;
             TokenInvalid = false;
@@ -115,8 +104,9 @@ namespace OnigiriShop.Pages
                 var user = await UserService.GetByIdAsync(UserId);
                 if (user != null)
                 {
+                    await SessionAuthProvider.SignOutAsync();
                     await SessionAuthProvider.SignInAsync(user);
-                    Nav.NavigateTo("/profile", forceLoad: true);
+                    Nav.NavigateTo("/", forceLoad: true);
                 }
             }, "Erreur lors de l’activation");
             IsBusy = false;

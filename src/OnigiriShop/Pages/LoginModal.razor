@@ -6,7 +6,7 @@
         <div class="modal-dialog modal-dialog-centered" @onclick:stopPropagation>
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"><i class="bi bi-person-fill-lock me-2"></i>@(IsRequestMode ? "Demande d'accès" : "Connexion")</h5>
+                    <h5 class="modal-title"><i class="bi bi-person-fill-lock me-2"></i>@(IsRequestMode ? "Demande d'accès" : IsForgotMode ? "Mot de passe oublié" : "Connexion")</h5>
                     <button type="button" class="btn-close" aria-label="Fermer" @onclick="Hide"></button>
                 </div>
                 <div class="modal-body">
@@ -48,6 +48,34 @@
                         }
                         <button class="btn btn-link w-100 mt-2" @onclick="ShowLogin">Se connecter</button>
                     }
+                    else if (IsForgotMode)
+                    {
+                        @if (ForgotSent)
+                        {
+                            <div class="alert alert-success">Si un compte existe, un lien magique vous a été envoyé.</div>
+                            <button class="btn btn-link w-100 mt-2" @onclick="ShowLogin">Se connecter</button>
+                        }
+                        else
+                        {
+                            <div class="mb-3">merci de renseigner votre mail, un nouveau lien magique vous permettra de vous connecter automatiquement si votre compte existe.</div>
+                            <EditForm Model="ForgotModel" OnValidSubmit="HandleForgotPassword">
+                                <DataAnnotationsValidator />
+                                <ValidationSummary />
+                                <div class="mb-3">
+                                    <label>Email</label>
+                                    <InputText class="form-control" @bind-Value="ForgotModel.Email" />
+                                </div>
+                                <button class="btn btn-success w-100" type="submit" disabled="@IsBusy">
+                                    Envoyer
+                                    @if (IsBusy)
+                                    {
+                                        <span class="spinner-border spinner-border-sm ms-2"></span>
+                                    }
+                                </button>
+                            </EditForm>
+                            <button class="btn btn-link w-100 mt-2" @onclick="ShowLogin">Se connecter</button>
+                        }
+                    }
                     else
                     {
                         <EditForm Model="LoginModel" OnValidSubmit="HandleLogin">
@@ -69,7 +97,10 @@
                                 }
                             </button>
                         </EditForm>
-                        <button class="btn btn-link w-100 mt-2" @onclick="ShowRequestAccess">Je n'ai pas de compte</button>
+                        <div class="d-flex justify-content-between mt-2">
+                            <button type="button" class="btn btn-link p-0" @onclick="ShowForgotPassword">J'ai oublié mon mot de passe</button>
+                            <button type="button" class="btn btn-link p-0" @onclick="ShowRequestAccess">Je n'ai pas de compte</button>
+                        </div>
                     }
                 </div>
             </div>

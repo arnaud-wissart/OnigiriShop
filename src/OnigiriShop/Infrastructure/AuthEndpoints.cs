@@ -1,4 +1,5 @@
-﻿using OnigiriShop.Data;
+﻿using Microsoft.AspNetCore.Identity.Data;
+using OnigiriShop.Data;
 using OnigiriShop.Services;
 using System.Net;
 using System.Security.Claims;
@@ -43,29 +44,34 @@ namespace OnigiriShop.Infrastructure
                 return Results.Ok();
             });
 
-            app.MapPost("/api/auth/magic-link", async (
-                            UserAccountService accountService,
-                            UserService userService,
-                            SessionAuthenticationStateProvider authProvider,
-                            MagicLinkRequest req) =>
+            app.MapPost("/api/auth/forgot-password", async (
+                HttpContext http,
+                UserAccountService accountService,
+                ForgotPasswordRequest req) =>
             {
-                var userId = await accountService.ValidateInviteTokenAsync(req.Token);
-                if (userId <= 0)
-                    return Results.Unauthorized();
+                if (string.IsNullOrWhiteSpace(req.Email))
+                    return Results.BadRequest(new { error = "Email requis." });
 
-                var user = await userService.GetByIdAsync(userId);
-                if (user == null || !user.IsActive)
-                    return Results.Unauthorized();
+                var baseUrl = $"{http.Request.Scheme}://{http.Request.Host}";
+                try
+                {
+                    await accountService.GenerateAndSendResetLinkAsync(req.Email, req.Email, baseUrl);
+                }
+                catch
+                {
+                    // On renvoie toujours OK pour ne pas divulguer l'existence du compte
+                }
 
-                await accountService.MarkTokenUsedAsync(req.Token);
-                await authProvider.SignInAsync(user);
-
-                return Results.Ok(new { user = new { user.Id, user.Name, user.Email, user.Role } });
-            }).Accepts<MagicLinkRequest>("application/json").Produces(200).Produces(401);
+                return Results.Ok();
+            })
+            .Accepts<ForgotPasswordRequest>("application/json")
+            .Produces(200)
+            .Produces(400);
         }
     }
 
     public record LoginRequest(string Email, string Password);
     public record MagicLinkRequest(string Token);
     public record AccessRequest(string Email, string Message);
+    public record ForgotPasswordRequest(string Email);
 }

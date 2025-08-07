@@ -17,10 +17,13 @@ namespace OnigiriShop.Pages
 
         protected LoginModel LoginModel { get; set; } = new();
         protected AccessRequestModel AccessRequestModel { get; set; } = new();
+        protected ForgotPasswordModel ForgotModel { get; set; } = new();
         protected string? ErrorMessage { get; set; } = string.Empty;
         protected bool IsBusy { get; set; }
         protected bool IsRequestMode { get; set; }
+        protected bool IsForgotMode { get; set; }
         protected bool RequestSent { get; set; }
+        protected bool ForgotSent { get; set; }
         protected string NoAccountInfo { get; set; } = string.Empty;
         protected string RenderedNoAccountInfo { get; set; } = string.Empty;
 
@@ -43,8 +46,11 @@ namespace OnigiriShop.Pages
             ErrorMessage = null;
             LoginModel = new LoginModel();
             AccessRequestModel = new AccessRequestModel();
+            ForgotModel = new ForgotPasswordModel();
             IsRequestMode = false;
+            IsForgotMode = false;
             RequestSent = false;
+            ForgotSent = false;
             OnHide.InvokeAsync();
         }
 
@@ -73,11 +79,19 @@ namespace OnigiriShop.Pages
         {
             ErrorMessage = null;
             IsRequestMode = true;
+            IsForgotMode = false;
         }
 
         protected void ShowLogin()
         {
             ErrorMessage = null;
+            IsRequestMode = false;
+            IsForgotMode = false;
+        }
+        protected void ShowForgotPassword()
+        {
+            ErrorMessage = null;
+            IsForgotMode = true;
             IsRequestMode = false;
         }
 
@@ -92,6 +106,27 @@ namespace OnigiriShop.Pages
             if (result != null && result.success)
             {
                 RequestSent = true;
+            }
+            else
+            {
+                ErrorMessage = result?.error ?? "Erreur inconnue. Veuillez réessayer.";
+            }
+
+            IsBusy = false;
+            StateHasChanged();
+        }
+
+        protected async Task HandleForgotPassword()
+        {
+            ErrorMessage = null;
+            IsBusy = true;
+            StateHasChanged();
+
+            var result = await JS.InvokeAsync<LoginResult>("onigiriAuth.forgotPassword", ForgotModel.Email);
+
+            if (result != null && result.success)
+            {
+                ForgotSent = true;
             }
             else
             {
@@ -127,5 +162,12 @@ namespace OnigiriShop.Pages
         [Required(ErrorMessage = "Message requis")]
         [MinLength(20, ErrorMessage = "Message trop court (20 caractères min)")]
         public string Message { get; set; } = string.Empty;
+    }
+
+    public class ForgotPasswordModel
+    {
+        [Required(ErrorMessage = "Email requis")]
+        [EmailAddress(ErrorMessage = "Email invalide")]
+        public string Email { get; set; } = string.Empty;
     }
 }

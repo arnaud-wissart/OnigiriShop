@@ -24,18 +24,17 @@ window.onigiriAuth = {
     },
 
     /**
-     * Envoie une demande d'accès à l'admin.
+     * Envoie un lien magique de réinitialisation si le compte existe.
      * @param {string} email
-     * @param {string} message
      * @returns {Promise<{success: boolean, error?: string}>}
      */
-    requestAccess: async function (email, message) {
+    forgotPassword: async function (email) {
         try {
-            const response = await fetch("/api/auth/request-access", {
+            const response = await fetch("/api/auth/forgot-password", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: "same-origin",
-                body: JSON.stringify({ email, message })
+                body: JSON.stringify({ email })
             });
             if (response.ok) return { success: true };
             if (response.status === 400) {
