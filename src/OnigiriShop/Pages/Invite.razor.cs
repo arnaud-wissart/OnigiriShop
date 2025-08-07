@@ -13,18 +13,17 @@ namespace OnigiriShop.Pages
         [Inject] public UserAccountService UserAccountService { get; set; } = default!;
         [Inject] public NavigationManager Nav { get; set; } = default!;
         [Inject] public SessionAuthenticationStateProvider SessionAuthProvider { get; set; } = default!;
+        [Inject] public HttpClient Http { get; set; } = default!;
+        [Inject] public ToastService ToastService { get; set; } = default!;
         [Parameter] public string Token { get; set; } = string.Empty;
         protected InviteModel Model { get; set; } = new();
         protected bool Loaded { get; set; }
         protected bool TokenInvalid { get; set; }
-        protected bool Success { get; set; }
         protected string? Error { get; set; } = string.Empty;
         protected bool IsBusy { get; set; }
-        protected bool AlreadyActivated { get; set; }
         protected bool CanRequestNewInvite { get; set; }
         protected string UserEmailForRequest { get; set; } = string.Empty;
         protected int UserIdForRequest { get; set; }
-        protected void GoHome() => Nav.NavigateTo("/");
         protected override async Task OnInitializedAsync()
         {
             await base.OnInitializedAsync();
@@ -37,9 +36,7 @@ namespace OnigiriShop.Pages
             {
                 if (await AuthService.IsAuthenticatedAsync())
                 {
-                    AlreadyActivated = true;
-                    Loaded = true;
-                    StateHasChanged();
+                    Nav.NavigateTo("/profile", forceLoad: true);
                     return;
                 }
                 TokenInvalid = true;
@@ -68,9 +65,8 @@ namespace OnigiriShop.Pages
 
             if (user != null && user.IsActive)
             {
-                await UserAccountService.MarkTokenUsedAsync(token);
-                await SessionAuthProvider.SignInAsync(user);
-                Nav.NavigateTo("/", forceLoad: true);
+                await Http.PostAsJsonAsync("/api/auth/magic-link", new { token });
+                Nav.NavigateTo("/profile", forceLoad: true);
                 return;
             }
 
@@ -93,7 +89,8 @@ namespace OnigiriShop.Pages
             {
                 await HandleAsync(async () =>
                 {
-                    await JS.InvokeVoidAsync("alert", "Un nouveau lien d'activation a été envoyé à votre adresse email.");
+                    await UserAccountService.ResendInvitationAsync(UserIdForRequest, Nav.BaseUri);
+                    ToastService.ShowToast("Invitation renvoyée avec succès !", string.Empty, ToastLevel.Success);
                 }, "Erreur lors de l'envoi de l'invitation");
             }
         }
@@ -115,7 +112,12 @@ namespace OnigiriShop.Pages
             await HandleAsync(async () =>
             {
                 await UserAccountService.SetUserPasswordAsync(UserId, Model.Password, Model.Token);
-                Success = true;
+                var user = await UserService.GetByIdAsync(UserId);
+                if (user != null)
+                {
+                    await SessionAuthProvider.SignInAsync(user);
+                    Nav.NavigateTo("/profile", forceLoad: true);
+                }
             }, "Erreur lors de l’activation");
             IsBusy = false;
         }

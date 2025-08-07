@@ -8,21 +8,7 @@
         <div class="col-12 p-3">
             <h2>Activation du compte</h2>
 
-            @if (Success)
-            {
-                <div class="alert alert-success">
-                    Compte activé ! Vous pouvez maintenant vous connecter.
-                </div>
-                <button class="btn btn-primary" @onclick="GoHome">Aller à la page d'accueil</button>
-            }
-            else if (AlreadyActivated)
-            {
-                <div class="alert alert-info">
-                    Votre compte est déjà activé. <br />
-                    <button class="btn btn-primary mt-2" @onclick="GoHome">Retour à l'accueil</button>
-                </div>
-            }
-            else if (TokenInvalid && CanRequestNewInvite)
+            @if (TokenInvalid && CanRequestNewInvite)
             {
                 <div class="alert alert-warning">
                     Ce lien d'activation a expiré.<br />

@@ -43,21 +43,29 @@ namespace OnigiriShop.Infrastructure
                 return Results.Ok();
             });
 
-            app.MapPost("/api/auth/request-access", async (EmailService emailService, AccessRequest req) =>
+            app.MapPost("/api/auth/magic-link", async (
+                            UserAccountService accountService,
+                            UserService userService,
+                            SessionAuthenticationStateProvider authProvider,
+                            MagicLinkRequest req) =>
             {
-                if (string.IsNullOrWhiteSpace(req.Email) || string.IsNullOrWhiteSpace(req.Message) || req.Message.Length < 20)
-                    return Results.BadRequest(new { error = "Email ou message invalide." });
+                var userId = await accountService.ValidateInviteTokenAsync(req.Token);
+                if (userId <= 0)
+                    return Results.Unauthorized();
 
-                var subject = "DEMANDE DE CREATION DE COMPTE";
-                var encoded = WebUtility.HtmlEncode(req.Message).Replace("\n", "<br/>");
-                var html = $"<p>Email : {req.Email}</p><p>{encoded}</p>";
-                var text = $"Email : {req.Email}\n\n{req.Message}";
-                await emailService.SendAdminNotificationAsync(subject, html, text, highPriority: true);
-                return Results.Ok();
-            }).Accepts<AccessRequest>("application/json").Produces(200).Produces(400);
+                var user = await userService.GetByIdAsync(userId);
+                if (user == null || !user.IsActive)
+                    return Results.Unauthorized();
+
+                await accountService.MarkTokenUsedAsync(req.Token);
+                await authProvider.SignInAsync(user);
+
+                return Results.Ok(new { user = new { user.Id, user.Name, user.Email, user.Role } });
+            }).Accepts<MagicLinkRequest>("application/json").Produces(200).Produces(401);
         }
     }
 
     public record LoginRequest(string Email, string Password);
+    public record MagicLinkRequest(string Token);
     public record AccessRequest(string Email, string Message);
 }
