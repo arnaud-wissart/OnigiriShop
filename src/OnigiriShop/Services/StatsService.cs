@@ -42,12 +42,13 @@ public class StatsService(ISqliteConnectionFactory connectionFactory)
     {
         using var conn = connectionFactory.CreateConnection();
         var products = (await conn.QueryAsync<ProductStat>(
-            @"SELECT p.Name, IFNULL(SUM(oi.Quantity),0) AS Quantity
+            @"SELECT p.Name, IFNULL(SUM(oi.Quantity), 0) AS Quantity
               FROM Product p
               LEFT JOIN OrderItem oi ON oi.ProductId = p.Id
               LEFT JOIN [Order] o ON o.Id = oi.OrderId AND o.OrderedAt BETWEEN @start AND @end
-              ORDER BY Quantity DESC", new { start, end })).ToList();
-        var top = products.FirstOrDefault();
+              GROUP BY p.Id, p.Name
+              ORDER BY Quantity DESC",
+            new { start, end })).ToList(); var top = products.FirstOrDefault();
         return new ProductStatsResult
         {
             ProductStats = products,
