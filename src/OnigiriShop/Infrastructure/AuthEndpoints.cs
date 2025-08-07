@@ -67,6 +67,30 @@ namespace OnigiriShop.Infrastructure
             .Accepts<ForgotPasswordRequest>("application/json")
             .Produces(200)
             .Produces(400);
+
+            app.MapGet("/reset-login", async (
+                HttpContext http,
+                UserAccountService accountService,
+                UserService userService,
+                SessionAuthenticationStateProvider authProvider) =>
+            {
+                var token = http.Request.Query["token"].ToString();
+                if (string.IsNullOrWhiteSpace(token))
+                    return Results.Redirect("/");
+
+                var userId = await accountService.ValidateInviteTokenAsync(token);
+                if (userId == 0)
+                    return Results.Redirect("/");
+
+                var user = await userService.GetByIdAsync(userId);
+                if (user == null)
+                    return Results.Redirect("/");
+
+                await authProvider.SignInAsync(user);
+                await accountService.MarkTokenUsedAsync(token);
+
+                return Results.Redirect("/profile");
+            });
         }
     }
 

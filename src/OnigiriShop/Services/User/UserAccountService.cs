@@ -226,7 +226,7 @@ SELECT last_insert_rowid();";
             Details = $"Lien de réinitialisation envoyé à {email}"
         });
 
-        var resetUrl = $"{siteBaseUrl.TrimEnd('/')}/invite?token={Uri.EscapeDataString(token)}";
+        var resetUrl = $"{siteBaseUrl.TrimEnd('/')}/reset-login?token={Uri.EscapeDataString(token)}";
 
         await emailService.SendPasswordResetAsync(email, name, resetUrl);
     }
