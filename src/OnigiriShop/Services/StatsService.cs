@@ -6,42 +6,53 @@ namespace OnigiriShop.Services;
 
 public class StatsService(ISqliteConnectionFactory connectionFactory)
 {
-    public async Task<StatsResult> GetStatsAsync(DateTime? start = null, DateTime? end = null)
+    public async Task<int[]> GetOrdersByMonthAsync(int year)
     {
-        start ??= DateTime.MinValue;
-        end ??= DateTime.MaxValue;
-
         using var conn = connectionFactory.CreateConnection();
-
-        var totalOrders = await conn.ExecuteScalarAsync<int>(
-            "SELECT COUNT(*) FROM 'Order' WHERE OrderedAt BETWEEN @start AND @end",
-            new { start, end });
-
-        var totalRevenue = await conn.ExecuteScalarAsync<decimal?>(
-            "SELECT SUM(TotalAmount) FROM 'Order' WHERE OrderedAt BETWEEN @start AND @end",
-            new { start, end }) ?? 0m;
-
-        var uniqueCustomers = await conn.ExecuteScalarAsync<int>(
-            "SELECT COUNT(DISTINCT UserId) FROM 'Order' WHERE OrderedAt BETWEEN @start AND @end",
-            new { start, end });
-
-        var top = await conn.QueryFirstOrDefaultAsync<(string Name, int Qty)>(
-            @"SELECT p.Name, SUM(oi.Quantity) AS Qty
-              FROM OrderItem oi
-              JOIN [Order] o ON oi.OrderId = o.Id
-              JOIN Product p ON oi.ProductId = p.Id
-              WHERE o.OrderedAt BETWEEN @start AND @end
-              GROUP BY p.Name
-              ORDER BY Qty DESC
-              LIMIT 1", new { start, end });
-
-        return new StatsResult
+        var query = @"SELECT CAST(strftime('%m', OrderedAt) AS INT) AS Month, COUNT(*) AS Count
+                      FROM [Order]
+                      WHERE strftime('%Y', OrderedAt) = @year
+                      GROUP BY Month";
+        var orders = await conn.QueryAsync<(int Month, int Count)>(query, new { year = year.ToString("0000") });
+        var result = new int[12];
+        foreach (var o in orders)
         {
-            TotalOrders = totalOrders,
-            TotalRevenue = Math.Round(totalRevenue, 2),
-            UniqueCustomers = uniqueCustomers,
-            TopProductName = top.Name,
-            TopProductQuantity = top.Qty
+            result[o.Month - 1] = o.Count;
+        }
+        return result;
+    }
+
+    public async Task<decimal[]> GetRevenueByMonthAsync(int year)
+    {
+        using var conn = connectionFactory.CreateConnection();
+        var query = @"SELECT CAST(strftime('%m', OrderedAt) AS INT) AS Month, SUM(TotalAmount) AS Amount
+                      FROM [Order]
+                      WHERE strftime('%Y', OrderedAt) = @year
+                      GROUP BY Month";
+        var revenue = await conn.QueryAsync<(int Month, decimal Amount)>(query, new { year = year.ToString("0000") });
+        var result = new decimal[12];
+        foreach (var r in revenue)
+        {
+            result[r.Month - 1] = Math.Round(r.Amount, 2);
+        }
+        return result;
+    }
+
+    public async Task<ProductStatsResult> GetProductStatsAsync(DateTime start, DateTime end)
+    {
+        using var conn = connectionFactory.CreateConnection();
+        var products = (await conn.QueryAsync<ProductStat>(
+            @"SELECT p.Name, IFNULL(SUM(oi.Quantity),0) AS Quantity
+              FROM Product p
+              LEFT JOIN OrderItem oi ON oi.ProductId = p.Id
+              LEFT JOIN [Order] o ON o.Id = oi.OrderId AND o.OrderedAt BETWEEN @start AND @end
+              ORDER BY Quantity DESC", new { start, end })).ToList();
+        var top = products.FirstOrDefault();
+        return new ProductStatsResult
+        {
+            ProductStats = products,
+            TopProductName = top?.Name ?? string.Empty,
+            TopProductQuantity = top?.Quantity ?? 0
         };
     }
 }

@@ -385,25 +385,87 @@ window.disposeHtmlEditor = function (id) {
     }
 };
 
-window.updateStatsChart = function (data) {
+window.updateOrdersChart = function (data) {
     if (!window.Chart) return;
-    const ctx = document.getElementById('statsChart');
-    if (!ctx) return;
-    if (window.statsChart && typeof window.statsChart.destroy === 'function') {
-        window.statsChart.destroy();
+    const months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
+    const ctx = document.getElementById('ordersChart');
+    if (ctx) {
+        if (window.ordersChart && typeof window.ordersChart.destroy === 'function') {
+            window.ordersChart.destroy();
+        }
+        window.ordersChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: months,
+                datasets: [{ data: data.orders, backgroundColor: '#0d6efd' }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    title: { display: true, text: 'Nombre de commandes' }
+                },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
     }
-    window.statsChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: ['Commandes', 'Clients', 'CA'],
-            datasets: [{
-                data: [data.totalOrders, data.uniqueCustomers, data.totalRevenue],
-                backgroundColor: ['#0d6efd', '#198754', '#fd7e14']
-            }]
-        },
-        options: { responsive: true, plugins: { legend: { display: false } } }
-    });
 };
+
+window.updateRevenueChart = function (data) {
+    if (!window.Chart) return;
+    const months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
+    const ctx = document.getElementById('revenueChart');
+    if (ctx) {
+        if (window.revenueChart && typeof window.revenueChart.destroy === 'function') {
+            window.revenueChart.destroy();
+        }
+        window.revenueChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: months,
+                datasets: [{ data: data.revenue, backgroundColor: '#fd7e14' }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    title: { display: true, text: "Chiffre d'affaires" }
+                },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+    }
+};
+
+window.updateProductChart = function (data) {
+    if (!window.Chart) return;
+    const ctx = document.getElementById('productChart');
+    if (ctx) {
+        if (window.productChart && typeof window.productChart.destroy === 'function') {
+            window.productChart.destroy();
+        }
+        const colors = data.labels.map(l => l === data.topProduct ? '#198754' : '#0d6efd');
+        window.productChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.labels,
+                datasets: [{ data: data.data, backgroundColor: colors }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    title: { display: true, text: 'Ventes par produit' }
+                },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+    }
+}
+
 // ==================== Date Picker (Flatpickr) ====================
 window.onigiriDatePicker = {
     init: function (inputId, dotNetHelper, deliveries) {
@@ -450,7 +512,7 @@ window.onigiriDatePicker = {
                 if (del) {
                     instance.input.value = del.date;
                     dotNetHelper.invokeMethodAsync('OnDateSelected', del.id);
-                }                    
+                }
             }
         };
         flatpickr(input, opts);

@@ -7,29 +7,57 @@
     <div class="card-body">
         <h4 class="card-title mb-3">Statistiques</h4>
         <div class="row g-3 mb-3">
-            <div class="col-auto">
-                <label class="form-label mb-1">Du</label>
-                <input type="date" class="form-control form-control-sm" @bind="StartDate" />
-            </div>
-            <div class="col-auto">
-                <label class="form-label mb-1">Au</label>
-                <input type="date" class="form-control form-control-sm" @bind="EndDate" />
-            </div>
-            <div class="col-auto align-self-end">
-                <button class="btn btn-sm btn-outline-primary" @onclick="LoadAsync">
-                    <i class="bi bi-funnel me-1"></i> Filtrer
-                </button>
-            </div>
+            <div class="row g-4">
+                <div class="col-12 col-lg-6">
+                    <h5 class="mb-2">Nombre de commandes</h5>
+                    <div class="row g-2 mb-2">
+                        <div class="col-auto">
+                            <label class="form-label mb-1">Année</label>
+                            <select class="form-select form-select-sm" value="@OrdersYear" @onchange="OnOrdersYearChange">
+                                @for (var y = DateTime.Today.Year; y >= DateTime.Today.Year - 5; y--)
+                                {
+                                    <option value="@y">@y</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <canvas id="ordersChart" height="300"></canvas>
+                </div>
+                <div class="col-12 col-lg-6">
+                    <h5 class="mb-2">Chiffre d'affaires</h5>
+                    <div class="row g-2 mb-2">
+                        <div class="col-auto">
+                            <label class="form-label mb-1">Année</label>
+                            <select class="form-select form-select-sm" value="@RevenueYear" @onchange="OnRevenueYearChange">
+                                @for (var y = DateTime.Today.Year; y >= DateTime.Today.Year - 5; y--)
+                                {
+                                    <option value="@y">@y</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <canvas id="revenueChart" height="300"></canvas>
+                </div>
+                <div class="col-12">
+                    <h5 class="mb-2">Ventes par produit</h5>
+                    <div class="row g-2 mb-2">
+                        <div class="col-auto">
+                            <label class="form-label mb-1">Du</label>
+                            <input type="date" class="form-control form-control-sm" @bind="ProductsStart" />
+                        </div>
+                        <div class="col-auto">
+                            <label class="form-label mb-1">Au</label>
+                            <input type="date" class="form-control form-control-sm" @bind="ProductsEnd" />
+                        </div>
+                        <div class="col-auto align-self-end">
+                            <button class="btn btn-sm btn-outline-primary" @onclick="LoadProductsAsync">
+                                <i class="bi bi-funnel me-1"></i> Filtrer
+                            </button>
+                        </div>
+                    </div>
+                    <canvas id="productChart" height="300"></canvas>
+                </div>
+            </div>            
         </div>
-        @if (Result != null)
-        {
-            <canvas id="statsChart" height="120" class="mb-3"></canvas>
-            <ul class="list-group">
-                <li class="list-group-item">Nombre de commandes : <strong>@Result.TotalOrders</strong></li>
-                <li class="list-group-item">Clients distincts : <strong>@Result.UniqueCustomers</strong></li>
-                <li class="list-group-item">Chiffre d'affaires : <strong>@Result.TotalRevenue.ToString("0.00") €</strong></li>
-                <li class="list-group-item">Produit le plus vendu : <strong>@Result.TopProductName</strong> (@Result.TopProductQuantity)</li>
-            </ul>
-        }
     </div>
 </div>
