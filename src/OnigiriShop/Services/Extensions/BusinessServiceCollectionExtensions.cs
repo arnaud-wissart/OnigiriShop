@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using OnigiriShop.Data.Models;
 using OnigiriShop.Infrastructure;
+using OnigiriShop.Services.Zones;
 
 namespace OnigiriShop.Services.Extensions;
 
@@ -31,6 +32,7 @@ public static class BusinessServiceCollectionExtensions
         services.AddScoped<OrderExportService>();
         services.AddScoped<DeliveryService>();
         services.AddScoped<MaintenanceService>();
+        services.AddSingleton<IZoneStatusService, ZoneStatusService>();
         services.AddSingleton<IGitHubBackupService>(sp =>
         {
             var options = sp.GetRequiredService<IOptions<GitHubBackupConfig>>();
