@@ -36,11 +36,11 @@ public class ZoneStatusServiceTests
         var records = new List<CountingRecord>
         {
             new("B5", CountingState.Completed, now.AddDays(-4), now.AddDays(-4).AddHours(2), "Inventaire #1"),
-            new("B5", CountingState.InProgress, now.AddHours(-6), reference: "Inventaire #2"),
-            new("B5", CountingState.InProgress, now.AddHours(-2), reference: "Inventaire #3"),
+            new("B5", CountingState.InProgress, now.AddHours(-6), Reference: "Inventaire #2"),
+            new("B5", CountingState.InProgress, now.AddHours(-2), Reference: "Inventaire #3"),
             new("B7", CountingState.Completed, now.AddDays(-7), now.AddDays(-7).AddHours(1)),
             new("B7", CountingState.Completed, now.AddDays(-1), now.AddDays(-1).AddHours(3), "Inventaire #4"),
-            new("S3", CountingState.InProgress, now.AddHours(-1), reference: "Inventaire #5"),
+            new("S3", CountingState.InProgress, now.AddHours(-1), Reference: "Inventaire #5"),
             new("S3", CountingState.Completed, now.AddDays(-2), now.AddDays(-2).AddHours(2)),
             new("X1", CountingState.InProgress, now) // zone inconnue ignorée
         };
@@ -54,13 +54,17 @@ public class ZoneStatusServiceTests
         Assert.True(Math.Abs((zoneB5.InProgress!.StartedAt - now.AddHours(-2)).TotalSeconds) <= 1);
         Assert.Equal("Inventaire #3", zoneB5.InProgress.Reference);
         Assert.NotNull(zoneB5.LastCompleted);
-        Assert.True(Math.Abs((zoneB5.LastCompleted!.CompletedAt - now.AddDays(-4).AddHours(2)).Value.TotalSeconds) <= 1);
+        var b5CompletedAt = zoneB5.LastCompleted!.CompletedAt;
+        Assert.NotNull(b5CompletedAt);
+        Assert.True(Math.Abs((b5CompletedAt!.Value - now.AddDays(-4).AddHours(2)).TotalSeconds) <= 1);
 
         var zoneB7 = result.Single(r => r.Code == "B7");
         Assert.Null(zoneB7.InProgress);
         Assert.NotNull(zoneB7.LastCompleted);
         Assert.Equal("Inventaire #4", zoneB7.LastCompleted!.Reference);
-        Assert.True(Math.Abs((zoneB7.LastCompleted.CompletedAt - now.AddDays(-1).AddHours(3)).Value.TotalSeconds) <= 1);
+        var b7CompletedAt = zoneB7.LastCompleted!.CompletedAt;
+        Assert.NotNull(b7CompletedAt);
+        Assert.True(Math.Abs((b7CompletedAt!.Value - now.AddDays(-1).AddHours(3)).TotalSeconds) <= 1);
 
         var zoneS3 = result.Single(r => r.Code == "S3");
         Assert.NotNull(zoneS3.InProgress);
