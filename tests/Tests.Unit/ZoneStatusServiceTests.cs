@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using FluentAssertions;
 using OnigiriShop.Data.Models.Zones;
 using OnigiriShop.Services.Zones;
 
@@ -16,12 +15,18 @@ public class ZoneStatusServiceTests
 
         var result = service.BuildSummaries(Array.Empty<CountingRecord>());
 
-        result.Should().HaveCount(39);
-        result.Select(r => r.Code).Should().StartWith(["B1", "B2", "B3"]);
-        result[19].Code.Should().Be("B20");
-        result[20].Code.Should().Be("S1");
-        result.Last().Code.Should().Be("S19");
-        result.Should().OnlyContain(r => r.InProgress is null && r.LastCompleted is null);
+        Assert.Equal(39, result.Count);
+        Assert.Equal("B1", result[0].Code);
+        Assert.Equal("B2", result[1].Code);
+        Assert.Equal("B3", result[2].Code);
+        Assert.Equal("B20", result[19].Code);
+        Assert.Equal("S1", result[20].Code);
+        Assert.Equal("S19", result[^1].Code);
+        Assert.All(result, r =>
+        {
+            Assert.Null(r.InProgress);
+            Assert.Null(r.LastCompleted);
+        });
     }
 
     [Fact]
@@ -45,26 +50,26 @@ public class ZoneStatusServiceTests
         var result = service.BuildSummaries(records);
 
         var zoneB5 = result.Single(r => r.Code == "B5");
-        zoneB5.InProgress.Should().NotBeNull();
-        zoneB5.InProgress!.StartedAt.Should().BeCloseTo(now.AddHours(-2), TimeSpan.FromSeconds(1));
-        zoneB5.InProgress.Reference.Should().Be("Inventaire #3");
-        zoneB5.LastCompleted.Should().NotBeNull();
-        zoneB5.LastCompleted!.CompletedAt.Should().BeCloseTo(now.AddDays(-4).AddHours(2), TimeSpan.FromSeconds(1));
+        Assert.NotNull(zoneB5.InProgress);
+        Assert.True(Math.Abs((zoneB5.InProgress!.StartedAt - now.AddHours(-2)).TotalSeconds) <= 1);
+        Assert.Equal("Inventaire #3", zoneB5.InProgress.Reference);
+        Assert.NotNull(zoneB5.LastCompleted);
+        Assert.True(Math.Abs((zoneB5.LastCompleted!.CompletedAt - now.AddDays(-4).AddHours(2)).Value.TotalSeconds) <= 1);
 
         var zoneB7 = result.Single(r => r.Code == "B7");
-        zoneB7.InProgress.Should().BeNull();
-        zoneB7.LastCompleted.Should().NotBeNull();
-        zoneB7.LastCompleted!.Reference.Should().Be("Inventaire #4");
-        zoneB7.LastCompleted.CompletedAt.Should().BeCloseTo(now.AddDays(-1).AddHours(3), TimeSpan.FromSeconds(1));
+        Assert.Null(zoneB7.InProgress);
+        Assert.NotNull(zoneB7.LastCompleted);
+        Assert.Equal("Inventaire #4", zoneB7.LastCompleted!.Reference);
+        Assert.True(Math.Abs((zoneB7.LastCompleted.CompletedAt - now.AddDays(-1).AddHours(3)).Value.TotalSeconds) <= 1);
 
         var zoneS3 = result.Single(r => r.Code == "S3");
-        zoneS3.InProgress.Should().NotBeNull();
-        zoneS3.LastCompleted.Should().NotBeNull();
-        zoneS3.InProgress!.Reference.Should().Be("Inventaire #5");
+        Assert.NotNull(zoneS3.InProgress);
+        Assert.NotNull(zoneS3.LastCompleted);
+        Assert.Equal("Inventaire #5", zoneS3.InProgress!.Reference);
 
         var zoneS4 = result.Single(r => r.Code == "S4");
-        zoneS4.InProgress.Should().BeNull();
-        zoneS4.LastCompleted.Should().BeNull();
+        Assert.Null(zoneS4.InProgress);
+        Assert.Null(zoneS4.LastCompleted);
     }
 
     [Fact]
@@ -84,8 +89,8 @@ public class ZoneStatusServiceTests
             new CountingRecord("B1", CountingState.InProgress, DateTime.UtcNow)
         });
 
-        result.Single(r => r.Code == "B1").Label.Should().Be("Zone existante");
-        result.Single(r => r.Code == "S2").Label.Should().Be("Allée Sud 2");
-        result.Single(r => r.Code == "S3").Label.Should().BeNull();
+        Assert.Equal("Zone existante", result.Single(r => r.Code == "B1").Label);
+        Assert.Equal("Allée Sud 2", result.Single(r => r.Code == "S2").Label);
+        Assert.Null(result.Single(r => r.Code == "S3").Label);
     }
 }
