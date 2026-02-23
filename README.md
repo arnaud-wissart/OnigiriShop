@@ -1,5 +1,7 @@
 # OnigiriShop
 
+[![CI](https://github.com/arnaud-wissart/onigirishop/actions/workflows/dotnet.yml/badge.svg)](https://github.com/arnaud-wissart/onigirishop/actions/workflows/dotnet.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![.NET](https://img.shields.io/badge/.NET-8.0-blue)](https://dotnet.microsoft.com/)
 [![Blazor](https://img.shields.io/badge/Blazor-Server-purple)](https://dotnet.microsoft.com/apps/aspnet/web-apps/blazor)
 [![SQLite](https://img.shields.io/badge/SQLite-DB-lightgrey)](https://sqlite.org/)
@@ -15,7 +17,16 @@
 - l’envoi de notifications e‑mails via Mailjet ;
 - une interface responsive basée sur Bootstrap et Blazor.
 
-L’objectif : proposer une expérience fluide sur mobile comme sur desktop et un back‑office robuste au quotidien.
+## Démo
+
+- Démo publique : non
+- URL : TODO: URL
+- Voir la section **Lancement local** pour exécuter l’application en local.
+
+## Captures
+
+![Catalogue](docs/screenshots/catalog.png)
+![Backoffice](docs/screenshots/backoffice.png)
 
 ## Fonctionnalités principales
 
@@ -29,7 +40,7 @@ L’objectif : proposer une expérience fluide sur mobile comme sur desktop et u
 
 ## Stack technique
 
- **Backend** : ASP.NET Core 8, Dapper, SQLite (compatible SQL Server)
+- **Backend** : ASP.NET Core 8, Dapper, SQLite (compatible SQL Server)
 - **Frontend** : Blazor Server
 - **Tests** : xUnit et Playwright
 - **Gestion front** : LibMan
@@ -37,17 +48,7 @@ L’objectif : proposer une expérience fluide sur mobile comme sur desktop et u
 
 ## Choix techniques
 
-Le projet a pour objectif d'être **gratuit** à l'usage. Il n'est donc pas
-possible de s'appuyer sur un serveur de base de données payant. C'est pourquoi
-la base est stockée dans un fichier **SQLite**. Le chemin est résolu via la
-méthode `DatabasePaths.GetPath()` afin de pouvoir l'héberger aussi bien en
-local que sur le serveur.
-
-Pour le déploiement, nous utilisons [Render.com](https://render.com). Chaque
-déploiement recrée le conteneur Docker et efface les fichiers précédents. Afin
-de ne pas perdre la base SQLite, un service sauvegarde régulièrement la base
-sur un répertoire GitHub privé via `GitHubBackupService`. Lors du démarrage de
-l'application, cette sauvegarde peut être restaurée automatiquement.
+Le projet vise un hébergement gratuit : la base est donc stockée dans un fichier **SQLite** (chemin géré par `DatabasePaths.GetPath()`). En production sur Render, le conteneur étant recréé à chaque déploiement, la sauvegarde/restauration de la base est assurée via `GitHubBackupService`.
 
 ## Qualité & bonnes pratiques
 
@@ -61,7 +62,7 @@ l'application, cette sauvegarde peut être restaurée automatiquement.
 
 Le fichier `DatabasePaths.cs` fournit la méthode `DatabasePaths.GetPath()` pour obtenir le chemin absolu de la base SQLite et crée le dossier `BDD` si nécessaire. Utilisez toujours cette méthode dans le code et les tests.
 
-## Démarrage rapide
+## Lancement local
 
 ```bash
 git clone https://github.com/arnaud-wissart/onigirishop.git
@@ -75,10 +76,13 @@ dotnet run
 ## Tests
 
 Avant d’exécuter la suite Playwright, installez les navigateurs :
+
 ```bash
 playwright.ps1 install
 ```
+
 La fixture de tests démarre automatiquement l’application. Il suffit donc d’exécuter :
+
 ```bash
 dotnet test
 ```
