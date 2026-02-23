@@ -9,15 +9,18 @@ namespace Tests.Playwright
         [Fact]
         public async Task AdminPageShowsLoginModal()
         {
-            await fixture.Page.GotoAsync(
+            await using var session = await fixture.CreateSessionAsync();
+            var page = session.Page;
+
+            await page.GotoAsync(
                             $"{fixture.BaseUrl}/admin",
                             new()
                             {
                                 WaitUntil = WaitUntilState.DOMContentLoaded,
                                 Timeout = 60000
                             });
-            await fixture.Page.WaitForSelectorAsync("#loginModal");
-            var content = await fixture.Page.ContentAsync();
+            await page.WaitForSelectorAsync("#loginModal");
+            var content = await page.ContentAsync();
             Assert.Contains("Connexion", content);
         }
 
@@ -26,16 +29,17 @@ namespace Tests.Playwright
         {
             // Sélectionne un produit aléatoire dans la base puis vérifie
             // qu'il est bien présent dans la page d'accueil.
-            var dbPath = Environment.GetEnvironmentVariable("ONIGIRISHOP_DB_PATH");
-            Assert.False(string.IsNullOrWhiteSpace(dbPath),
-                "Le chemin de la base n'est pas défini");
+            var dbPath = fixture.DatabasePath;
 
             using var conn = new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={dbPath};Pooling=False");
             await conn.OpenAsync();
             var productName = await conn.ExecuteScalarAsync<string>(
                 "SELECT Name FROM Product WHERE IsDeleted = 0 AND IsOnMenu = 1 ORDER BY RANDOM() LIMIT 1");
 
-            var response = await fixture.Page.GotoAsync($"{fixture.BaseUrl}/",
+            await using var session = await fixture.CreateSessionAsync();
+            var page = session.Page;
+
+            var response = await page.GotoAsync($"{fixture.BaseUrl}/",
                             new()
                             {
                                 WaitUntil = WaitUntilState.DOMContentLoaded,

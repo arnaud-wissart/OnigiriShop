@@ -1,7 +1,7 @@
 # OnigiriShop
 
 [![CI](https://github.com/arnaud-wissart/onigirishop/actions/workflows/dotnet.yml/badge.svg)](https://github.com/arnaud-wissart/onigirishop/actions/workflows/dotnet.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+[![Licence: MIT](https://img.shields.io/badge/Licence-MIT-yellow.svg)](./LICENSE)
 [![.NET](https://img.shields.io/badge/.NET-8.0-blue)](https://dotnet.microsoft.com/)
 [![Blazor](https://img.shields.io/badge/Blazor-Server-purple)](https://dotnet.microsoft.com/apps/aspnet/web-apps/blazor)
 [![SQLite](https://img.shields.io/badge/SQLite-DB-lightgrey)](https://sqlite.org/)
@@ -9,80 +9,97 @@
 
 ## Présentation
 
-**OnigiriShop** est une application web en cours de développement destinée à gérer des commandes artisanales de onigiris. Pensée pour une utilisation simple et efficace, elle offre :
+**OnigiriShop** est une application web Blazor Server de gestion de commandes artisanales de onigiris et de desserts.
 
-- un catalogue de produits affiché dynamiquement ;
-- la prise de commandes en ligne avec choix du créneau de retrait ou livraison ;
-- un espace administrateur sécurisé pour gérer produits et commandes ;
-- l’envoi de notifications e‑mails via Mailjet ;
-- une interface responsive basée sur Bootstrap et Blazor.
+Elle couvre notamment :
 
-## Démo
-
-- Démo publique : non
-- URL : TODO: URL
-- Voir la section **Lancement local** pour exécuter l’application en local.
-
-## Captures
-
-![Catalogue](docs/screenshots/catalog.png)
-![Backoffice](docs/screenshots/backoffice.png)
+- le catalogue de produits ;
+- la prise de commande avec choix d'une livraison ;
+- l'espace d'administration (produits, commandes, utilisateurs, planning) ;
+- les notifications e-mail ;
+- la journalisation applicative.
 
 ## Fonctionnalités principales
 
-- **Catalogue produits** avec gestion CRUD
-- **Commandes en ligne** avec suivi du statut
-- **Notifications par e-mail** (confirmations et alertes admin)
-- **Espace administration sécurisé** pour gérer produits et utilisateurs
-- **Logs applicatifs** (Serilog) et audit trail
-- **Gestion des secrets** via `dotnet user-secrets`
-- **Interface responsive** Bootstrap 5
+- Catalogue produits avec gestion CRUD
+- Commandes en ligne et suivi d'état
+- Administration sécurisée
+- Notifications e-mail (Mailjet)
+- Sauvegarde et restauration de base SQLite
+- Interface responsive (Bootstrap)
+- Tests unitaires et tests E2E (Playwright)
 
 ## Stack technique
 
-- **Backend** : ASP.NET Core 8, Dapper, SQLite (compatible SQL Server)
-- **Frontend** : Blazor Server
-- **Tests** : xUnit et Playwright
-- **Gestion front** : LibMan
-- **CI/CD** : GitHub Actions
+- Back-end : ASP.NET Core 8, Dapper, FluentMigrator, SQLite
+- Front-end : Blazor Server, Bootstrap, Chart.js, FullCalendar, Quill, Flatpickr
+- Journalisation : Serilog
+- Tests : xUnit, Moq, Playwright
+- CI : GitHub Actions
+- Gestion des bibliothèques front : LibMan
 
-## Choix techniques
+## Prérequis
 
-Le projet vise un hébergement gratuit : la base est donc stockée dans un fichier **SQLite** (chemin géré par `DatabasePaths.GetPath()`). En production sur Render, le conteneur étant recréé à chaque déploiement, la sauvegarde/restauration de la base est assurée via `GitHubBackupService`.
+- SDK .NET 8 installé
+- PowerShell (Windows)
+- Accès réseau pour restaurer NuGet et LibMan
 
-## Qualité & bonnes pratiques
+Pour les bibliothèques front, installer LibMan CLI une fois :
 
-- **Aucun secret dans le repo** : tout est géré par user‑secrets ou ignoré dans Git
-- **Dépôt propre** : dépendances front gérées par LibMan, pas de binaires
-- **Séparation claire du code** : services, modèles, pages
-- **Extensible & maintenable** grâce à une architecture modulaire
-- **Documentation onboarding** complète
-
-## Utilitaires
-
-Le fichier `DatabasePaths.cs` fournit la méthode `DatabasePaths.GetPath()` pour obtenir le chemin absolu de la base SQLite et crée le dossier `BDD` si nécessaire. Utilisez toujours cette méthode dans le code et les tests.
+```powershell
+dotnet tool install -g Microsoft.Web.LibraryManager.Cli
+```
 
 ## Lancement local
 
-```bash
+```powershell
 git clone https://github.com/arnaud-wissart/onigirishop.git
 cd onigirishop/src/OnigiriShop
 libman restore
 dotnet restore
 dotnet user-secrets set "Mailjet:ApiKey" "VOTRE_CLE"
+dotnet user-secrets set "Mailjet:ApiSecret" "VOTRE_SECRET"
 dotnet run
 ```
 
-## Tests
+## Exécution des tests
 
-Avant d’exécuter la suite Playwright, installez les navigateurs :
+Depuis la racine du dépôt :
 
-```bash
-playwright.ps1 install
+```powershell
+dotnet build OnigiriShop.sln -c Debug
+dotnet test OnigiriShop.sln -c Debug
 ```
 
-La fixture de tests démarre automatiquement l’application. Il suffit donc d’exécuter :
+Pour Playwright (première exécution sur une machine) :
 
-```bash
-dotnet test
+```powershell
+pwsh tests/Tests.Playwright/bin/Debug/net8.0/playwright.ps1 install --with-deps
 ```
+
+## Mise à jour des dépendances
+
+### Vérifier les dépendances NuGet obsolètes
+
+```powershell
+dotnet list src/OnigiriShop/OnigiriShop.csproj package --outdated
+dotnet list tests/Tests.Unit/Tests.Unit.csproj package --outdated
+dotnet list tests/Tests.Playwright/Tests.Playwright.csproj package --outdated
+```
+
+### Vérifier les vulnérabilités NuGet
+
+```powershell
+dotnet list OnigiriShop.sln package --vulnerable
+```
+
+### Mettre à jour les bibliothèques front (LibMan)
+
+1. Mettre à jour les versions dans `src/OnigiriShop/libman.json`
+2. Restaurer :
+
+```powershell
+cd src/OnigiriShop
+libman restore
+```
+

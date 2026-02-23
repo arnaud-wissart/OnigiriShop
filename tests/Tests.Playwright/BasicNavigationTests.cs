@@ -9,13 +9,15 @@ namespace Tests.Playwright
         [Fact]
         public async Task HomePageLoads()
         {
-            await fixture.Page.GotoAsync(
+            await using var session = await fixture.CreateSessionAsync();
+            var page = session.Page;
+
+            await page.GotoAsync(
                             $"{fixture.BaseUrl}/",
                             new() { 
                                 WaitUntil = WaitUntilState.DOMContentLoaded,
                                 Timeout = 60000 });
-            var title = await fixture.Page.TitleAsync();
-            var test = GetSiteName();
+            var title = await page.TitleAsync();
             Assert.Contains(GetSiteName(), title);
         }
 

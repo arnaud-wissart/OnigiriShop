@@ -94,6 +94,7 @@ window.bootstrapInterop = {
      */
     showModal: function (selector) {
         if (window.closeAllTooltips) window.closeAllTooltips();
+        if (!window.bootstrap || !window.bootstrap.Modal) return;
         var modalEl = document.querySelector(selector);
         if (modalEl) {
             var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
@@ -105,6 +106,7 @@ window.bootstrapInterop = {
      * @param {string} selector 
      */
     hideModal: function (selector) {
+        if (!window.bootstrap || !window.bootstrap.Modal) return;
         var modalEl = document.querySelector(selector);
         if (modalEl) {
             var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
@@ -117,6 +119,7 @@ window.bootstrapInterop = {
  * Réactive tous les tooltips Bootstrap.
  */
 window.activateTooltips = function () {
+    if (!window.bootstrap || !window.bootstrap.Tooltip) return;
     document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) {
         var tooltip = bootstrap.Tooltip.getInstance(el);
         if (tooltip) tooltip.dispose();
@@ -129,6 +132,7 @@ window.activateTooltips = function () {
     });
 };
 window.closeAllTooltips = function () {
+    if (!window.bootstrap || !window.bootstrap.Tooltip) return;
     document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) {
         var tooltip = bootstrap.Tooltip.getInstance(el);
         if (tooltip) tooltip.hide();
