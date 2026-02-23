@@ -60,19 +60,32 @@ namespace OnigiriShop.Pages
             IsBusy = true;
             StateHasChanged();
 
-            var result = await JS.InvokeAsync<LoginResult>("onigiriAuth.login", LoginModel.Email, LoginModel.Password);
-
-            if (result != null && result.success)
+            try
             {
-                await JS.InvokeVoidAsync("location.reload");
-            }
-            else
-            {
-                ErrorMessage = result?.error ?? "Erreur inconnue. Veuillez réessayer.";
-            }
+                var result = await JS.InvokeAsync<LoginResult>("onigiriAuth.login", LoginModel.Email, LoginModel.Password);
 
-            IsBusy = false;
-            StateHasChanged();
+                if (result != null && result.success)
+                {
+                    await JS.InvokeVoidAsync("location.reload");
+                }
+                else
+                {
+                    ErrorMessage = result?.error ?? "Erreur inconnue. Veuillez réessayer.";
+                }
+            }
+            catch (JSException)
+            {
+                ErrorMessage = "Erreur technique côté navigateur. Rechargez la page puis réessayez.";
+            }
+            catch
+            {
+                ErrorMessage = "Erreur inattendue. Veuillez réessayer.";
+            }
+            finally
+            {
+                IsBusy = false;
+                StateHasChanged();
+            }
         }
 
         protected void ShowRequestAccess()
@@ -101,19 +114,32 @@ namespace OnigiriShop.Pages
             IsBusy = true;
             StateHasChanged();
 
-            var result = await JS.InvokeAsync<LoginResult>("onigiriAuth.requestAccess", AccessRequestModel.Email, AccessRequestModel.Message);
-
-            if (result != null && result.success)
+            try
             {
-                RequestSent = true;
-            }
-            else
-            {
-                ErrorMessage = result?.error ?? "Erreur inconnue. Veuillez réessayer.";
-            }
+                var result = await JS.InvokeAsync<LoginResult>("onigiriAuth.requestAccess", AccessRequestModel.Email, AccessRequestModel.Message);
 
-            IsBusy = false;
-            StateHasChanged();
+                if (result != null && result.success)
+                {
+                    RequestSent = true;
+                }
+                else
+                {
+                    ErrorMessage = result?.error ?? "Erreur inconnue. Veuillez réessayer.";
+                }
+            }
+            catch (JSException)
+            {
+                ErrorMessage = "Erreur technique côté navigateur. Rechargez la page puis réessayez.";
+            }
+            catch
+            {
+                ErrorMessage = "Erreur inattendue. Veuillez réessayer.";
+            }
+            finally
+            {
+                IsBusy = false;
+                StateHasChanged();
+            }
         }
 
         protected async Task HandleForgotPassword()
@@ -122,19 +148,32 @@ namespace OnigiriShop.Pages
             IsBusy = true;
             StateHasChanged();
 
-            var result = await JS.InvokeAsync<LoginResult>("onigiriAuth.forgotPassword", ForgotModel.Email);
-
-            if (result != null && result.success)
+            try
             {
-                ForgotSent = true;
-            }
-            else
-            {
-                ErrorMessage = result?.error ?? "Erreur inconnue. Veuillez réessayer.";
-            }
+                var result = await JS.InvokeAsync<LoginResult>("onigiriAuth.forgotPassword", ForgotModel.Email);
 
-            IsBusy = false;
-            StateHasChanged();
+                if (result != null && result.success)
+                {
+                    ForgotSent = true;
+                }
+                else
+                {
+                    ErrorMessage = result?.error ?? "Erreur inconnue. Veuillez réessayer.";
+                }
+            }
+            catch (JSException)
+            {
+                ErrorMessage = "Erreur technique côté navigateur. Rechargez la page puis réessayez.";
+            }
+            catch
+            {
+                ErrorMessage = "Erreur inattendue. Veuillez réessayer.";
+            }
+            finally
+            {
+                IsBusy = false;
+                StateHasChanged();
+            }
         }
     }
 

@@ -68,6 +68,35 @@ namespace OnigiriShop.Infrastructure
             .Produces(200)
             .Produces(400);
 
+            app.MapPost("/api/auth/request-access", async (
+                EmailService emailService,
+                AccessRequest req) =>
+            {
+                var email = req.Email?.Trim();
+                var message = req.Message?.Trim();
+
+                if (string.IsNullOrWhiteSpace(email))
+                    return Results.BadRequest(new { error = "Email requis." });
+
+                if (string.IsNullOrWhiteSpace(message) || message.Length < 20)
+                    return Results.BadRequest(new { error = "Message trop court (20 caractères min)." });
+
+                var subject = "Nouvelle demande d'accès boutique";
+                var safeEmail = WebUtility.HtmlEncode(email);
+                var safeMessage = WebUtility.HtmlEncode(message)
+                    .Replace("\r\n", "<br />")
+                    .Replace("\n", "<br />");
+
+                var html = $"<p><b>Email :</b> {safeEmail}</p><p><b>Message :</b><br />{safeMessage}</p>";
+                var text = $"Email : {email}\n\nMessage :\n{message}";
+
+                await emailService.SendAdminNotificationAsync(subject, html, text, highPriority: true);
+                return Results.Ok();
+            })
+            .Accepts<AccessRequest>("application/json")
+            .Produces(200)
+            .Produces(400);
+
             app.MapGet("/reset-login", async (
                 HttpContext http,
                 UserAccountService accountService,

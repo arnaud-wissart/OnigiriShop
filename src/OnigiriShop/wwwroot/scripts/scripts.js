@@ -47,6 +47,31 @@ window.onigiriAuth = {
         }
     },
 
+    /**
+     * Envoie une demande d'accès à la boutique.
+     * @param {string} email
+     * @param {string} message
+     * @returns {Promise<{success: boolean, error?: string}>}
+     */
+    requestAccess: async function (email, message) {
+        try {
+            const response = await fetch("/api/auth/request-access", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "same-origin",
+                body: JSON.stringify({ email, message })
+            });
+            if (response.ok) return { success: true };
+            if (response.status === 400) {
+                const data = await response.json().catch(() => null);
+                return { success: false, error: data?.error || "Données invalides." };
+            }
+            return { success: false, error: `Erreur serveur (${response.status})` };
+        } catch (err) {
+            return { success: false, error: "Erreur : " + err };
+        }
+    },
+
 
     /**
      * Déconnecte l'utilisateur et redirige si succès.
