@@ -19,6 +19,12 @@ Elle couvre notamment :
 - les notifications e-mail ;
 - la journalisation applicative.
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/arnaud-wissart/OnigiriShop/main/docs/screenshots/onigiri2.png" width="800"/>
+  <span width="20"></span>
+  <img src="https://raw.githubusercontent.com/arnaud-wissart/OnigiriShop/main/docs/screenshots/onigiri1.png" height="400"/>
+</p>
+
 ## Fonctionnalités principales
 
 - Catalogue produits avec gestion CRUD
