@@ -21,7 +21,7 @@ Application e-commerce de démonstration en Blazor Server pour catalogue, panier
 
 <p align="center">
   <img src="docs/screenshots/onigiri2.png" width="750" />
-  <img src="docs/screenshots/onigiri1.png" heught="400" />
+  <img src="docs/screenshots/onigiri1.png" height="400" />
 </p>
 
 ## Architecture
