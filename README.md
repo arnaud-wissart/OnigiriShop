@@ -5,7 +5,7 @@ Application e-commerce de démonstration en Blazor Server pour catalogue, panier
 [![Licence: MIT](https://img.shields.io/badge/Licence-MIT-yellow.svg)](./LICENSE)
 
 ## Démo live
-- URL: onigirishop.onrender.com/
+- URL: https://onigirishop.onrender.com/
 - Releases: [GitHub Releases](https://github.com/arnaud-wissart/OnigiriShop/releases)
 
 ## Ce que ça démontre
