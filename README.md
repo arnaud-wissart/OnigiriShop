@@ -36,8 +36,8 @@ flowchart LR
     DBL --> DB[(SQLite OnigiriShop.db)]
     MIG[FluentMigrator + SQL init_db.sql/seed.sql] --> DB
     BKG[DatabaseBackupBackgroundService] --> BAK[Copie locale .bak]
-    BKG --> HTTP[Backup.Endpoint (optionnel)]
-    BKG --> GH[GitHubBackup (optionnel)]
+    BKG --> HTTP_BKP["Backup.Endpoint (optionnel)"]
+    BKG --> GH_BKP["GitHubBackup (optionnel)"]
 ```
 
 ## Stack technique
