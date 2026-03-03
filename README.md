@@ -77,7 +77,7 @@ dotnet test tests/Tests.Playwright/Tests.Playwright.csproj -c Release
 ```
 
 Intégration:
-- `TODO` (aucun projet de tests d'intégration dédié détecté dans le dépôt).
+- Pas de projet de tests d'intégration dédié dans ce dépôt (scope volontairement limité).
 
 CI (pipeline complet):
 ```powershell
@@ -115,7 +115,7 @@ dotnet user-secrets set "GitHubBackup:Branch" "main"
 Notes:
 - Ne jamais committer de secrets dans `appsettings.json`, `appsettings.*.json` ou les scripts CI.
 - Le détail exploitation/déploiement est centralisé dans [`docs/RUNBOOK.md`](docs/RUNBOOK.md).
-- `TODO`: durcir la politique cookie en production (`CookieSecurePolicy.None` est commenté dans `AuthConfig`).
+- Note : durcissement de la politique cookie en production à valider (cf. `AuthConfig`).
 
 ## Licence
 Ce projet est distribué sous licence [MIT](LICENSE).
