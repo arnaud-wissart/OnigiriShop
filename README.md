@@ -6,7 +6,6 @@ Application e-commerce de démonstration en Blazor Server pour catalogue, panier
 
 ## Démo live
 - URL: https://onigirishop.onrender.com/
-- Releases: [GitHub Releases](https://github.com/arnaud-wissart/OnigiriShop/releases)
 
 ## Ce que ça démontre
 - Développement d'une application Blazor Server orientée usage métier (catalogue, panier, validation de commande).
@@ -54,7 +53,7 @@ Prérequis:
 - LibMan CLI
 
 ```powershell
-git clone https://github.com/arnaud-wissart/OnigiriShop.git
+git clone https://github.com/arnaud-wissart-lab/OnigiriShop.git
 cd OnigiriShop/src/OnigiriShop
 dotnet tool install -g Microsoft.Web.LibraryManager.Cli
 libman restore
