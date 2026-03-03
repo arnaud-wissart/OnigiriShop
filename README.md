@@ -1,7 +1,7 @@
 # OnigiriShop
 Application e-commerce de démonstration en Blazor Server pour catalogue, panier, commande et back-office.
 
-[![CI](https://github.com/arnaud-wissart/OnigiriShop/actions/workflows/dotnet.yml/badge.svg)](https://github.com/arnaud-wissart/OnigiriShop/actions/workflows/dotnet.yml)
+[![CI](https://github.com/arnaud-wissart-lab/OnigiriShop/actions/workflows/dotnet.yml/badge.svg)](https://github.com/arnaud-wissart-lab/OnigiriShop/actions/workflows/dotnet.yml)
 [![Licence: MIT](https://img.shields.io/badge/Licence-MIT-yellow.svg)](./LICENSE)
 
 ## Démo live
