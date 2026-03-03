@@ -18,8 +18,11 @@ Application e-commerce de démonstration en Blazor Server pour catalogue, panier
 - Qualité logicielle avec tests unitaires xUnit et tests E2E Playwright, exécutés en CI GitHub Actions.
 
 ## Captures
-![Capture écran catalogue](docs/screenshots/onigiri2.png)
-![Capture écran interface](docs/screenshots/onigiri1.png)
+
+<p align="center">
+  <img src="docs/screenshots/onigiri1.png" width="750" />
+  <img src="docs/screenshots/onigiri2.png" heught="400" />
+</p>
 
 ## Architecture
 ```mermaid
